@@ -1,5 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
+
+import ScholarshipFinder from './pages/ScholarshipFinder';
 import UniversityRecommender from './pages/UniversityRecommender';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -29,7 +31,13 @@ function App() {
      <Route
   path="/university-recommender"
   element={<UniversityRecommender />}
-/>       <Route path="/quiz" element={<GeneralQuiz />} />
+  />
+  <Route
+  path="/scholarships"
+  element={<ScholarshipFinder />}
+/>
+  
+     <Route path="/quiz" element={<GeneralQuiz />} />
             <Route path="/general-quiz" element={<GeneralQuiz />} />
             <Route path="/specific-quiz" element={<SpecificQuiz />} />
             <Route path="/result" element={<Result />} />

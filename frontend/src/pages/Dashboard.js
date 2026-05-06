@@ -37,13 +37,20 @@ function Dashboard() {
 
           {/* University Recommender Button */}
           <button
-            className="recommend-button"
+         
+              className="primary-button"
             type="button"
             onClick={() => navigate('/university-recommender')}
           >
             🎓 University Recommender
           </button>
-
+<button
+  className="primary-button"
+  type="button"
+  onClick={() => navigate('/scholarships')}
+>
+  🎓 Scholarships
+</button>
           {/* Logout Button */}
           <button
             className="secondary-button"
