@@ -6,10 +6,26 @@ import pandas as pd
 app = Flask(__name__)
 CORS(app)
 
+# ================================
+# LOAD MODEL
+# ================================
+model = joblib.load("career_model.pkl")
+le_background = joblib.load("background_encoder.pkl")
+le_career = joblib.load("career_encoder.pkl")
+
+# ================================
+# LOAD CSV FILES
+# ================================
+uni_df = pd.read_csv("universities_cleaned.csv")
+scholarships_df = pd.read_csv("scholarships.csv")
+
+
+# ================================
+# UNIVERSITY LINKS
+# ================================
 def get_university_link(name):
     base = name.lower()
 
-    # ✅ safer: open homepage (never 403)
     if "fast" in base:
         return "https://nu.edu.pk/"
     elif "comsats" in base:
@@ -17,24 +33,21 @@ def get_university_link(name):
     elif "bahria" in base:
         return "https://bahria.edu.pk/"
 
-    # ✅ fallback: Google search (always works)
     search_query = name.replace(" ", "+") + "+admissions+Pakistan"
     return f"https://www.google.com/search?q={search_query}"
-    
-
-   
-# LOAD MODEL
-model = joblib.load("career_model.pkl")
-le_background = joblib.load("background_encoder.pkl")
-le_career = joblib.load("career_encoder.pkl")
 
 
+# ================================
+# HOME ROUTE
+# ================================
 @app.route("/")
 def home():
-    return "API Running"
+    return "Career Counselling API Running"
 
 
-# 🔥 EXPLANATION FUNCTION
+# ================================
+# EXPLANATION FUNCTION
+# ================================
 def generate_reason(data):
     reasons = []
 
@@ -56,6 +69,9 @@ def generate_reason(data):
     return reasons
 
 
+# ================================
+# PREDICT ROUTE
+# ================================
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
@@ -63,81 +79,155 @@ def predict():
 
         city = data.get("City", None)
 
+        # ================================
+        # MODEL INPUT
+        # ================================
         model_input = data.copy()
         model_input.pop("City", None)
 
         df = pd.DataFrame([model_input])
 
-        df = df[["Math", "Biology", "Computer", "Communication", "Marks", "Background", "Leadership"]]
+        df = df[[
+            "Math",
+            "Biology",
+            "Computer",
+            "Communication",
+            "Marks",
+            "Background",
+            "Leadership"
+        ]]
 
+        # Encode background
         df["Background"] = le_background.transform(df["Background"])
 
+        # ================================
+        # CAREER PREDICTION
+        # ================================
         pred = model.predict(df)
         career = le_career.inverse_transform(pred)[0]
 
-        # 🔥 EXPLANATION
+        # ================================
+        # EXPLANATION
+        # ================================
         reasons = generate_reason(data)
 
-        # -------- UNIVERSITIES --------
-        uni_df = pd.read_csv("universities_cleaned.csv")
-
+        # ================================
+        # UNIVERSITY FILTERING
+        # ================================
         mapping = {
-            "BSCS": "Computer",
-            "Software Engineering": "Software",
-            "BBA": "Business",
-            "MBBS": "Medical"
+            "BSCS": ["Computer", "CS"],
+            "Software Engineering": ["Software"],
+            "BBA": ["Business", "Management"],
+            "Media Studies": ["Communication", "Media"],
+            "Pharmacy": ["Pharmacy"],
+            "MBBS": ["Medical"]
         }
 
-        keyword = mapping.get(career, career)
+        keywords = mapping.get(career, [career])
 
-        recommended = uni_df[
-            (uni_df["Program"].str.contains(keyword, case=False)) &
-            (uni_df["Merit"] <= data["Marks"])
+        marks = data["Marks"]
+
+        # helper function
+        def match_program(df, keywords):
+            condition = False
+
+            for k in keywords:
+                condition = condition | df["Program"].str.contains(
+                    k,
+                    case=False,
+                    na=False
+                )
+
+            return df[condition]
+
+        # strict filter
+        recommended = match_program(uni_df, keywords)
+        recommended = recommended[
+            recommended["Merit"] <= marks
         ]
 
+        # relaxed filter
+        if recommended.empty:
+            recommended = match_program(uni_df, keywords)
+            recommended = recommended[
+                recommended["Merit"] <= marks + 10
+            ]
+
+        # fallback
+        if recommended.empty:
+            recommended = match_program(uni_df, keywords)
+
+        # city filter
         if city:
             recommended = recommended[
                 recommended["City"].str.lower() == city.lower()
             ]
 
+        # remove duplicates
         recommended = recommended.drop_duplicates(
             subset=["University", "Program"]
         ).head(5)
 
-        # 🔥 ADD REQUIREMENTS + GUIDANCE
+        # ================================
+        # UNIVERSITIES RESPONSE
+        # ================================
         universities_list = []
 
         for _, row in recommended.iterrows():
-           universities_list.append({
-    "University": row["University"],
-    "Program": row["Program"],
-    "City": row["City"],
-    "Merit": row["Merit"],
 
-    # 🔥 NEW FEATURES
-    "your_marks": data["Marks"],
+            universities_list.append({
+                "University": row["University"],
+                "Program": row["Program"],
+                "City": row["City"],
+                "Merit": row["Merit"],
 
-    "eligibility": "Eligible" if data["Marks"] >= row["Merit"] else "Not Eligible",
+                "your_marks": marks,
 
-    "requirements": f"Minimum {row['Merit']}% merit required",
+                "eligibility":
+                    "Eligible"
+                    if marks >= row["Merit"]
+                    else "Not Eligible",
 
-    "link": get_university_link(row["University"]),
+                "requirements":
+                    f"Minimum {row['Merit']}% merit required",
 
-    "guidance": [
-        "Apply before deadline",
-        "Prepare required documents",
-        "Check entry test schedule"
-    ]
-})
+                "link":
+                    get_university_link(row["University"]),
+
+                "guidance": [
+                    "Apply before deadline",
+                    "Prepare required documents",
+                    "Check entry test schedule"
+                ]
+            })
+
+        # ================================
+        # SCHOLARSHIP FILTERING
+        # ================================
+        filtered_scholarships = scholarships_df[
+            scholarships_df["min_percentage"] <= marks
+        ]
+
+        scholarships = filtered_scholarships.to_dict(
+            orient="records"
+        )
+
+        # ================================
+        # FINAL RESPONSE
+        # ================================
         return jsonify({
             "career": career,
             "reasons": reasons,
-            "universities": universities_list
+            "universities": universities_list,
+            "scholarships": scholarships
         })
 
     except Exception as e:
         return jsonify({"error": str(e)})
 
 
+# ================================
+# RUN APP
+# ================================
 if __name__ == "__main__":
     app.run(debug=True)
