@@ -5,7 +5,7 @@ import { securityQuestions } from '../data/securityQuestions';
 import './Auth.css';
 
 function Register() {
-  const { register, signInWithGoogle, initialized, isAuthenticated } = useAuth();
+  const { register, initialized, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [name, setName] = useState('');
@@ -39,19 +39,6 @@ function Register() {
       navigate(destination, { replace: true });
     } catch (error) {
       setErrorMessage(error.message || 'Unable to create the account right now.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoogleSignUp = async () => {
-    setErrorMessage('');
-    setIsSubmitting(true);
-    try {
-      await signInWithGoogle();
-      navigate(destination, { replace: true });
-    } catch (err) {
-      setErrorMessage(err.message || 'Google sign-in failed.');
     } finally {
       setIsSubmitting(false);
     }
@@ -162,12 +149,6 @@ function Register() {
             <button className="auth-primary-button" type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Creating account...' : 'Create account'}
             </button>
-
-            <div style={{ textAlign: 'center', marginTop: 12 }}>
-              <button type="button" className="auth-secondary-button" onClick={handleGoogleSignUp} disabled={isSubmitting}>
-                Sign up with Google
-              </button>
-            </div>
           </form>
 
           <p className="auth-switch-text">

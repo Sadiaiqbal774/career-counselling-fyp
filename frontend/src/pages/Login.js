@@ -5,7 +5,6 @@ import './Auth.css';
 
 function Login() {
   const { login, initialized, isAuthenticated } = useAuth();
-  const { signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState('');
@@ -29,19 +28,6 @@ function Login() {
       navigate(destination, { replace: true });
     } catch (error) {
       setErrorMessage(error.message || 'Unable to sign in right now.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setErrorMessage('');
-    setIsSubmitting(true);
-    try {
-      await signInWithGoogle();
-      navigate(destination, { replace: true });
-    } catch (err) {
-      setErrorMessage(err.message || 'Google sign-in failed.');
     } finally {
       setIsSubmitting(false);
     }
@@ -107,12 +93,6 @@ function Login() {
             <button className="auth-primary-button" type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Signing in...' : 'Sign in'}
             </button>
-
-            <div style={{ textAlign: 'center', marginTop: 12 }}>
-              <button type="button" className="auth-secondary-button" onClick={handleGoogleSignIn} disabled={isSubmitting}>
-                Continue with Google
-              </button>
-            </div>
           </form>
 
           <p className="auth-switch-text">
