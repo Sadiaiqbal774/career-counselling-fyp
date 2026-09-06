@@ -1,0 +1,506 @@
+Math,Biology,Computer,Communication,Marks,Background,Leadership,Career
+5,1,5,3,85,ICS,3,BSCS
+4,1,5,4,88,ICS,4,Software Engineering
+5,2,4,3,82,ICS,2,BSCS
+4,1,5,2,79,ICS,3,Software Engineering
+5,1,4,3,86,ICS,4,BSCS
+3,1,5,4,83,ICS,3,Software Engineering
+5,1,5,2,90,ICS,2,BSCS
+4,2,4,3,77,ICS,4,Software Engineering
+5,1,5,4,88,ICS,3,BSCS
+4,1,4,3,81,ICS,2,Software Engineering
+5,2,5,2,84,ICS,3,BSCS
+3,1,5,3,87,ICS,4,Software Engineering
+4,1,5,4,91,ICS,3,BSCS
+5,2,4,2,78,ICS,2,Software Engineering
+4,1,5,3,85,ICS,4,BSCS
+5,1,4,4,89,ICS,3,Software Engineering
+4,2,5,2,76,ICS,2,BSCS
+5,1,5,3,83,ICS,4,Software Engineering
+3,1,4,4,80,ICS,3,BSCS
+5,2,5,2,87,ICS,2,Software Engineering
+5,1,5,3,92,ICS,4,BSCS
+4,1,4,4,85,ICS,3,Software Engineering
+5,2,5,2,81,ICS,2,BSCS
+4,1,5,3,88,ICS,4,Software Engineering
+3,1,4,4,84,ICS,3,BSCS
+1,5,1,4,90,Pre-Medical,3,MBBS
+2,5,1,5,87,Pre-Medical,4,Pharmacy
+1,4,2,4,91,Pre-Medical,3,MBBS
+2,5,1,4,85,Pre-Medical,2,Pharmacy
+1,5,1,3,93,Pre-Medical,4,MBBS
+2,4,2,5,88,Pre-Medical,3,Pharmacy
+1,5,1,4,89,Pre-Medical,4,MBBS
+2,5,2,3,84,Pre-Medical,2,Pharmacy
+1,4,1,5,92,Pre-Medical,3,MBBS
+2,5,1,4,86,Pre-Medical,4,Pharmacy
+1,5,2,3,90,Pre-Medical,3,MBBS
+2,4,1,5,87,Pre-Medical,2,Pharmacy
+1,5,1,4,94,Pre-Medical,4,MBBS
+2,5,2,3,83,Pre-Medical,3,Pharmacy
+1,4,1,5,91,Pre-Medical,2,MBBS
+1,5,1,4,88,Pre-Medical,4,MBBS
+2,5,2,3,85,Pre-Medical,3,Pharmacy
+1,4,1,5,93,Pre-Medical,2,MBBS
+2,5,1,4,89,Pre-Medical,4,Pharmacy
+1,5,2,3,87,Pre-Medical,3,MBBS
+2,4,1,5,84,Pre-Medical,2,Pharmacy
+1,5,1,4,92,Pre-Medical,4,MBBS
+2,5,2,3,86,Pre-Medical,3,Pharmacy
+1,4,1,5,90,Pre-Medical,2,MBBS
+2,5,1,4,88,Pre-Medical,4,Pharmacy
+3,2,2,5,78,Commerce,5,BBA
+4,1,2,4,80,Commerce,4,Accounting
+3,2,3,5,75,Commerce,5,BBA
+4,1,2,4,82,Commerce,4,Accounting
+3,2,2,5,77,Commerce,5,BBA
+4,2,3,4,79,Commerce,4,Accounting
+3,1,2,5,76,Commerce,5,BBA
+4,2,2,4,81,Commerce,4,Accounting
+3,1,3,5,74,Commerce,5,BBA
+4,2,2,4,83,Commerce,4,Accounting
+3,1,2,5,78,Commerce,4,BBA
+4,2,3,4,80,Commerce,5,Accounting
+3,2,2,5,76,Commerce,4,BBA
+4,1,2,4,82,Commerce,5,Accounting
+3,2,3,5,75,Commerce,4,BBA
+4,1,2,4,79,Commerce,5,Accounting
+3,2,2,5,77,Commerce,4,BBA
+4,2,3,4,81,Commerce,5,Accounting
+3,1,2,5,73,Commerce,4,BBA
+4,2,2,4,84,Commerce,5,Accounting
+3,1,3,5,76,Commerce,4,BBA
+4,2,2,4,80,Commerce,5,Accounting
+3,1,2,5,78,Commerce,4,BBA
+4,2,3,4,82,Commerce,5,Accounting
+3,2,2,5,75,Commerce,4,BBA
+5,1,3,3,84,Pre-Engineering,3,Civil Engineering
+5,1,3,3,82,Pre-Engineering,2,Mechanical Engineering
+5,2,3,2,86,Pre-Engineering,3,Civil Engineering
+5,1,2,3,80,Pre-Engineering,2,Mechanical Engineering
+5,2,3,3,83,Pre-Engineering,4,Civil Engineering
+5,1,3,2,85,Pre-Engineering,3,Mechanical Engineering
+5,2,2,3,81,Pre-Engineering,2,Civil Engineering
+5,1,3,3,87,Pre-Engineering,4,Mechanical Engineering
+5,2,3,2,79,Pre-Engineering,3,Civil Engineering
+5,1,2,3,84,Pre-Engineering,2,Mechanical Engineering
+5,2,3,3,86,Pre-Engineering,3,Civil Engineering
+5,1,3,2,82,Pre-Engineering,4,Mechanical Engineering
+5,2,2,3,88,Pre-Engineering,2,Civil Engineering
+5,1,3,3,80,Pre-Engineering,3,Mechanical Engineering
+5,2,3,2,85,Pre-Engineering,4,Civil Engineering
+5,1,2,3,83,Pre-Engineering,2,Mechanical Engineering
+5,2,3,3,87,Pre-Engineering,3,Civil Engineering
+5,1,3,2,81,Pre-Engineering,4,Mechanical Engineering
+5,2,2,3,84,Pre-Engineering,3,Civil Engineering
+5,1,3,3,86,Pre-Engineering,2,Mechanical Engineering
+5,2,3,2,82,Pre-Engineering,4,Civil Engineering
+5,1,2,3,85,Pre-Engineering,3,Mechanical Engineering
+5,2,3,3,89,Pre-Engineering,2,Civil Engineering
+5,1,3,2,83,Pre-Engineering,4,Mechanical Engineering
+5,2,2,3,87,Pre-Engineering,3,Civil Engineering
+2,2,1,5,75,Arts,5,Law
+1,2,1,5,70,Arts,4,Media Studies
+2,3,1,5,73,Arts,5,Law
+1,2,2,5,68,Arts,4,Media Studies
+2,2,1,4,76,Arts,5,Law
+1,3,1,5,72,Arts,4,Media Studies
+2,2,2,5,74,Arts,5,Law
+1,2,1,4,69,Arts,4,Media Studies
+2,3,1,5,77,Arts,5,Law
+1,2,2,5,71,Arts,4,Media Studies
+2,2,1,5,75,Arts,5,Law
+1,3,1,4,70,Arts,4,Media Studies
+2,2,2,5,73,Arts,5,Law
+1,2,1,5,68,Arts,4,Media Studies
+2,3,1,5,76,Arts,5,Law
+1,2,2,4,72,Arts,4,Media Studies
+2,2,1,5,74,Arts,5,Law
+1,3,1,5,69,Arts,4,Media Studies
+2,2,2,5,77,Arts,5,Law
+1,2,1,4,71,Arts,4,Media Studies
+2,3,1,5,75,Arts,5,Law
+1,2,2,5,73,Arts,4,Media Studies
+2,2,1,4,70,Arts,5,Law
+1,3,1,5,68,Arts,4,Media Studies
+2,2,2,5,76,Arts,5,Law
+5,1,4,3,86,ICS,3,BSCS
+4,2,5,3,84,ICS,2,Software Engineering
+5,1,4,4,89,ICS,4,BSCS
+4,1,5,3,83,ICS,3,Software Engineering
+5,2,4,2,87,ICS,2,BSCS
+4,1,5,4,81,ICS,4,Software Engineering
+5,1,4,3,90,ICS,3,BSCS
+4,2,5,2,85,ICS,2,Software Engineering
+5,1,4,4,88,ICS,4,BSCS
+4,1,5,3,82,ICS,3,Software Engineering
+1,5,1,4,91,Pre-Medical,3,MBBS
+2,4,2,5,86,Pre-Medical,4,Pharmacy
+1,5,1,3,94,Pre-Medical,2,MBBS
+2,5,1,4,88,Pre-Medical,3,Pharmacy
+1,4,2,5,90,Pre-Medical,4,MBBS
+2,5,1,3,85,Pre-Medical,2,Pharmacy
+1,5,1,4,93,Pre-Medical,4,MBBS
+2,4,2,5,87,Pre-Medical,3,Pharmacy
+1,5,1,3,89,Pre-Medical,2,MBBS
+2,5,2,4,84,Pre-Medical,4,Pharmacy
+4,2,2,5,79,Commerce,5,BBA
+3,1,3,4,81,Commerce,4,Accounting
+4,2,2,5,77,Commerce,5,BBA
+3,1,3,4,83,Commerce,4,Accounting
+4,2,2,5,75,Commerce,5,BBA
+3,1,3,4,80,Commerce,4,Accounting
+4,2,2,5,78,Commerce,5,BBA
+3,1,3,4,82,Commerce,4,Accounting
+4,2,2,5,76,Commerce,5,BBA
+3,1,3,4,84,Commerce,4,Accounting
+5,1,3,2,85,Pre-Engineering,3,Civil Engineering
+5,2,2,3,83,Pre-Engineering,4,Mechanical Engineering
+5,1,3,3,87,Pre-Engineering,2,Civil Engineering
+5,2,3,2,81,Pre-Engineering,3,Mechanical Engineering
+5,1,2,3,86,Pre-Engineering,4,Civil Engineering
+5,2,3,3,84,Pre-Engineering,2,Mechanical Engineering
+5,1,3,2,88,Pre-Engineering,3,Civil Engineering
+5,2,2,3,82,Pre-Engineering,4,Mechanical Engineering
+5,1,3,3,85,Pre-Engineering,2,Civil Engineering
+5,2,3,2,80,Pre-Engineering,3,Mechanical Engineering
+1,2,2,5,74,Arts,5,Law
+2,3,1,4,72,Arts,4,Media Studies
+1,2,1,5,76,Arts,5,Law
+2,2,2,5,70,Arts,4,Media Studies
+1,3,1,4,74,Arts,5,Law
+2,2,1,5,71,Arts,4,Media Studies
+1,2,2,5,77,Arts,5,Law
+2,3,1,4,73,Arts,4,Media Studies
+1,2,1,5,75,Arts,5,Law
+2,2,2,5,69,Arts,4,Media Studies
+5,1,5,3,91,ICS,3,BSCS
+4,1,4,4,85,ICS,4,Software Engineering
+5,2,5,2,88,ICS,2,BSCS
+4,1,4,3,83,ICS,3,Software Engineering
+5,1,5,4,90,ICS,4,BSCS
+4,2,4,3,86,ICS,2,Software Engineering
+5,1,5,2,87,ICS,3,BSCS
+4,1,4,4,84,ICS,4,Software Engineering
+5,2,5,3,92,ICS,2,BSCS
+4,1,4,2,81,ICS,3,Software Engineering
+1,5,2,4,92,Pre-Medical,4,MBBS
+2,4,1,5,86,Pre-Medical,3,Pharmacy
+1,5,1,4,95,Pre-Medical,4,MBBS
+2,5,2,3,89,Pre-Medical,2,Pharmacy
+1,4,1,5,91,Pre-Medical,4,MBBS
+2,5,1,4,87,Pre-Medical,3,Pharmacy
+1,5,2,3,93,Pre-Medical,2,MBBS
+2,4,1,5,85,Pre-Medical,4,Pharmacy
+1,5,1,4,90,Pre-Medical,3,MBBS
+2,5,2,3,88,Pre-Medical,2,Pharmacy
+3,2,3,5,80,Commerce,5,BBA
+4,1,2,4,78,Commerce,4,Accounting
+3,2,3,5,82,Commerce,5,BBA
+4,2,2,4,76,Commerce,4,Accounting
+3,1,3,5,79,Commerce,5,BBA
+4,2,2,4,81,Commerce,4,Accounting
+3,2,3,5,77,Commerce,5,BBA
+4,1,2,4,83,Commerce,4,Accounting
+3,2,3,5,75,Commerce,5,BBA
+4,2,2,4,80,Commerce,4,Accounting
+5,2,3,2,84,Pre-Engineering,3,Civil Engineering
+5,1,2,3,86,Pre-Engineering,4,Mechanical Engineering
+5,2,3,3,82,Pre-Engineering,2,Civil Engineering
+5,1,3,2,88,Pre-Engineering,3,Mechanical Engineering
+5,2,2,3,85,Pre-Engineering,4,Civil Engineering
+5,1,3,3,83,Pre-Engineering,2,Mechanical Engineering
+5,2,3,2,87,Pre-Engineering,3,Civil Engineering
+5,1,2,3,81,Pre-Engineering,4,Mechanical Engineering
+5,2,3,3,86,Pre-Engineering,2,Civil Engineering
+5,1,3,2,84,Pre-Engineering,3,Mechanical Engineering
+2,2,1,5,73,Arts,5,Law
+1,3,2,4,71,Arts,4,Media Studies
+2,2,1,5,75,Arts,5,Law
+1,2,1,5,69,Arts,4,Media Studies
+2,3,2,4,77,Arts,5,Law
+1,2,1,5,72,Arts,4,Media Studies
+2,2,1,4,74,Arts,5,Law
+1,3,2,5,70,Arts,4,Media Studies
+2,2,1,5,76,Arts,5,Law
+1,2,1,4,68,Arts,4,Media Studies
+5,1,5,3,86,ICS,4,BSCS
+4,2,4,4,82,ICS,3,Software Engineering
+5,1,5,2,89,ICS,2,BSCS
+4,1,4,3,85,ICS,4,Software Engineering
+5,2,5,4,87,ICS,3,BSCS
+4,1,4,2,83,ICS,2,Software Engineering
+5,1,5,3,91,ICS,4,BSCS
+4,2,4,4,86,ICS,3,Software Engineering
+5,1,5,2,84,ICS,2,BSCS
+4,1,4,3,88,ICS,4,Software Engineering
+1,5,1,4,90,Pre-Medical,3,MBBS
+2,5,2,3,86,Pre-Medical,4,Pharmacy
+1,4,1,5,93,Pre-Medical,2,MBBS
+2,5,1,4,88,Pre-Medical,3,Pharmacy
+1,5,2,3,91,Pre-Medical,4,MBBS
+2,4,1,5,85,Pre-Medical,2,Pharmacy
+1,5,1,4,94,Pre-Medical,3,MBBS
+2,5,2,3,87,Pre-Medical,4,Pharmacy
+1,4,1,5,89,Pre-Medical,2,MBBS
+2,5,1,4,92,Pre-Medical,3,Pharmacy
+4,1,2,5,79,Commerce,5,BBA
+3,2,3,4,81,Commerce,4,Accounting
+4,1,2,5,77,Commerce,5,BBA
+3,2,3,4,83,Commerce,4,Accounting
+4,2,2,5,75,Commerce,5,BBA
+3,1,3,4,80,Commerce,4,Accounting
+4,2,2,5,78,Commerce,5,BBA
+3,1,3,4,76,Commerce,4,Accounting
+4,1,2,5,82,Commerce,5,BBA
+3,2,3,4,79,Commerce,4,Accounting
+5,2,3,3,85,Pre-Engineering,3,Civil Engineering
+5,1,2,2,83,Pre-Engineering,4,Mechanical Engineering
+5,2,3,3,87,Pre-Engineering,2,Civil Engineering
+5,1,3,2,81,Pre-Engineering,3,Mechanical Engineering
+5,2,2,3,84,Pre-Engineering,4,Civil Engineering
+5,1,3,3,86,Pre-Engineering,2,Mechanical Engineering
+5,2,3,2,82,Pre-Engineering,3,Civil Engineering
+5,1,2,3,88,Pre-Engineering,4,Mechanical Engineering
+5,2,3,3,85,Pre-Engineering,2,Civil Engineering
+5,1,3,2,83,Pre-Engineering,3,Mechanical Engineering
+1,3,1,5,74,Arts,5,Law
+2,2,2,4,72,Arts,4,Media Studies
+1,3,1,5,76,Arts,5,Law
+2,2,1,5,70,Arts,4,Media Studies
+1,2,2,4,73,Arts,5,Law
+2,3,1,5,71,Arts,4,Media Studies
+1,3,1,4,75,Arts,5,Law
+2,2,2,5,69,Arts,4,Media Studies
+1,2,1,5,77,Arts,5,Law
+2,3,1,4,72,Arts,4,Media Studies
+5,1,4,3,87,ICS,3,BSCS
+4,2,5,4,83,ICS,2,Software Engineering
+5,1,4,2,90,ICS,4,BSCS
+4,1,5,3,85,ICS,3,Software Engineering
+5,2,4,4,88,ICS,2,BSCS
+4,1,5,2,82,ICS,4,Software Engineering
+5,1,4,3,91,ICS,3,BSCS
+4,2,5,4,86,ICS,2,Software Engineering
+5,1,4,2,84,ICS,4,BSCS
+4,1,5,3,89,ICS,3,Software Engineering
+2,5,1,4,91,Pre-Medical,4,MBBS
+1,5,2,3,87,Pre-Medical,3,Pharmacy
+2,4,1,5,94,Pre-Medical,2,MBBS
+1,5,1,4,89,Pre-Medical,4,Pharmacy
+2,5,2,3,92,Pre-Medical,3,MBBS
+1,4,1,5,86,Pre-Medical,2,Pharmacy
+2,5,1,4,95,Pre-Medical,4,MBBS
+1,5,2,3,88,Pre-Medical,3,Pharmacy
+2,4,1,5,90,Pre-Medical,2,MBBS
+1,5,1,4,93,Pre-Medical,4,Pharmacy
+3,1,2,5,80,Commerce,5,BBA
+4,2,3,4,78,Commerce,4,Accounting
+3,1,2,5,82,Commerce,5,BBA
+4,2,3,4,76,Commerce,4,Accounting
+3,2,2,5,79,Commerce,5,BBA
+4,1,3,4,81,Commerce,4,Accounting
+3,2,2,5,77,Commerce,5,BBA
+4,1,3,4,83,Commerce,4,Accounting
+3,1,2,5,75,Commerce,5,BBA
+4,2,3,4,80,Commerce,4,Accounting
+5,1,3,2,86,Pre-Engineering,3,Civil Engineering
+5,2,2,3,84,Pre-Engineering,4,Mechanical Engineering
+5,1,3,3,88,Pre-Engineering,2,Civil Engineering
+5,2,3,2,82,Pre-Engineering,3,Mechanical Engineering
+5,1,2,3,85,Pre-Engineering,4,Civil Engineering
+5,2,3,3,83,Pre-Engineering,2,Mechanical Engineering
+5,1,3,2,87,Pre-Engineering,3,Civil Engineering
+5,2,2,3,81,Pre-Engineering,4,Mechanical Engineering
+5,1,3,3,84,Pre-Engineering,2,Civil Engineering
+5,2,3,2,86,Pre-Engineering,3,Mechanical Engineering
+2,2,1,5,74,Arts,5,Law
+1,2,2,4,72,Arts,4,Media Studies
+2,3,1,5,76,Arts,5,Law
+1,2,1,5,70,Arts,4,Media Studies
+2,2,2,4,73,Arts,5,Law
+1,3,1,5,71,Arts,4,Media Studies
+2,2,1,5,75,Arts,5,Law
+1,2,2,4,69,Arts,4,Media Studies
+2,3,1,5,77,Arts,5,Law
+1,2,1,5,72,Arts,4,Media Studies
+5,1,5,4,92,ICS,3,BSCS
+4,2,4,3,86,ICS,4,Software Engineering
+5,1,5,2,89,ICS,2,BSCS
+4,1,4,4,87,ICS,3,Software Engineering
+5,2,5,3,91,ICS,4,BSCS
+4,1,4,2,84,ICS,2,Software Engineering
+5,1,5,4,88,ICS,3,BSCS
+4,2,4,3,85,ICS,4,Software Engineering
+5,1,5,2,93,ICS,2,BSCS
+4,1,4,4,82,ICS,3,Software Engineering
+1,5,1,3,91,Pre-Medical,4,MBBS
+2,5,2,4,87,Pre-Medical,3,Pharmacy
+1,4,1,5,94,Pre-Medical,2,MBBS
+2,5,1,3,89,Pre-Medical,4,Pharmacy
+1,5,2,4,92,Pre-Medical,3,MBBS
+2,4,1,5,86,Pre-Medical,2,Pharmacy
+1,5,1,3,95,Pre-Medical,4,MBBS
+2,5,2,4,88,Pre-Medical,3,Pharmacy
+1,4,1,5,90,Pre-Medical,2,MBBS
+2,5,1,3,93,Pre-Medical,4,Pharmacy
+4,2,2,5,81,Commerce,5,BBA
+3,1,3,4,79,Commerce,4,Accounting
+4,2,2,5,83,Commerce,5,BBA
+3,1,3,4,77,Commerce,4,Accounting
+4,1,2,5,80,Commerce,5,BBA
+3,2,3,4,82,Commerce,4,Accounting
+4,1,2,5,78,Commerce,5,BBA
+3,2,3,4,84,Commerce,4,Accounting
+4,2,2,5,76,Commerce,5,BBA
+3,1,3,4,81,Commerce,4,Accounting
+5,2,3,3,87,Pre-Engineering,3,Civil Engineering
+5,1,2,2,85,Pre-Engineering,4,Mechanical Engineering
+5,2,3,3,89,Pre-Engineering,2,Civil Engineering
+5,1,3,2,83,Pre-Engineering,3,Mechanical Engineering
+5,2,2,3,86,Pre-Engineering,4,Civil Engineering
+5,1,3,3,84,Pre-Engineering,2,Mechanical Engineering
+5,2,3,2,88,Pre-Engineering,3,Civil Engineering
+5,1,2,3,82,Pre-Engineering,4,Mechanical Engineering
+5,2,3,3,85,Pre-Engineering,2,Civil Engineering
+5,1,3,2,87,Pre-Engineering,3,Mechanical Engineering
+1,3,2,5,75,Arts,5,Law
+2,2,1,4,73,Arts,4,Media Studies
+1,3,1,5,77,Arts,5,Law
+2,2,2,5,71,Arts,4,Media Studies
+1,2,1,4,74,Arts,5,Law
+2,3,1,5,72,Arts,4,Media Studies
+1,3,2,5,76,Arts,5,Law
+2,2,1,4,70,Arts,4,Media Studies
+1,2,1,5,78,Arts,5,Law
+2,3,2,4,73,Arts,4,Media Studies
+5,1,5,3,93,ICS,4,BSCS
+4,2,4,4,87,ICS,3,Software Engineering
+5,1,5,2,90,ICS,2,BSCS
+4,1,4,3,88,ICS,4,Software Engineering
+5,2,5,4,92,ICS,3,BSCS
+4,1,4,2,85,ICS,2,Software Engineering
+5,1,5,3,89,ICS,4,BSCS
+4,2,4,4,86,ICS,3,Software Engineering
+5,1,5,2,94,ICS,2,BSCS
+4,1,4,3,83,ICS,4,Software Engineering
+1,5,2,4,92,Pre-Medical,3,MBBS
+2,4,1,5,88,Pre-Medical,4,Pharmacy
+1,5,1,3,95,Pre-Medical,2,MBBS
+2,5,2,4,90,Pre-Medical,3,Pharmacy
+1,4,1,5,91,Pre-Medical,4,MBBS
+2,5,1,3,87,Pre-Medical,2,Pharmacy
+1,5,2,4,94,Pre-Medical,3,MBBS
+2,4,1,5,89,Pre-Medical,4,Pharmacy
+1,5,1,3,92,Pre-Medical,2,MBBS
+2,5,2,4,86,Pre-Medical,3,Pharmacy
+3,2,2,5,81,Commerce,5,BBA
+4,1,3,4,79,Commerce,4,Accounting
+3,2,2,5,83,Commerce,5,BBA
+4,2,3,4,77,Commerce,4,Accounting
+3,1,2,5,80,Commerce,5,BBA
+4,2,3,4,82,Commerce,4,Accounting
+3,1,2,5,78,Commerce,5,BBA
+4,1,3,4,84,Commerce,4,Accounting
+3,2,2,5,76,Commerce,5,BBA
+4,1,3,4,81,Commerce,4,Accounting
+5,1,4,2,86,Pre-Engineering,3,Civil Engineering
+5,2,3,3,84,Pre-Engineering,4,Mechanical Engineering
+5,1,4,3,88,Pre-Engineering,2,Civil Engineering
+5,2,3,2,82,Pre-Engineering,3,Mechanical Engineering
+5,1,3,3,85,Pre-Engineering,4,Civil Engineering
+5,2,4,2,83,Pre-Engineering,2,Mechanical Engineering
+5,1,4,3,87,Pre-Engineering,3,Civil Engineering
+5,2,3,2,81,Pre-Engineering,4,Mechanical Engineering
+5,1,4,3,84,Pre-Engineering,2,Civil Engineering
+5,2,3,3,86,Pre-Engineering,3,Mechanical Engineering
+2,2,1,5,75,Arts,5,Law
+1,3,1,4,73,Arts,4,Media Studies
+2,2,2,5,77,Arts,5,Law
+1,2,1,5,71,Arts,4,Media Studies
+2,3,1,4,74,Arts,5,Law
+1,2,2,5,72,Arts,4,Media Studies
+2,2,1,5,76,Arts,5,Law
+1,3,1,4,70,Arts,4,Media Studies
+2,2,1,5,78,Arts,5,Law
+1,2,2,4,73,Arts,4,Media Studies
+5,1,5,4,94,ICS,3,BSCS
+4,2,4,3,88,ICS,4,Software Engineering
+5,1,5,2,91,ICS,2,BSCS
+4,1,4,4,89,ICS,3,Software Engineering
+5,2,5,3,93,ICS,4,BSCS
+4,1,4,2,86,ICS,2,Software Engineering
+5,1,5,4,90,ICS,3,BSCS
+4,2,4,3,87,ICS,4,Software Engineering
+5,1,5,2,95,ICS,2,BSCS
+4,1,4,4,84,ICS,3,Software Engineering
+1,5,1,4,93,Pre-Medical,4,MBBS
+2,5,2,3,89,Pre-Medical,3,Pharmacy
+1,4,1,5,96,Pre-Medical,2,MBBS
+2,5,1,4,91,Pre-Medical,4,Pharmacy
+1,5,2,3,94,Pre-Medical,3,MBBS
+2,4,1,5,88,Pre-Medical,2,Pharmacy
+1,5,1,4,92,Pre-Medical,4,MBBS
+2,5,2,3,90,Pre-Medical,3,Pharmacy
+1,4,1,5,95,Pre-Medical,2,MBBS
+2,5,1,4,87,Pre-Medical,4,Pharmacy
+4,1,2,5,82,Commerce,5,BBA
+3,2,3,4,80,Commerce,4,Accounting
+4,1,2,5,84,Commerce,5,BBA
+3,2,3,4,78,Commerce,4,Accounting
+4,2,2,5,81,Commerce,5,BBA
+3,1,3,4,83,Commerce,4,Accounting
+4,2,2,5,79,Commerce,5,BBA
+3,1,3,4,85,Commerce,4,Accounting
+4,1,2,5,77,Commerce,5,BBA
+3,2,3,4,82,Commerce,4,Accounting
+5,2,4,2,87,Pre-Engineering,3,Civil Engineering
+5,1,3,3,85,Pre-Engineering,4,Mechanical Engineering
+5,2,4,3,89,Pre-Engineering,2,Civil Engineering
+5,1,3,2,83,Pre-Engineering,3,Mechanical Engineering
+5,2,3,3,86,Pre-Engineering,4,Civil Engineering
+5,1,4,2,84,Pre-Engineering,2,Mechanical Engineering
+5,2,4,3,88,Pre-Engineering,3,Civil Engineering
+5,1,3,2,82,Pre-Engineering,4,Mechanical Engineering
+5,2,4,3,85,Pre-Engineering,2,Civil Engineering
+5,1,3,3,87,Pre-Engineering,3,Mechanical Engineering
+1,2,2,5,76,Arts,5,Law
+2,3,1,4,74,Arts,4,Media Studies
+1,2,1,5,78,Arts,5,Law
+2,2,2,5,72,Arts,4,Media Studies
+1,3,1,4,75,Arts,5,Law
+2,2,1,5,73,Arts,4,Media Studies
+1,2,2,5,77,Arts,5,Law
+2,3,1,4,71,Arts,4,Media Studies
+1,2,1,5,79,Arts,5,Law
+2,2,2,4,74,Arts,4,Media Studies
+5,1,5,3,95,ICS,4,BSCS
+4,2,4,4,89,ICS,3,Software Engineering
+5,1,5,2,92,ICS,2,BSCS
+4,1,4,3,90,ICS,4,Software Engineering
+5,2,5,4,94,ICS,3,BSCS
+4,1,4,2,87,ICS,2,Software Engineering
+5,1,5,3,91,ICS,4,BSCS
+4,2,4,4,88,ICS,3,Software Engineering
+5,1,5,2,96,ICS,2,BSCS
+4,1,4,3,85,ICS,4,Software Engineering
+1,5,1,3,94,Pre-Medical,4,MBBS
+2,5,2,4,90,Pre-Medical,3,Pharmacy
+1,4,1,5,97,Pre-Medical,2,MBBS
+2,5,1,3,92,Pre-Medical,4,Pharmacy
+1,5,2,4,95,Pre-Medical,3,MBBS
+2,4,1,5,89,Pre-Medical,2,Pharmacy
+1,5,1,3,93,Pre-Medical,4,MBBS
+2,5,2,4,91,Pre-Medical,3,Pharmacy
+1,4,1,5,96,Pre-Medical,2,MBBS
+2,5,1,3,88,Pre-Medical,4,Pharmacy
+3,2,3,5,83,Commerce,5,BBA
+4,1,2,4,81,Commerce,4,Accounting
+3,2,3,5,85,Commerce,5,BBA
+4,1,2,4,79,Commerce,4,Accounting
+3,1,3,5,82,Commerce,5,BBA
+4,2,2,4,84,Commerce,4,Accounting
+3,1,3,5,80,Commerce,5,BBA
+4,2,2,4,86,Commerce,4,Accounting
+3,2,3,5,78,Commerce,5,BBA
+4,1,2,4,83,Commerce,4,Accounting
