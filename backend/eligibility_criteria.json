@@ -1,0 +1,44 @@
+[
+  {
+    "id": "computer-science",
+    "field": "Computer Science & Technology",
+    "description": "",
+    "minimumMarks": 70.8
+  },
+  {
+    "id": "engineering",
+    "field": "Engineering",
+    "description": "",
+    "minimumMarks": 50
+  },
+  {
+    "id": "business-commerce",
+    "field": "Business & Commerce",
+    "description": "Placeholder criteria for business, accounting, finance, commerce, economics, and management programs. Update with approved requirements.",
+    "minimumMarks": 60
+  },
+  {
+    "id": "medicine-health-sciences",
+    "field": "Medicine & Health Sciences",
+    "description": "Placeholder criteria for medicine, pharmacy, nursing, dentistry, nutrition, and health science programs. Update with approved requirements.",
+    "minimumMarks": 0
+  },
+  {
+    "id": "law",
+    "field": "Law",
+    "description": "Placeholder criteria for law and legal studies programs. Update with approved requirements.",
+    "minimumMarks": 0
+  },
+  {
+    "id": "natural-applied-sciences",
+    "field": "Natural & Applied Sciences",
+    "description": "Placeholder criteria for biology, chemistry, physics, mathematics, agriculture, biotechnology, and related programs. Update with approved requirements.",
+    "minimumMarks": 0
+  },
+  {
+    "id": "social-sciences-humanities",
+    "field": "Social Sciences & Humanities",
+    "description": "Placeholder criteria for psychology, education, languages, media, sociology, history, and related programs. Update with approved requirements.",
+    "minimumMarks": 0
+  }
+]

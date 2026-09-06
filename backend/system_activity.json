@@ -1,0 +1,252 @@
+[
+  {
+    "id": "6fc5f523af49ae8e",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-08-26T08:24:32Z"
+  },
+  {
+    "id": "9c8185896bdfe971",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-08-26T08:30:38Z"
+  },
+  {
+    "id": "50e34ced744fa4d7",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-08-26T08:33:04Z"
+  },
+  {
+    "id": "ebdb466cf9561c6f",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-08-26T08:35:42Z"
+  },
+  {
+    "id": "2e37f3966372959c",
+    "type": "admin_user_blocked",
+    "details": {
+      "userId": "016fcb40-41da-4544-a55b-f6f21f6e3d03",
+      "email": "ayesha@gmail.com"
+    },
+    "createdAt": "2026-08-26T09:00:11Z"
+  },
+  {
+    "id": "72a3671f8ed01fcb",
+    "type": "admin_user_unblocked",
+    "details": {
+      "userId": "016fcb40-41da-4544-a55b-f6f21f6e3d03",
+      "email": "ayesha@gmail.com"
+    },
+    "createdAt": "2026-08-26T09:00:22Z"
+  },
+  {
+    "id": "45728a5fadaa1eda",
+    "type": "admin_user_blocked",
+    "details": {
+      "userId": "016fcb40-41da-4544-a55b-f6f21f6e3d03",
+      "email": "ayesha@gmail.com"
+    },
+    "createdAt": "2026-08-26T09:00:58Z"
+  },
+  {
+    "id": "6a6acfb6d9e57256",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-08-26T09:58:54Z"
+  },
+  {
+    "id": "30278908678a788f",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-08-27T05:39:31Z"
+  },
+  {
+    "id": "69ef1f6eb456b979",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-27T10:39:56Z"
+  },
+  {
+    "id": "343e5532e5046932",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-27T10:40:19Z"
+  },
+  {
+    "id": "861b17e8d259967b",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-27T10:40:58Z"
+  },
+  {
+    "id": "10aeace0fad2c376",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-27T10:41:30Z"
+  },
+  {
+    "id": "dc980ca88cc3c9d4",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T06:06:05Z"
+  },
+  {
+    "id": "3ed523da780759b1",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T06:06:28Z"
+  },
+  {
+    "id": "9fd12a7a45ee485a",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T06:08:24Z"
+  },
+  {
+    "id": "0fb0af3ed47e9b7b",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T06:09:01Z"
+  },
+  {
+    "id": "67a5e3c8f09e15e2",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T10:37:10Z"
+  },
+  {
+    "id": "6f0bae73ec532f74",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T10:37:48Z"
+  },
+  {
+    "id": "26240eaffac9341d",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T10:39:46Z"
+  },
+  {
+    "id": "1378bade5dff9155",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T10:40:02Z"
+  },
+  {
+    "id": "966f60051d5fcc8b",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T10:40:38Z"
+  },
+  {
+    "id": "f97820902dbae408",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T10:41:51Z"
+  },
+  {
+    "id": "57eca4d78eee5147",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": null
+    },
+    "createdAt": "2026-08-31T10:54:30Z"
+  },
+  {
+    "id": "e3c52462b6cb6363",
+    "type": "admin_user_deleted",
+    "details": {
+      "userId": "73e812bf-52ac-483a-8c2a-f899fd214510"
+    },
+    "createdAt": "2026-08-31T11:58:47Z"
+  },
+  {
+    "id": "07ce0d314a1a06cb",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-08-31T19:01:21Z"
+  },
+  {
+    "id": "2fd62ba198aa7775",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": null
+    },
+    "createdAt": "2026-09-01T06:05:27Z"
+  },
+  {
+    "id": "82e1a8be118c4fee",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "affc1f96-87fd-4040-8eff-1b24fc8f680e"
+    },
+    "createdAt": "2026-09-01T06:06:19Z"
+  },
+  {
+    "id": "46fef5d68476e982",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "affc1f96-87fd-4040-8eff-1b24fc8f680e"
+    },
+    "createdAt": "2026-09-01T06:07:03Z"
+  },
+  {
+    "id": "7ee2045489e54814",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "affc1f96-87fd-4040-8eff-1b24fc8f680e"
+    },
+    "createdAt": "2026-09-01T06:07:16Z"
+  }
+]

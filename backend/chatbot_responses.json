@@ -1,0 +1,51 @@
+[
+  {
+    "id": "greeting",
+    "keyword": "hello, hi, hey, salam, assalam",
+    "response": "Hi! I'm the CareerGuide assistant. Ask me about the career quiz, universities, scholarships, or your profile.",
+    "link": "",
+    "linkLabel": ""
+  },
+  {
+    "id": "quiz-help",
+    "keyword": "quiz, test, assessment, career test",
+    "response": "You can take the career quiz from your Dashboard or the Quiz page. It asks about your interests and academic background, then recommends a career field for you.",
+    "link": "/quiz",
+    "linkLabel": "Open the career quiz"
+  },
+  {
+    "id": "university-help",
+    "keyword": "university, universities, admission, merit",
+    "response": "Use the University Recommender to see universities and programs matched to your marks and interests. Admins keep this list updated with current eligibility criteria.",
+    "link": "/university-recommender",
+    "linkLabel": "Open University Recommender"
+  },
+  {
+    "id": "scholarship-help",
+    "keyword": "scholarship, scholarships, funding, financial aid",
+    "response": "Check the Scholarship Finder page for scholarships filtered by merit, need, and province. Each listing shows eligibility details and a link to apply.",
+    "link": "/scholarships",
+    "linkLabel": "Open Scholarship Finder"
+  },
+  {
+    "id": "profile-help",
+    "keyword": "profile, account, my information",
+    "response": "You can update your personal and academic details anytime from the Profile page. Your quiz results are saved there under Previous recommendations.",
+    "link": "/profile",
+    "linkLabel": "Open your profile"
+  },
+  {
+    "id": "contact-help",
+    "keyword": "help, support, contact, admin",
+    "response": "For anything I can't answer, please reach out to your institution's career counselling office.",
+    "link": "",
+    "linkLabel": ""
+  },
+  {
+    "id": "default",
+    "keyword": "",
+    "response": "I'm not sure about that yet, but I can help with the career quiz, university recommendations, scholarships, or your profile. What would you like to know?",
+    "link": "",
+    "linkLabel": ""
+  }
+]
