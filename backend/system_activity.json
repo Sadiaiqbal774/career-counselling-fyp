@@ -1,0 +1,769 @@
+[
+  {
+    "id": "6fc5f523af49ae8e",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-08-26T08:24:32Z"
+  },
+  {
+    "id": "9c8185896bdfe971",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-08-26T08:30:38Z"
+  },
+  {
+    "id": "50e34ced744fa4d7",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-08-26T08:33:04Z"
+  },
+  {
+    "id": "ebdb466cf9561c6f",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-08-26T08:35:42Z"
+  },
+  {
+    "id": "2e37f3966372959c",
+    "type": "admin_user_blocked",
+    "details": {
+      "userId": "016fcb40-41da-4544-a55b-f6f21f6e3d03",
+      "email": "ayesha@gmail.com"
+    },
+    "createdAt": "2026-08-26T09:00:11Z"
+  },
+  {
+    "id": "72a3671f8ed01fcb",
+    "type": "admin_user_unblocked",
+    "details": {
+      "userId": "016fcb40-41da-4544-a55b-f6f21f6e3d03",
+      "email": "ayesha@gmail.com"
+    },
+    "createdAt": "2026-08-26T09:00:22Z"
+  },
+  {
+    "id": "45728a5fadaa1eda",
+    "type": "admin_user_blocked",
+    "details": {
+      "userId": "016fcb40-41da-4544-a55b-f6f21f6e3d03",
+      "email": "ayesha@gmail.com"
+    },
+    "createdAt": "2026-08-26T09:00:58Z"
+  },
+  {
+    "id": "6a6acfb6d9e57256",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-08-26T09:58:54Z"
+  },
+  {
+    "id": "30278908678a788f",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-08-27T05:39:31Z"
+  },
+  {
+    "id": "69ef1f6eb456b979",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-27T10:39:56Z"
+  },
+  {
+    "id": "343e5532e5046932",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-27T10:40:19Z"
+  },
+  {
+    "id": "861b17e8d259967b",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-27T10:40:58Z"
+  },
+  {
+    "id": "10aeace0fad2c376",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-27T10:41:30Z"
+  },
+  {
+    "id": "dc980ca88cc3c9d4",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T06:06:05Z"
+  },
+  {
+    "id": "3ed523da780759b1",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T06:06:28Z"
+  },
+  {
+    "id": "9fd12a7a45ee485a",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T06:08:24Z"
+  },
+  {
+    "id": "0fb0af3ed47e9b7b",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T06:09:01Z"
+  },
+  {
+    "id": "67a5e3c8f09e15e2",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T10:37:10Z"
+  },
+  {
+    "id": "6f0bae73ec532f74",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T10:37:48Z"
+  },
+  {
+    "id": "26240eaffac9341d",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T10:39:46Z"
+  },
+  {
+    "id": "1378bade5dff9155",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T10:40:02Z"
+  },
+  {
+    "id": "966f60051d5fcc8b",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T10:40:38Z"
+  },
+  {
+    "id": "f97820902dbae408",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b"
+    },
+    "createdAt": "2026-08-31T10:41:51Z"
+  },
+  {
+    "id": "57eca4d78eee5147",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": null
+    },
+    "createdAt": "2026-08-31T10:54:30Z"
+  },
+  {
+    "id": "e3c52462b6cb6363",
+    "type": "admin_user_deleted",
+    "details": {
+      "userId": "73e812bf-52ac-483a-8c2a-f899fd214510"
+    },
+    "createdAt": "2026-08-31T11:58:47Z"
+  },
+  {
+    "id": "07ce0d314a1a06cb",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-08-31T19:01:21Z"
+  },
+  {
+    "id": "2fd62ba198aa7775",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": null
+    },
+    "createdAt": "2026-09-01T06:05:27Z"
+  },
+  {
+    "id": "82e1a8be118c4fee",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "affc1f96-87fd-4040-8eff-1b24fc8f680e"
+    },
+    "createdAt": "2026-09-01T06:06:19Z"
+  },
+  {
+    "id": "46fef5d68476e982",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "affc1f96-87fd-4040-8eff-1b24fc8f680e"
+    },
+    "createdAt": "2026-09-01T06:07:03Z"
+  },
+  {
+    "id": "7ee2045489e54814",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "affc1f96-87fd-4040-8eff-1b24fc8f680e"
+    },
+    "createdAt": "2026-09-01T06:07:16Z"
+  },
+  {
+    "id": "dc38da7119178a1c",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Natural & Applied Sciences"
+    },
+    "createdAt": "2026-09-06T09:00:33Z"
+  },
+  {
+    "id": "450a97fc52503a56",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:01:18Z"
+  },
+  {
+    "id": "e457ed63fd6cebb2",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:01:28Z"
+  },
+  {
+    "id": "825583c0021a44bf",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:01:57Z"
+  },
+  {
+    "id": "af7498b83fb715b2",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Natural & Applied Sciences"
+    },
+    "createdAt": "2026-09-06T09:02:21Z"
+  },
+  {
+    "id": "31b2e83af5b5e042",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:15:42Z"
+  },
+  {
+    "id": "7b055aa4b1abfd6a",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:15:57Z"
+  },
+  {
+    "id": "279bb3d7078e2739",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:16:13Z"
+  },
+  {
+    "id": "7352df47da9a487c",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Social Sciences & Humanities",
+      "matchedField": "Social Sciences & Humanities"
+    },
+    "createdAt": "2026-09-06T09:17:31Z"
+  },
+  {
+    "id": "20c2a21979cd6b55",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Social Sciences & Humanities",
+      "matchedField": "Social Sciences & Humanities"
+    },
+    "createdAt": "2026-09-06T09:19:42Z"
+  },
+  {
+    "id": "7a3e43336914aea2",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:19:46Z"
+  },
+  {
+    "id": "f6af09d8415ac740",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:20:27Z"
+  },
+  {
+    "id": "1721ceb21b6313a7",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:20:34Z"
+  },
+  {
+    "id": "1d0b48caf857c310",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:23:53Z"
+  },
+  {
+    "id": "c181ec09d78501f1",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:25:25Z"
+  },
+  {
+    "id": "c92b5f3afe152fc3",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:27:02Z"
+  },
+  {
+    "id": "6542314a9e005b60",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "0a4e2f64ad9a6467b4282810"
+    },
+    "createdAt": "2026-09-06T09:27:32Z"
+  },
+  {
+    "id": "295b7a752e61193d",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:31:41Z"
+  },
+  {
+    "id": "70fe7cf7e981f59f",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "test-user-id"
+    },
+    "createdAt": "2026-09-06T09:40:42Z"
+  },
+  {
+    "id": "25e4c89881e1c566",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:51:26Z"
+  },
+  {
+    "id": "3daaa3954bedfcfc",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T09:51:48Z"
+  },
+  {
+    "id": "40571e4a45f80c28",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "0a4e2f64ad9a6467b4282810"
+    },
+    "createdAt": "2026-09-06T09:53:15Z"
+  },
+  {
+    "id": "483409d7bb5ef25c",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "0a4e2f64ad9a6467b4282810"
+    },
+    "createdAt": "2026-09-06T09:53:28Z"
+  },
+  {
+    "id": "ac66bf07f508e4b0",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "0a4e2f64ad9a6467b4282810"
+    },
+    "createdAt": "2026-09-06T09:53:49Z"
+  },
+  {
+    "id": "08aacc509403b75e",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T10:01:48Z"
+  },
+  {
+    "id": "2d25860ccb067d1d",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T11:29:08Z"
+  },
+  {
+    "id": "015c203f4f9efa10",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "0a4e2f64ad9a6467b4282810"
+    },
+    "createdAt": "2026-09-06T11:30:11Z"
+  },
+  {
+    "id": "f3e330fad23cef47",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "0a4e2f64ad9a6467b4282810"
+    },
+    "createdAt": "2026-09-06T11:30:22Z"
+  },
+  {
+    "id": "cf082c00d8ffc79e",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-06T11:31:55Z"
+  },
+  {
+    "id": "414617470545036d",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-07T03:51:47Z"
+  },
+  {
+    "id": "8462030bed0ea3b8",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "0a4e2f64ad9a6467b4282810"
+    },
+    "createdAt": "2026-09-07T03:55:43Z"
+  },
+  {
+    "id": "a8343bd4821ecce4",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-07T04:00:05Z"
+  },
+  {
+    "id": "f67362f4327621f2",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-07T04:00:32Z"
+  },
+  {
+    "id": "03c8c41babc09bf8",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-07T04:01:54Z"
+  },
+  {
+    "id": "658391ad32797731",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-07T05:36:10Z"
+  },
+  {
+    "id": "6d1725e6035981e3",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-07T05:36:19Z"
+  },
+  {
+    "id": "1c0ec41f5276bc90",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-07T05:37:05Z"
+  },
+  {
+    "id": "20086e8f0e4f944d",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "199f58df4c905128a1a9bdb2"
+    },
+    "createdAt": "2026-09-07T05:37:12Z"
+  },
+  {
+    "id": "13b53fdc252f993e",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "199f58df4c905128a1a9bdb2"
+    },
+    "createdAt": "2026-09-07T05:37:29Z"
+  },
+  {
+    "id": "3506c16257046e8f",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Natural & Applied Sciences",
+      "matchedField": "Natural & Applied Sciences"
+    },
+    "createdAt": "2026-09-07T05:58:31Z"
+  },
+  {
+    "id": "eecf34fbefcde388",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Natural & Applied Sciences",
+      "matchedField": "Natural & Applied Sciences"
+    },
+    "createdAt": "2026-09-07T05:58:35Z"
+  },
+  {
+    "id": "f184466608ad5bc6",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "acb49b2b479664ba8f7c9a7b"
+    },
+    "createdAt": "2026-09-07T06:08:19Z"
+  },
+  {
+    "id": "3b31e78ab2603e3a",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Natural & Applied Sciences",
+      "matchedField": "Natural & Applied Sciences"
+    },
+    "createdAt": "2026-09-07T06:08:23Z"
+  },
+  {
+    "id": "748ed9f57a9e38db",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Natural & Applied Sciences",
+      "matchedField": "Natural & Applied Sciences"
+    },
+    "createdAt": "2026-09-07T06:09:24Z"
+  },
+  {
+    "id": "ab74989e403849ce",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "acb49b2b479664ba8f7c9a7b",
+      "email": "monis@gmail.com"
+    },
+    "createdAt": "2026-09-09T04:17:27Z"
+  },
+  {
+    "id": "c343aa6afc2c62b7",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "acb49b2b479664ba8f7c9a7b",
+      "email": "monis@gmail.com"
+    },
+    "createdAt": "2026-09-09T04:24:43Z"
+  },
+  {
+    "id": "18f498a4fdd4aae7",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "acb49b2b479664ba8f7c9a7b",
+      "email": "monis@gmail.com"
+    },
+    "createdAt": "2026-09-09T04:26:36Z"
+  },
+  {
+    "id": "5dc6f08e0a437a1d",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "acb49b2b479664ba8f7c9a7b",
+      "email": "monis@gmail.com"
+    },
+    "createdAt": "2026-09-09T04:26:40Z"
+  },
+  {
+    "id": "e9adef81cdfd07d3",
+    "type": "admin_user_deleted",
+    "details": {
+      "userId": "acb49b2b479664ba8f7c9a7b"
+    },
+    "createdAt": "2026-09-09T04:26:45Z"
+  },
+  {
+    "id": "11e9b4edc96bb711",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-09T04:31:17Z"
+  },
+  {
+    "id": "ec879e4ffbc6f1dd",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-09-09T04:50:13Z"
+  },
+  {
+    "id": "5bfe59a8c28699a3",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Natural & Applied Sciences",
+      "matchedField": "Natural & Applied Sciences"
+    },
+    "createdAt": "2026-09-09T04:56:36Z"
+  },
+  {
+    "id": "1378c043f9ae1a36",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Natural & Applied Sciences",
+      "matchedField": "Natural & Applied Sciences"
+    },
+    "createdAt": "2026-09-09T04:56:50Z"
+  },
+  {
+    "id": "5889164d4172f423",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Natural & Applied Sciences",
+      "matchedField": "Natural & Applied Sciences"
+    },
+    "createdAt": "2026-09-09T04:58:20Z"
+  },
+  {
+    "id": "0ac2ee57149649be",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "0a4e2f64ad9a6467b4282810"
+    },
+    "createdAt": "2026-09-09T04:58:41Z"
+  },
+  {
+    "id": "eb49d132f731b39c",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "199f58df4c905128a1a9bdb2",
+      "email": "alina@gmail.com"
+    },
+    "createdAt": "2026-09-09T05:04:09Z"
+  },
+  {
+    "id": "18b092c870f2ab73",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "199f58df4c905128a1a9bdb2",
+      "email": "alina@gmail.com"
+    },
+    "createdAt": "2026-09-09T05:04:12Z"
+  },
+  {
+    "id": "1a3f41a4f19a38ee",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "199f58df4c905128a1a9bdb2",
+      "email": "alina@gmail.com"
+    },
+    "createdAt": "2026-09-09T05:04:27Z"
+  },
+  {
+    "id": "4a318bc7db9d2f9e",
+    "type": "admin_user_deleted",
+    "details": {
+      "userId": "199f58df4c905128a1a9bdb2"
+    },
+    "createdAt": "2026-09-09T05:04:38Z"
+  }
+]

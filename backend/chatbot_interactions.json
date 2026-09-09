@@ -1,0 +1,219 @@
+[
+  {
+    "id": "daf72fdfc30d6547",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "message": "scholarships",
+    "response": "Hi! I'm the CareerGuide assistant. Ask me about the career quiz, universities, scholarships, or your profile.",
+    "createdAt": "2026-08-27T10:39:56Z"
+  },
+  {
+    "id": "9b0976b1090c2f48",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "message": "medical universities show all",
+    "response": "Use the University Recommender to see universities and programs matched to your marks and interests. Admins keep this list updated with current eligibility criteria.",
+    "createdAt": "2026-08-27T10:40:19Z"
+  },
+  {
+    "id": "3e88909089449cb9",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "message": "can you update my profile?",
+    "response": "You can update your personal and academic details anytime from the Profile page. Your quiz results are saved there under Previous recommendations.",
+    "createdAt": "2026-08-27T10:40:58Z"
+  },
+  {
+    "id": "1adfdf8f8758a560",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "message": "profile",
+    "response": "You can update your personal and academic details anytime from the Profile page. Your quiz results are saved there under Previous recommendations.",
+    "createdAt": "2026-08-27T10:41:30Z"
+  },
+  {
+    "id": "26503ed6c0e4fc11",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "message": "recommend me university based on my interest",
+    "response": "Use the University Recommender to see universities and programs matched to your marks and interests. Admins keep this list updated with current eligibility criteria.",
+    "createdAt": "2026-08-31T06:06:05Z"
+  },
+  {
+    "id": "6e6938d28a554c78",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "message": "how can i update my profile",
+    "response": "You can update your personal and academic details anytime from the Profile page. Your quiz results are saved there under Previous recommendations.",
+    "createdAt": "2026-08-31T06:06:28Z"
+  },
+  {
+    "id": "2932e4a0ad662c88",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "message": "quiz",
+    "response": "You can take the career quiz from your Dashboard or the Quiz page. It asks about your interests and academic background, then recommends a career field for you.",
+    "createdAt": "2026-08-31T06:08:24Z"
+  },
+  {
+    "id": "1b5ecd1f544727e7",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "message": "scholarships",
+    "response": "Check the Scholarship Finder page for scholarships filtered by merit, need, and province. Each listing shows eligibility details and a link to apply.",
+    "createdAt": "2026-08-31T06:09:01Z"
+  },
+  {
+    "id": "a8e85ba81ad47985",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "message": "quiz",
+    "response": "You can take the career quiz from your Dashboard or the Quiz page. It asks about your interests and academic background, then recommends a career field for you.",
+    "createdAt": "2026-08-31T10:37:10Z"
+  },
+  {
+    "id": "630bed7218b08f33",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "message": "scholarship",
+    "response": "Check the Scholarship Finder page for scholarships filtered by merit, need, and province. Each listing shows eligibility details and a link to apply.",
+    "createdAt": "2026-08-31T10:37:48Z"
+  },
+  {
+    "id": "e63ba7f47be75bd1",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "message": "quiz",
+    "response": "You can take the career quiz from your Dashboard or the Quiz page. It asks about your interests and academic background, then recommends a career field for you.",
+    "createdAt": "2026-08-31T10:39:45Z"
+  },
+  {
+    "id": "f5153d7b99c731d4",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "message": "scholarships",
+    "response": "Check the Scholarship Finder page for scholarships filtered by merit, need, and province. Each listing shows eligibility details and a link to apply.",
+    "createdAt": "2026-08-31T10:40:02Z"
+  },
+  {
+    "id": "b1fcf6b5bedf79f5",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "message": "profile",
+    "response": "You can update your personal and academic details anytime from the Profile page. Your quiz results are saved there under Previous recommendations.",
+    "createdAt": "2026-08-31T10:40:38Z"
+  },
+  {
+    "id": "7a3d455ae65f37c9",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "message": "signout",
+    "response": "I'm not sure about that yet, but I can help with the career quiz, university recommendations, scholarships, or your profile. What would you like to know?",
+    "createdAt": "2026-08-31T10:41:51Z"
+  },
+  {
+    "id": "1d173d9e0d9f7939",
+    "userId": null,
+    "message": "tell me about scholarships",
+    "response": "Check the Scholarship Finder page for scholarships filtered by merit, need, and province. Each listing shows eligibility details and a link to apply.",
+    "createdAt": "2026-08-31T10:54:30Z"
+  },
+  {
+    "id": "3ec85cbcfbe4469d",
+    "userId": null,
+    "message": "scholarship",
+    "response": "Check the Scholarship Finder page for scholarships filtered by merit, need, and province. Each listing shows eligibility details and a link to apply.",
+    "createdAt": "2026-09-01T06:05:27Z"
+  },
+  {
+    "id": "1bedf619f368a58e",
+    "userId": "affc1f96-87fd-4040-8eff-1b24fc8f680e",
+    "message": "scholarships",
+    "response": "Check the Scholarship Finder page for scholarships filtered by merit, need, and province. Each listing shows eligibility details and a link to apply.",
+    "createdAt": "2026-09-01T06:06:19Z"
+  },
+  {
+    "id": "c5d1bde406988f63",
+    "userId": "affc1f96-87fd-4040-8eff-1b24fc8f680e",
+    "message": "universities",
+    "response": "Use the University Recommender to see universities and programs matched to your marks and interests. Admins keep this list updated with current eligibility criteria.",
+    "createdAt": "2026-09-01T06:07:03Z"
+  },
+  {
+    "id": "67e89cfe57ed5eb9",
+    "userId": "affc1f96-87fd-4040-8eff-1b24fc8f680e",
+    "message": "scholarships",
+    "response": "Check the Scholarship Finder page for scholarships filtered by merit, need, and province. Each listing shows eligibility details and a link to apply.",
+    "createdAt": "2026-09-01T06:07:16Z"
+  },
+  {
+    "id": "6c2439d05cb03011",
+    "userId": "0a4e2f64ad9a6467b4282810",
+    "message": "quiz",
+    "response": "You can take the career quiz from your Dashboard or the Quiz page. It asks about your interests and academic background, then recommends a career field for you.",
+    "createdAt": "2026-09-06T09:27:32Z"
+  },
+  {
+    "id": "5fc34a9af9094766",
+    "userId": "test-user-id",
+    "message": "hello",
+    "response": "Hi there",
+    "createdAt": "2026-09-06T09:40:42Z"
+  },
+  {
+    "id": "20bf9fc75ba45d60",
+    "userId": "0a4e2f64ad9a6467b4282810",
+    "message": "assessment",
+    "response": "You have already completed your career assessment! Your results and career matches are safely stored. You do not need to retake the quiz unless you want to change your answers.",
+    "createdAt": "2026-09-06T09:53:15Z"
+  },
+  {
+    "id": "e1995144a4b54026",
+    "userId": "0a4e2f64ad9a6467b4282810",
+    "message": "scolarship",
+    "response": "I can help you with your assessment results, university recommendations, scholarships, or your profile. What would you like to know?",
+    "createdAt": "2026-09-06T09:53:28Z"
+  },
+  {
+    "id": "2e5eef50641db851",
+    "userId": "0a4e2f64ad9a6467b4282810",
+    "message": "scholarships",
+    "response": "Your assessment scores and profile marks are safely recorded! You can browse eligible merit-based and need-based scholarships in the Scholarship Finder. You do not need to take any new test or quiz.",
+    "createdAt": "2026-09-06T09:53:49Z"
+  },
+  {
+    "id": "b085521339b13340",
+    "userId": "0a4e2f64ad9a6467b4282810",
+    "message": "carrer",
+    "response": "I can help you with your assessment results, university recommendations, scholarships, or your profile. What would you like to know?",
+    "createdAt": "2026-09-06T11:30:11Z"
+  },
+  {
+    "id": "61e6a33a825d3ae1",
+    "userId": "0a4e2f64ad9a6467b4282810",
+    "message": "scholarships",
+    "response": "Browse the Scholarship Finder to explore merit-based and need-based financial aid opportunities across Pakistan. You can also take our quick career quiz to identify your ideal field.",
+    "createdAt": "2026-09-06T11:30:22Z"
+  },
+  {
+    "id": "b1897005b4f8e305",
+    "userId": "0a4e2f64ad9a6467b4282810",
+    "message": "quiz",
+    "response": "You can take the career assessment anytime! It takes only 5 minutes, evaluating your academic background and interests to match you with top degrees and careers.",
+    "createdAt": "2026-09-07T03:55:43Z"
+  },
+  {
+    "id": "224396946fb13b5f",
+    "userId": "199f58df4c905128a1a9bdb2",
+    "message": "scholarships",
+    "response": "Your assessment scores and profile marks are safely recorded! You can browse eligible merit-based and need-based scholarships in the Scholarship Finder. You do not need to take any new test or quiz.",
+    "createdAt": "2026-09-07T05:37:12Z"
+  },
+  {
+    "id": "01af1ec18bf8c0a9",
+    "userId": "199f58df4c905128a1a9bdb2",
+    "message": "quiz",
+    "response": "You have already completed your career assessment! Your results and career matches are safely stored. You do not need to retake the quiz unless you want to change your answers.",
+    "createdAt": "2026-09-07T05:37:29Z"
+  },
+  {
+    "id": "88383d1736d0c327",
+    "userId": "acb49b2b479664ba8f7c9a7b",
+    "message": "university",
+    "response": "Your profile marks and assessment scores are already connected with the University Recommender! You can view programs and university options matched to you.",
+    "createdAt": "2026-09-07T06:08:19Z"
+  },
+  {
+    "id": "a3c70e019ae20294",
+    "userId": "0a4e2f64ad9a6467b4282810",
+    "message": "quiz",
+    "response": "You can take the career assessment anytime! It takes only 5 minutes, evaluating your academic background and interests to match you with top degrees and careers.",
+    "createdAt": "2026-09-09T04:58:41Z"
+  }
+]
