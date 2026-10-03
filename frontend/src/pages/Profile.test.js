@@ -55,7 +55,7 @@ test('renders profile management and recommendation history sections', async () 
 
   expect(screen.getByText(/Profile management/i)).toBeInTheDocument();
   expect(screen.getByLabelText(/Full name/i)).toBeInTheDocument();
-  expect(screen.getByLabelText(/Academic level/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/Preferred city/i)).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: /your saved recommendation history/i })).toBeInTheDocument();
   expect(await screen.findByText(/Software Developer or IT Specialist/i)).toBeInTheDocument();
 });

@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+
+import { toast } from 'react-hot-toast';
+
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Settings.css';
@@ -18,8 +21,6 @@ function Settings() {
   const navigate = useNavigate();
   const { currentUser, logout, deleteAccount } = useAuth();
   const [settings, setSettings] = useState(readSettings);
-  const [notice, setNotice] = useState('');
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!currentUser) navigate('/login', { replace: true });
@@ -32,8 +33,7 @@ function Settings() {
 
   const updateSetting = (key, value) => {
     setSettings((previous) => ({ ...previous, [key]: value }));
-    setNotice('Settings saved.');
-    setError('');
+    toast.success('Settings saved.');
   };
 
   const signOut = async () => {
@@ -49,7 +49,7 @@ function Settings() {
       await deleteAccount(password);
       navigate('/login', { replace: true });
     } catch (deleteError) {
-      setError(deleteError.message || 'Unable to delete account.');
+      toast.error(deleteError.message || 'Unable to delete account.');
     }
   };
 
@@ -77,8 +77,6 @@ function Settings() {
           <a className="settings-row" href="mailto:support@careerguide.app?subject=CareerGuide%20Support"><span>Contact support</span><span aria-hidden="true">›</span></a>
         </section>
       </div>
-      {notice && <p className="settings-feedback settings-feedback--success" role="status">{notice}</p>}
-      {error && <p className="settings-feedback settings-feedback--error" role="alert">{error}</p>}
     </main>
   );
 }

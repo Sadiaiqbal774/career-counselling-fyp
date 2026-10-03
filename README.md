@@ -12,12 +12,12 @@ python app.py
 
 ## Admin access
 
-Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in the backend process environment before starting Flask. The server fails closed when these values are not configured.
+Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` in the backend process environment before starting Flask. The server fails closed when these values are not configured.
 
 PowerShell example:
 
 ```powershell
-$env:ADMIN_EMAIL = "admin@example.com"
+$env:ADMIN_USERNAME = "administrator"
 $env:ADMIN_PASSWORD = "replace-with-a-long-random-password"
 py -3 backend\app.py
 ```

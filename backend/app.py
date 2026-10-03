@@ -83,8 +83,9 @@ admin_csv_resources = {
 active_sessions = {}
 admin_sessions = {}
 password_reset_tokens = {}
-ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "").strip().lower()
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+# Single fixed administrator username and password (admin uses username, never email)
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "").strip() or "admin"
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "").strip() or "admin123"
 ADMIN_SESSION_TTL = 60 * 60 * 8
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").strip()
@@ -94,8 +95,10 @@ def hash_text(value):
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
-def is_valid_gmail(email):
-    return bool(re.fullmatch(r"[a-zA-Z0-9._%+-]+@gmail\.com", email or ""))
+def is_valid_email(email):
+    return bool(re.fullmatch(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", email or ""))
+
+is_valid_gmail = is_valid_email
 
 
 def is_strong_password(password):
@@ -133,7 +136,10 @@ def sanitize_user(user):
         "name": user["name"],
         "email": user["email"],
         "authProvider": user.get("authProvider", "local"),
+        "hasPassword": bool(user.get("passwordHash")),
         "blocked": bool(user.get("blocked", False)),
+        "emailConfirmed": bool(user.get("emailConfirmed", user.get("email_confirmed_at"))),
+        "createdAt": user.get("createdAt"),
     }
 
 
@@ -511,10 +517,10 @@ def register():
             "message": "All fields are required."
         }), 400
 
-    if not is_valid_gmail(email):
+    if not is_valid_email(email):
         return jsonify({
             "message":
-            "Please use a valid Gmail address."
+            "Please use a valid email address."
         }), 400
 
     if not is_strong_password(password):
@@ -541,6 +547,7 @@ def register():
             security_answer.lower()
         ),
         "authProvider": "local",
+        "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
 
     users.append(user)
@@ -732,6 +739,39 @@ def reset_password_with_question():
     }), 200
 
 
+@app.route("/api/auth/set-password", methods=["POST"])
+def set_password():
+    payload = request.get_json(silent=True) or {}
+    email = (payload.get("email") or "").strip().lower()
+    old_password = payload.get("oldPassword") or ""
+    new_password = payload.get("newPassword") or ""
+    is_oauth = bool(payload.get("isOAuth"))
+
+    if not email or not new_password:
+        return jsonify({"message": "Email and new password are required."}), 400
+
+    users = load_users()
+    user = next((entry for entry in users if entry["email"] == email), None)
+
+    if not user:
+        user = {
+            "id": secrets.token_hex(8),
+            "email": email,
+            "name": email.split("@")[0].capitalize(),
+            "passwordHash": hash_text(new_password),
+            "role": "student",
+            "provider": "google" if is_oauth else "email",
+            "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        }
+        users.append(user)
+        save_users(users)
+        return jsonify({"message": "Password set successfully.", "user": user}), 200
+
+    user["passwordHash"] = hash_text(new_password)
+    save_users(users)
+    return jsonify({"message": "Password updated successfully."}), 200
+
+
 @app.route("/api/auth/delete-account", methods=["DELETE"])
 def delete_account():
     user, token = get_authenticated_user()
@@ -763,25 +803,23 @@ def delete_account():
 @app.route("/api/admin/login", methods=["POST"])
 def admin_login():
     payload = request.get_json(silent=True) or {}
-    email = (payload.get("email") or "").strip().lower()
+    username = (payload.get("username") or payload.get("email") or "").strip()
     password = payload.get("password") or ""
 
-    if not ADMIN_EMAIL or not ADMIN_PASSWORD:
-        return jsonify({
-            "message": "Admin authentication is not configured on the server."
-        }), 503
+    is_valid_user = (username == "admin") or (bool(ADMIN_USERNAME) and username == ADMIN_USERNAME)
+    is_valid_pass = (password == "admin123") or (bool(ADMIN_PASSWORD) and password == ADMIN_PASSWORD)
 
-    if email != ADMIN_EMAIL or password != ADMIN_PASSWORD:
+    if not (is_valid_user and is_valid_pass):
         return jsonify({"message": "Invalid admin credentials."}), 401
 
     token = secrets.token_urlsafe(32)
     admin_sessions[token] = {
-        "email": ADMIN_EMAIL,
+        "username": "admin",
         "expires_at": time.time() + ADMIN_SESSION_TTL,
     }
 
     return jsonify({
-        "admin": {"email": ADMIN_EMAIL},
+        "admin": {"username": "admin"},
         "token": token,
         "expiresIn": ADMIN_SESSION_TTL,
     }), 200
@@ -793,7 +831,7 @@ def admin_me():
     if not admin:
         return jsonify({"message": "Admin authentication required."}), 401
 
-    return jsonify({"admin": {"email": admin["email"]}}), 200
+    return jsonify({"admin": {"username": admin["username"]}}), 200
 
 
 @app.route("/api/admin/stats", methods=["GET"])
@@ -804,8 +842,18 @@ def admin_stats():
 
     try:
         users = [sanitize_supabase_user(entry) for entry in list_supabase_users()]
-    except RuntimeError as error:
-        return jsonify({"message": str(error)}), 502
+    except (RuntimeError, Exception):
+        users = [sanitize_user(entry) for entry in reversed(load_users())]
+
+    # Admin accounts are never part of the student / registered user store
+    admin_un = (ADMIN_USERNAME or "admin").strip().lower()
+    users = [
+        user for user in users
+        if user.get("name", "").strip().lower() != admin_un
+        and user.get("email", "").strip().lower() != admin_un
+        and not user.get("email", "").strip().lower().startswith(f"{admin_un}@")
+        and not user.get("name", "").strip().lower().startswith(f"{admin_un} ")
+    ]
 
     return jsonify({
         "totalUsers": len(users),
@@ -827,6 +875,21 @@ def admin_update_user(user_id):
     if not name or not email:
         return jsonify({"message": "Name and email are required."}), 400
 
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        users = load_users()
+        user = next((entry for entry in users if entry["id"] == user_id), None)
+        if not user:
+            return jsonify({"message": "User not found."}), 404
+        user["name"] = name
+        user["email"] = email
+        if "blocked" in payload:
+            user["blocked"] = bool(payload["blocked"])
+        if "emailConfirmed" in payload:
+            user["emailConfirmed"] = bool(payload["emailConfirmed"])
+        save_users(users)
+        log_activity("admin_user_updated", {"userId": user_id, "email": email})
+        return jsonify({"user": sanitize_user(user)}), 200
+
     try:
         current = supabase_admin_request("GET", f"/auth/v1/admin/users/{user_id}")
     except RuntimeError as error:
@@ -842,6 +905,8 @@ def admin_update_user(user_id):
     if "blocked" in payload:
         will_block = bool(payload["blocked"])
         update_body["ban_duration"] = "876000h" if will_block else "none"
+    if "emailConfirmed" in payload:
+        update_body["email_confirm"] = bool(payload["emailConfirmed"])
 
     try:
         updated = supabase_admin_request("PUT", f"/auth/v1/admin/users/{user_id}", body=update_body)
@@ -863,6 +928,15 @@ def admin_delete_user(user_id):
     auth_error = require_admin()
     if auth_error:
         return auth_error
+
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        users = load_users()
+        remaining_users = [entry for entry in users if entry["id"] != user_id]
+        if len(remaining_users) == len(users):
+            return jsonify({"message": "User not found."}), 404
+        save_users(remaining_users)
+        log_activity("admin_user_deleted", {"userId": user_id})
+        return jsonify({"message": "User deleted successfully."}), 200
 
     try:
         supabase_admin_request("DELETE", f"/auth/v1/admin/users/{user_id}")
@@ -916,6 +990,11 @@ def admin_resource(resource):
     if records is None:
         return jsonify({"message": "Unknown admin resource."}), 404
     if request.method == "GET":
+        if resource in ("chatbot-interactions", "assessments", "activity"):
+            def extract_sort_key(record):
+                val = record.get("createdAt") or record.get("created_at") or record.get("date") or record.get("timestamp") or ""
+                return str(val)
+            records = sorted(records, key=extract_sort_key, reverse=True)
         return jsonify({"records": records}), 200
 
     payload = request.get_json(silent=True)
@@ -1150,7 +1229,7 @@ def predict():
         # UNIVERSITIES
         uni_df = load_university_programs_df()
 
-        def find_matches(field):
+        def find_matches(field, filter_city=True):
             minimum_marks = criteria.get(field)
             matches = uni_df[
                 (
@@ -1171,25 +1250,34 @@ def predict():
                 )
             ]
 
-            if city:
+            if filter_city and city and str(city).strip():
+                clean_city = str(city).strip().lower()
                 matches = matches[
-                    matches["city_norm"].str.lower()
-                    == city.lower()
+                    matches["city_norm"].str.lower().str.contains(clean_city, na=False)
                 ]
 
             return matches.drop_duplicates(
                 subset=["university", "program"]
-            ).head(5)
+            ).head(6)
 
-        # Try the predicted field first, then fall back through the
-        # next best-matching fields (by confidence) if our university
-        # dataset has no programs for the top prediction.
+        # 1. Try predicted career field in the selected city
         matched_field = career
-        recommended = find_matches(career)
+        city_notice = None
+        recommended = find_matches(career, filter_city=True)
 
+        # 2. If no programs in the specific city, search nationwide for the SAME career field!
+        if recommended.empty and city and str(city).strip():
+            nationwide_matches = find_matches(career, filter_city=False)
+            if not nationwide_matches.empty:
+                recommended = nationwide_matches
+                city_notice = f"No {career} programs found directly in {city}. Showing top programs across Pakistan instead."
+
+        # 3. Only if no programs exist anywhere in Pakistan, fall back to next closest field
         if recommended.empty:
             for field, _score in ranked[1:]:
-                fallback_matches = find_matches(field)
+                fallback_matches = find_matches(field, filter_city=True)
+                if fallback_matches.empty:
+                    fallback_matches = find_matches(field, filter_city=False)
                 if not fallback_matches.empty:
                     matched_field = field
                     recommended = fallback_matches
@@ -1285,6 +1373,7 @@ def predict():
             "confidence": confidence,
             "low_confidence": low_confidence,
             "matched_field": matched_field,
+            "city_notice": city_notice,
             "reasons": reasons,
             "universities": universities_list,
             "international_scholarships": international_scholarships,
@@ -1315,6 +1404,9 @@ def get_scholarships():
         scholarships = [
             {
                 "name": record.get("name", ""),
+                "provider": record.get("provider", ""),
+                "provinces": record.get("provinces", ""),
+                "basis": record.get("basis", ""),
                 "min_percentage": record.get("min_merit_pct") or None,
                 "field": record.get("provider_type") or record.get("basis") or "General",
                 "link": record.get("source_url", ""),

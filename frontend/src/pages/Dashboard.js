@@ -14,7 +14,11 @@ function Dashboard() {
   const profileCompletion = getProfileCompletion(profile);
   const storedScores = useMemo(() => {
     try {
-      return readUserQuizData(currentUser?.id).scores;
+      const userData = readUserQuizData(currentUser?.id);
+      if (userData && userData.scores) return userData.scores;
+      // fallback to guest data
+      const guestData = readUserQuizData('guest');
+      return guestData ? guestData.scores : null;
     } catch {
       return null;
     }

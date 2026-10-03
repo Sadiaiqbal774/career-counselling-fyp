@@ -415,3 +415,67 @@ html {
     font-size: 0.8125rem;
   }
 }
+
+/* ============================== */
+/* DARK MODE OVERRIDES */
+/* ============================== */
+
+html.dark-mode .modern-hero .hero-copy h1 {
+  color: #f7efe7;
+}
+
+html.dark-mode .modern-hero .hero-copy p.lead {
+  color: #cbb9a8;
+}
+
+html.dark-mode .hero-brand {
+  color: #f7efe7;
+}
+
+html.dark-mode .brand-dark {
+  color: #f7efe7 !important;
+}
+
+html.dark-mode .text-brown {
+  color: #f7efe7 !important;
+}
+
+html.dark-mode .text-brown-muted {
+  color: #cbb9a8 !important;
+}
+
+html.dark-mode .bg-beige {
+  background: #201915 !important;
+}
+
+html.dark-mode .btn-secondary-large,
+html.dark-mode .nav-btn-secondary {
+  color: #f7efe7;
+  border-color: rgba(247, 239, 231, 0.2);
+}
+
+html.dark-mode .btn-secondary-large:hover,
+html.dark-mode .nav-btn-secondary:hover {
+  background: rgba(247, 239, 231, 0.08);
+  border-color: rgba(247, 239, 231, 0.35);
+  color: #ffffff;
+}
+
+html.dark-mode .nav-btn-secondary-mobile {
+  color: #f7efe7;
+  border-color: rgba(247, 239, 231, 0.2);
+}
+
+html.dark-mode .mockup-figure {
+  border-color: #3d2f26;
+  background: #231b17;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+html.dark-mode .modern-header a {
+  color: #cbb9a8;
+}
+
+html.dark-mode .modern-header a:hover {
+  color: #f7efe7;
+}
