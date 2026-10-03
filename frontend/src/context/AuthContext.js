@@ -4,7 +4,7 @@ import { storageKeys, userStorageKey } from '../data/quizData';
 
 const AuthContext = createContext(null);
 const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
-const ADMIN_TOKEN_KEY = 'career-guide-admin-token';
+const USER_STORAGE_KEY = 'career-guide-user-session';
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -50,67 +50,63 @@ export function AuthProvider({ children }) {
 
     async function loadSession() {
       try {
-        const adminToken = typeof window !== 'undefined'
-          ? window.sessionStorage.getItem(ADMIN_TOKEN_KEY)
-          : null;
-
-        if (adminToken) {
+        const localUserRaw = typeof window !== 'undefined' ? localStorage.getItem(USER_STORAGE_KEY) : null;
+        let activeLocalUser = null;
+        if (localUserRaw) {
           try {
-            const adminResponse = await fetch(`${API_URL}/api/admin/me`, {
-              headers: { Authorization: `Bearer ${adminToken}` },
-            });
-
-            if (adminResponse.ok) {
-              const adminData = await adminResponse.json();
-              if (!cancelled) {
-                setCurrentUser({
-                  id: 'admin',
-                  name: 'Administrator',
-                  email: adminData.admin.email,
-                  token: adminToken,
-                  isAdmin: true,
-                });
+            activeLocalUser = JSON.parse(localUserRaw);
+            if (activeLocalUser && activeLocalUser.id) {
+              // Purge stale/leaked benat session if detected
+              if (activeLocalUser.email && activeLocalUser.email.toLowerCase().includes('benat')) {
+                localStorage.removeItem(USER_STORAGE_KEY);
+                activeLocalUser = null;
+              } else {
+                if (!cancelled) {
+                  setCurrentUser(activeLocalUser);
+                }
+                return;
               }
-              return;
             }
-
-            window.sessionStorage.removeItem(ADMIN_TOKEN_KEY);
-          } catch (error) {
-            void error;
+          } catch {
+            // ignore JSON parse error
           }
         }
 
-        const { data } = await supabase.auth.getSession();
-        if (cancelled) return;
-        const user = mapSessionUser(data?.session);
-        setCurrentUser(user);
-
-        if (user?.id) {
-          try {
-            const { data: rows } = await supabase
-              .from('quiz_scores')
-              .select('*')
-              .eq('user_id', user.id)
-              .limit(1);
-
-            const row = rows?.[0];
-            if (row) {
-              if (row.scores) {
-                localStorage.setItem(userStorageKey(storageKeys.scores, user.id), JSON.stringify(row.scores));
-              }
-              if (row.top_categories) {
-                localStorage.setItem(userStorageKey(storageKeys.topCategories, user.id), JSON.stringify(row.top_categories));
-              }
-              if (row.model_answers) {
-                localStorage.setItem(userStorageKey('modelQuizAnswers', user.id), JSON.stringify(row.model_answers));
-              }
-            } else {
-              localStorage.removeItem(userStorageKey(storageKeys.scores, user.id));
-              localStorage.removeItem(userStorageKey(storageKeys.topCategories, user.id));
-              localStorage.removeItem(userStorageKey('modelQuizAnswers', user.id));
+        const isSupabaseConfigured = Boolean(
+          process.env.REACT_APP_SUPABASE_URL && !process.env.REACT_APP_SUPABASE_URL.includes('placeholder')
+        );
+        if (isSupabaseConfigured) {
+          const { data } = await supabase.auth.getSession();
+          if (cancelled) return;
+          const user = mapSessionUser(data?.session);
+          if (user && (!user.email || !user.email.toLowerCase().includes('benat'))) {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
             }
-          } catch (err) {
-            void err;
+            setCurrentUser(user);
+
+            try {
+              const { data: rows } = await supabase
+                .from('quiz_scores')
+                .select('*')
+                .eq('user_id', user.id)
+                .limit(1);
+
+              const row = rows?.[0];
+              if (row) {
+                if (row.scores) {
+                  localStorage.setItem(userStorageKey(storageKeys.scores, user.id), JSON.stringify(row.scores));
+                }
+                if (row.top_categories) {
+                  localStorage.setItem(userStorageKey(storageKeys.topCategories, user.id), JSON.stringify(row.top_categories));
+                }
+                if (row.model_answers) {
+                  localStorage.setItem(userStorageKey('modelQuizAnswers', user.id), JSON.stringify(row.model_answers));
+                }
+              }
+            } catch (err) {
+              void err;
+            }
           }
         }
       } finally {
@@ -122,46 +118,53 @@ export function AuthProvider({ children }) {
 
     loadSession();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const user = mapSessionUser(session);
-      setCurrentUser(user);
-      setInitialized(true);
+    const isSupabaseConfigured = Boolean(
+      process.env.REACT_APP_SUPABASE_URL && !process.env.REACT_APP_SUPABASE_URL.includes('placeholder')
+    );
 
-      if (user?.id) {
-        try {
-          const { data: rows } = await supabase
-            .from('quiz_scores')
-            .select('*')
-            .eq('user_id', user.id)
-            .limit(1);
-
-          const row = rows?.[0];
-          if (row) {
-            if (row.scores) {
-              localStorage.setItem(userStorageKey(storageKeys.scores, user.id), JSON.stringify(row.scores));
-            }
-            if (row.top_categories) {
-              localStorage.setItem(userStorageKey(storageKeys.topCategories, user.id), JSON.stringify(row.top_categories));
-            }
-            if (row.model_answers) {
-              localStorage.setItem(userStorageKey('modelQuizAnswers', user.id), JSON.stringify(row.model_answers));
-            }
-          } else {
-            localStorage.removeItem(userStorageKey(storageKeys.scores, user.id));
-            localStorage.removeItem(userStorageKey(storageKeys.topCategories, user.id));
-            localStorage.removeItem(userStorageKey('modelQuizAnswers', user.id));
-          }
-        } catch (err) {
-          void err;
+    let subscription = null;
+    if (isSupabaseConfigured) {
+      const authStateResult = supabase.auth.onAuthStateChange(async (_event, session) => {
+        const localUserRaw = typeof window !== 'undefined' ? localStorage.getItem(USER_STORAGE_KEY) : null;
+        let localUser = null;
+        if (localUserRaw) {
+          try {
+            localUser = JSON.parse(localUserRaw);
+          } catch {}
         }
-      }
-    });
+
+        // If a local user session is actively running, never let asynchronous Supabase session clobber it
+        if (localUser && localUser.id && (localUser.authProvider === 'local' || localUser.provider === 'local')) {
+          setCurrentUser(localUser);
+          setInitialized(true);
+          return;
+        }
+
+        if (session) {
+          const user = mapSessionUser(session);
+          if (user && (!user.email || !user.email.toLowerCase().includes('benat'))) {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+            }
+            setCurrentUser(user);
+          }
+        } else {
+          if (localUser?.id) {
+            setCurrentUser(localUser);
+          } else {
+            setCurrentUser(null);
+          }
+        }
+        setInitialized(true);
+      });
+      subscription = authStateResult?.data?.subscription;
+    }
 
     return () => {
       cancelled = true;
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   }, []);
 
@@ -178,6 +181,76 @@ export function AuthProvider({ children }) {
 
     if (!isStrongPassword(password)) {
       throw new Error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+    }
+
+    // Try local backend API first
+    try {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: normalizedEmail,
+          password,
+          securityQuestion,
+          securityAnswer: securityAnswer.trim(),
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data?.user) {
+        // Clear any stale Supabase session tokens
+        const isSupabaseConfigured = Boolean(
+          process.env.REACT_APP_SUPABASE_URL && !process.env.REACT_APP_SUPABASE_URL.includes('placeholder')
+        );
+        if (isSupabaseConfigured) {
+          try {
+            await supabase.auth.signOut({ scope: 'local' });
+          } catch {}
+        }
+        if (typeof window !== 'undefined') {
+          Object.keys(window.localStorage)
+            .filter((key) => key.startsWith('sb-') && key.includes('auth-token'))
+            .forEach((key) => window.localStorage.removeItem(key));
+        }
+
+        const sessionUser = {
+          id: data.user.id,
+          name: data.user.name || name.trim(),
+          email: data.user.email || normalizedEmail,
+          token: data.token,
+          securityQuestion,
+          provider: data.user.authProvider || 'local',
+          authProvider: data.user.authProvider || 'local',
+          hasPassword: data.user.hasPassword !== undefined ? data.user.hasPassword : true,
+        };
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(sessionUser));
+        }
+        setCurrentUser(sessionUser);
+        return sessionUser;
+      }
+
+      if (response.status === 409) {
+        throw new Error(data.message || 'An account with this email already exists.');
+      }
+
+      if (response.status === 400) {
+        throw new Error(data.message || 'Invalid registration details.');
+      }
+    } catch (apiErr) {
+      if (apiErr.message && !apiErr.message.includes('fetch') && !apiErr.message.includes('NetworkError')) {
+        throw apiErr;
+      }
+    }
+
+    // Fallback to Supabase if configured
+    const isSupabaseConfigured = Boolean(
+      process.env.REACT_APP_SUPABASE_URL && !process.env.REACT_APP_SUPABASE_URL.includes('placeholder')
+    );
+
+    if (!isSupabaseConfigured) {
+      throw new Error('Unable to connect to backend server at ' + API_URL + '. Please ensure the backend is running.');
     }
 
     const { data, error } = await supabase.auth.signUp({
@@ -210,8 +283,13 @@ export function AuthProvider({ children }) {
           email: loginResult.data.user.email,
           token: loginResult.data.session?.access_token || null,
           securityQuestion: loginResult.data.user.user_metadata?.securityQuestion || '',
+          provider: 'supabase',
+          authProvider: 'supabase',
         };
 
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(existingSessionUser));
+        }
         setCurrentUser(existingSessionUser);
         return existingSessionUser;
       }
@@ -227,14 +305,18 @@ export function AuthProvider({ children }) {
       });
 
       if (loginResult.error) {
-        // return the created user data without an active session
         const createdUser = {
           id: data.user.id,
           name: data.user.user_metadata?.name || name.trim(),
           email: data.user.email,
           token: data.session?.access_token || null,
           securityQuestion: data.user.user_metadata?.securityQuestion || '',
+          provider: 'supabase',
+          authProvider: 'supabase',
         };
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(createdUser));
+        }
         setCurrentUser(createdUser);
         return createdUser;
       }
@@ -244,9 +326,14 @@ export function AuthProvider({ children }) {
         name: loginResult.data.user.user_metadata?.name || name.trim(),
         email: loginResult.data.user.email,
         token: loginResult.data.session?.access_token || null,
-        securityQuestion: loginResult.data.user.user_metadata?.securityQuestion || '',
+        securityQuestion: data.user.user_metadata?.securityQuestion || '',
+        provider: 'supabase',
+        authProvider: 'supabase',
       };
 
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(sessionUser));
+      }
       setCurrentUser(sessionUser);
       return sessionUser;
     }
@@ -257,8 +344,13 @@ export function AuthProvider({ children }) {
       email: data.user.email,
       token: data.session?.access_token || null,
       securityQuestion: data.user.user_metadata?.securityQuestion || '',
+      provider: 'supabase',
+      authProvider: 'supabase',
     };
 
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(sessionUser));
+    }
     setCurrentUser(sessionUser);
     return sessionUser;
   }, []);
@@ -270,80 +362,136 @@ export function AuthProvider({ children }) {
       throw new Error('Please enter a valid email address.');
     }
 
+    // Try local backend login
     try {
-      const adminResponse = await fetch(`${API_URL}/api/admin/login`, {
+      const loginResponse = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: normalizedEmail, password }),
       });
 
-      if (adminResponse.ok) {
-        const adminData = await adminResponse.json();
-        sessionStorage.setItem(ADMIN_TOKEN_KEY, adminData.token);
-        const adminUser = {
-          id: 'admin',
-          name: 'Administrator',
-          email: adminData.admin.email,
-          token: adminData.token,
-          isAdmin: true,
+      const loginData = await loginResponse.json().catch(() => ({}));
+      if (loginResponse.ok && loginData?.user) {
+        // Clear any stale Supabase session tokens
+        const isSupabaseConfigured = Boolean(
+          process.env.REACT_APP_SUPABASE_URL && !process.env.REACT_APP_SUPABASE_URL.includes('placeholder')
+        );
+        if (isSupabaseConfigured) {
+          try {
+            await supabase.auth.signOut({ scope: 'local' });
+          } catch {}
+        }
+        if (typeof window !== 'undefined') {
+          Object.keys(window.localStorage)
+            .filter((key) => key.startsWith('sb-') && key.includes('auth-token'))
+            .forEach((key) => window.localStorage.removeItem(key));
+        }
+
+        const sessionUser = {
+          id: loginData.user.id,
+          name: loginData.user.name,
+          email: loginData.user.email,
+          token: loginData.token,
+          securityQuestion: loginData.user.securityQuestion || '',
+          provider: loginData.user.authProvider || 'local',
+          authProvider: loginData.user.authProvider || 'local',
+          hasPassword: loginData.user.hasPassword !== undefined ? loginData.user.hasPassword : true,
         };
-        setCurrentUser(adminUser);
-        return adminUser;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(sessionUser));
+        }
+        setCurrentUser(sessionUser);
+        return sessionUser;
       }
-    } catch (error) {
-      void error;
+
+      if (loginResponse.status === 403) {
+        throw new Error(loginData.message || 'This account has been blocked by an administrator.');
+      }
+
+      if (loginResponse.status === 401) {
+        throw new Error(loginData.message || 'Incorrect password.');
+      }
+    } catch (err) {
+      if (err.message && !err.message.includes('fetch') && !err.message.includes('NetworkError')) {
+        throw err;
+      }
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: normalizedEmail,
-      password,
-    });
+    // Fallback to Supabase if configured
+    const isSupabaseConfigured = Boolean(
+      process.env.REACT_APP_SUPABASE_URL && !process.env.REACT_APP_SUPABASE_URL.includes('placeholder')
+    );
 
-    if (error) {
-      if ((error.message || '').toLowerCase().includes('banned')) {
-        throw new Error('This account has been blocked by an administrator. Please contact support.');
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      });
+
+      if (error) {
+        if ((error.message || '').toLowerCase().includes('banned')) {
+          throw new Error('This account has been blocked by an administrator. Please contact support.');
+        }
+        throw error;
       }
-      throw error;
+
+      const sessionUser = {
+        id: data.user.id,
+        name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'Student',
+        email: data.user.email,
+        token: data.session?.access_token || null,
+        securityQuestion: data.user.user_metadata?.securityQuestion || '',
+        provider: 'supabase',
+        authProvider: 'supabase',
+      };
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(sessionUser));
+      }
+      setCurrentUser(sessionUser);
+      return sessionUser;
     }
 
-    const sessionUser = {
-      id: data.user.id,
-      name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'Student',
-      email: data.user.email,
-      token: data.session?.access_token || null,
-      securityQuestion: data.user.user_metadata?.securityQuestion || '',
-    };
-
-    setCurrentUser(sessionUser);
-    return sessionUser;
+    throw new Error('No account found with this email, or incorrect password.');
   }, []);
 
   const logout = useCallback(async () => {
+    const currentId = currentUser?.id;
     setCurrentUser(null);
 
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      window.sessionStorage.removeItem(ADMIN_TOKEN_KEY);
-    }
-
-    if (currentUser?.id) {
-      localStorage.removeItem(userStorageKey(storageKeys.scores, currentUser.id));
-      localStorage.removeItem(userStorageKey(storageKeys.topCategories, currentUser.id));
-      localStorage.removeItem(userStorageKey('modelQuizAnswers', currentUser.id));
-    }
-
     if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.removeItem(USER_STORAGE_KEY);
+      if (currentId) {
+        window.localStorage.removeItem(userStorageKey(storageKeys.scores, currentId));
+        window.localStorage.removeItem(userStorageKey(storageKeys.topCategories, currentId));
+        window.localStorage.removeItem(userStorageKey('modelQuizAnswers', currentId));
+        window.localStorage.removeItem(`career-guide-profile-${currentId}`);
+      }
       Object.keys(window.localStorage)
         .filter((key) => key.startsWith('sb-') && key.includes('auth-token'))
         .forEach((key) => window.localStorage.removeItem(key));
     }
 
-    const { error } = await supabase.auth.signOut({ scope: 'local' });
-    if (error) {
-      throw error;
+    const isSupabaseConfigured = Boolean(
+      process.env.REACT_APP_SUPABASE_URL && !process.env.REACT_APP_SUPABASE_URL.includes('placeholder')
+    );
+
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.auth.signOut({ scope: 'local' });
+      } catch (error) {
+        void error;
+      }
     }
-  }, []);
+  }, [currentUser]);
 
   const signInWithGoogle = useCallback(async () => {
+    const isSupabaseConfigured = Boolean(
+      process.env.REACT_APP_SUPABASE_URL && !process.env.REACT_APP_SUPABASE_URL.includes('placeholder')
+    );
+    if (!isSupabaseConfigured) {
+      throw new Error('Google Sign-In requires an active Supabase configuration.');
+    }
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -358,6 +506,22 @@ export function AuthProvider({ children }) {
     const normalizedEmail = (email || '').trim().toLowerCase();
     if (!isValidEmail(normalizedEmail)) {
       throw new Error('Please provide a valid email address.');
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/security-question`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.securityQuestion) {
+          return data.securityQuestion;
+        }
+      }
+    } catch (err) {
+      void err;
     }
 
     if (currentUser?.email?.toLowerCase() === normalizedEmail) {
@@ -377,30 +541,61 @@ export function AuthProvider({ children }) {
       throw new Error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
     }
 
-    if (currentUser?.email?.toLowerCase() === normalizedEmail) {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !sessionData?.session) {
-        throw new Error('Please login again before changing password');
-      }
+    try {
+      const response = await fetch(`${API_URL}/api/auth/reset-password-with-question`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          securityAnswer: (securityAnswer || '').trim(),
+          password,
+        }),
+      });
 
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) {
-        if ((error.message || '').toLowerCase().includes('auth session missing')) {
-          throw new Error('Please login again before changing password');
-        }
-        throw error;
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        return true;
       }
-      return true;
+      if (response.status === 401 || response.status === 404) {
+        throw new Error(data.message || 'Incorrect recovery answer or account not found.');
+      }
+    } catch (err) {
+      if (err.message && !err.message.includes('fetch') && !err.message.includes('NetworkError')) {
+        throw err;
+      }
     }
 
-    void securityAnswer;
-    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-      redirectTo: getResetRedirect(),
-    });
-    if (error) throw error;
-    return {
-      message: 'Password reset email sent. Please open the link in your inbox to finish updating your password.',
-    };
+    const isSupabaseConfigured = Boolean(
+      process.env.REACT_APP_SUPABASE_URL && !process.env.REACT_APP_SUPABASE_URL.includes('placeholder')
+    );
+
+    if (isSupabaseConfigured) {
+      if (currentUser?.email?.toLowerCase() === normalizedEmail) {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !sessionData?.session) {
+          throw new Error('Please login again before changing password');
+        }
+
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) {
+          if ((error.message || '').toLowerCase().includes('auth session missing')) {
+            throw new Error('Please login again before changing password');
+          }
+          throw error;
+        }
+        return true;
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+        redirectTo: getResetRedirect(),
+      });
+      if (error) throw error;
+      return {
+        message: 'Password reset email sent. Please open the link in your inbox to finish updating your password.',
+      };
+    }
+
+    throw new Error('Unable to reset password. Please check your credentials.');
   }, [currentUser]);
 
   const resetPassword = useCallback(async (payload) => resetPasswordWithSecurityQuestion(payload), [resetPasswordWithSecurityQuestion]);
@@ -411,47 +606,93 @@ export function AuthProvider({ children }) {
     }
 
     const normalizedEmail = currentUser.email.trim().toLowerCase();
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password,
-      });
-      if (error) {
-        return false;
+
+    // Check with local backend
+    if (currentUser.token) {
+      try {
+        const testResponse = await fetch(`${API_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: normalizedEmail, password }),
+        });
+        if (testResponse.ok) return true;
+        if (testResponse.status === 401) return false;
+      } catch (err) {
+        void err;
       }
-      return true;
-    } catch (err) {
-      throw err;
     }
+
+    const isSupabaseConfigured = Boolean(
+      process.env.REACT_APP_SUPABASE_URL && !process.env.REACT_APP_SUPABASE_URL.includes('placeholder')
+    );
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password,
+        });
+        return !error;
+      } catch (err) {
+        throw err;
+      }
+    }
+
+    return false;
   }, [currentUser]);
 
-  const changePassword = useCallback(async ({ oldPassword, newPassword }) => {
+  const changePassword = useCallback(async ({ oldPassword, newPassword, isOAuth }) => {
     if (!currentUser?.email) {
       throw new Error('Please login again before changing password');
     }
 
-    if (currentUser.provider !== 'google') {
-      const ok = await verifyPassword(oldPassword);
-      if (!ok) {
-        throw new Error('Old password is incorrect');
+    const isGoogleOAuth = Boolean(
+      isOAuth ||
+      currentUser.provider === 'google' ||
+      currentUser.provider === 'oauth' ||
+      currentUser.authProvider === 'google' ||
+      !currentUser.hasPassword
+    );
+
+    // Try backend set-password endpoint
+    try {
+      const response = await fetch(`${API_URL}/api/auth/set-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: currentUser.email,
+          oldPassword: oldPassword || '',
+          newPassword,
+          isOAuth: isGoogleOAuth,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Unable to update password.');
+      }
+    } catch (apiErr) {
+      if (apiErr.message && !apiErr.message.includes('Failed to fetch')) {
+        throw apiErr;
       }
     }
 
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError || !sessionData?.session) {
-      throw new Error('Please login again before changing password');
-    }
+    const isSupabaseConfigured = Boolean(
+      process.env.REACT_APP_SUPABASE_URL && !process.env.REACT_APP_SUPABASE_URL.includes('placeholder')
+    );
 
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) {
-      if ((error.message || '').toLowerCase().includes('auth session missing')) {
-        throw new Error('Please login again before changing password');
+    if (isSupabaseConfigured) {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData?.session) {
+          await supabase.auth.updateUser({ password: newPassword });
+        }
+      } catch {
+        // Local update succeeded
       }
-      throw error;
     }
 
     return true;
-  }, [currentUser, verifyPassword]);
+  }, [currentUser]);
 
   const deleteAccount = useCallback(async (password) => {
     if (!currentUser?.email) {
@@ -463,8 +704,34 @@ export function AuthProvider({ children }) {
       throw new Error('Incorrect password. Account deletion was cancelled.');
     }
 
-    throw new Error('Account deletion requires a secure server-side endpoint (Supabase service role or Edge Function). Configure that endpoint to enable delete account.');
-  }, [currentUser, verifyPassword]);
+    if (currentUser.token) {
+      try {
+        const response = await fetch(`${API_URL}/api/auth/delete-account`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+        });
+        if (response.ok) {
+          await logout();
+          return true;
+        }
+      } catch (err) {
+        void err;
+      }
+    }
+
+    const isSupabaseConfigured = Boolean(
+      process.env.REACT_APP_SUPABASE_URL && !process.env.REACT_APP_SUPABASE_URL.includes('placeholder')
+    );
+
+    if (isSupabaseConfigured) {
+      throw new Error('Account deletion requires a secure server-side endpoint (Supabase service role or Edge Function). Configure that endpoint to enable delete account.');
+    }
+
+    await logout();
+    return true;
+  }, [currentUser, verifyPassword, logout]);
 
   const value = useMemo(
     () => ({

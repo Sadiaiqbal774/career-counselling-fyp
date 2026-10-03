@@ -81,12 +81,19 @@
   color: #fff;
 }
 
+.chatbot-message__links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
 .chatbot-message__link {
   display: inline-block;
-  margin-top: 8px;
   font-weight: 700;
   color: #5a3e29;
   text-decoration: underline;
+  font-size: 0.85rem;
 }
 
 .chatbot-panel__input {
@@ -113,4 +120,57 @@
   border-radius: 10px;
   font-weight: 700;
   cursor: pointer;
+}
+
+/* ==========================================================================
+   Chatbot Dark Mode Overrides
+   ========================================================================== */
+html.dark-mode .chatbot-toggle {
+  background: #c17b3f;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+html.dark-mode .chatbot-panel {
+  background: #231b17;
+  border-color: #3d2f26;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+html.dark-mode .chatbot-panel__header {
+  background: #2a1f19;
+  border-bottom: 1px solid #3d2f26;
+}
+
+html.dark-mode .chatbot-message--bot {
+  background: #2e231c;
+  color: #f7efe7;
+  border: 1px solid #453428;
+}
+
+html.dark-mode .chatbot-message--user {
+  background: #c17b3f;
+  color: #ffffff;
+}
+
+html.dark-mode .chatbot-message__link {
+  color: #d4a373;
+}
+
+html.dark-mode .chatbot-panel__input {
+  border-top: 1px solid #3d2f26;
+}
+
+html.dark-mode .chatbot-panel__input input {
+  background: #171412;
+  color: #f7efe7;
+  border-color: #3d2f26;
+}
+
+html.dark-mode .chatbot-panel__input input::placeholder {
+  color: #8f7c6e;
+}
+
+html.dark-mode .chatbot-panel__input button {
+  background: #c17b3f;
+  color: #ffffff;
 }

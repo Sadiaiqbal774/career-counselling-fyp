@@ -22,6 +22,7 @@ import AdminProtectedRoute from './components/AdminProtectedRoute';
 import Settings from './pages/Settings';
 import ChatbotWidget from './components/ChatbotWidget';
 import { useEffect, useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 
 function AppNavigation() {
   const location = useLocation();
@@ -87,6 +88,9 @@ function AppFooter() {
 }
 
 function AppLayout() {
+  const location = useLocation();
+  const isAdminPortal = location.pathname.startsWith('/admin');
+
   useEffect(() => {
     try {
       const settings = JSON.parse(localStorage.getItem('career-guide-settings') || '{}');
@@ -98,9 +102,9 @@ function AppLayout() {
 
   return (
     <>
-      <BackButton />
-      <AppNavigation />
-      <div className="app-content">
+      {!isAdminPortal && <BackButton />}
+      {!isAdminPortal && <AppNavigation />}
+      <div className={isAdminPortal ? 'app-content app-content--admin' : 'app-content'}>
         <Routes>
           <Route path="/" Component={ModernLanding} />
           <Route path="/login" Component={Login} />
@@ -127,7 +131,8 @@ function AppLayout() {
         </Routes>
       </div>
       <AppFooter />
-      <ChatbotWidget />
+      <Toaster />
+      {!isAdminPortal && <ChatbotWidget />}
     </>
   );
 }

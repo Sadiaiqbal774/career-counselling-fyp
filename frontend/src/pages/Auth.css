@@ -300,3 +300,98 @@
     max-width: none;
   }
 }
+
+/* ============================== */
+/* DARK MODE OVERRIDES */
+/* ============================== */
+
+html.dark-mode .auth-screen {
+  background:
+    radial-gradient(circle at top left, rgba(193, 123, 63, 0.15), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(124, 93, 66, 0.12), transparent 28%),
+    linear-gradient(180deg, #1f1915 0%, #171412 100%);
+  color: #f7efe7;
+}
+
+html.dark-mode .auth-hero,
+html.dark-mode .auth-card {
+  background: #231b17;
+  border-color: #3d2f26;
+  color: #f7efe7;
+}
+
+html.dark-mode .auth-brand-name {
+  color: #f7efe7;
+}
+
+html.dark-mode .auth-brand-subtitle {
+  color: #cbb9a8;
+}
+
+html.dark-mode .auth-hero h1 {
+  color: #f7efe7;
+}
+
+html.dark-mode .auth-hero p {
+  color: #cbb9a8;
+}
+
+html.dark-mode .auth-feature-list div {
+  background: #2b211c;
+  border-color: #3d2f26;
+  color: #f7efe7;
+}
+
+html.dark-mode .auth-feature-list h3 {
+  color: #f7efe7;
+}
+
+html.dark-mode .auth-feature-list p {
+  color: #cbb9a8;
+}
+
+html.dark-mode .auth-card h2 {
+  color: #f7efe7;
+}
+
+html.dark-mode .auth-card-subtitle {
+  color: #cbb9a8;
+}
+
+html.dark-mode .auth-field label {
+  color: #f7efe7;
+}
+
+html.dark-mode .auth-field input,
+html.dark-mode .auth-field select {
+  background: #1a1412;
+  border-color: #3d2f26;
+  color: #f7efe7;
+}
+
+html.dark-mode .auth-field input:focus,
+html.dark-mode .auth-field select:focus {
+  border-color: #c17b3f;
+}
+
+html.dark-mode .auth-field input::placeholder {
+  color: #8c7b6e;
+}
+
+html.dark-mode .auth-secondary-button {
+  background: #33261f;
+  color: #f7efe7;
+  border-color: #4d3a2e;
+}
+
+html.dark-mode .auth-secondary-button:hover:not(:disabled) {
+  background: #3d2e25;
+}
+
+html.dark-mode .auth-switch-text {
+  color: #cbb9a8;
+}
+
+html.dark-mode .auth-switch-text a {
+  color: #d4a373;
+}

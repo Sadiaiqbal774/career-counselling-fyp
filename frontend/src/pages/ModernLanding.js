@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { readUserQuizData } from '../data/userData';
 import './ModernLanding.css';
 
 function ModernLanding() {
@@ -157,7 +158,20 @@ function ModernLanding() {
             {currentUser ? (
               <>
                 <button onClick={() => navigate('/quiz')} className="btn-primary-large">Start the assessment</button>
-                <button onClick={() => navigate('/result')} className="btn-secondary-large">View your results</button>
+                <button
+                  onClick={() => {
+                    const { scores } = readUserQuizData(currentUser?.id);
+                    if (scores) {
+                      navigate('/result');
+                    } else {
+                      alert('You have not completed the career assessment yet. Redirecting you to take the quiz now!');
+                      navigate('/quiz');
+                    }
+                  }}
+                  className="btn-secondary-large"
+                >
+                  View your results
+                </button>
               </>
             ) : (
               <>

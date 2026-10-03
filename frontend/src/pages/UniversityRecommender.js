@@ -4,6 +4,7 @@ import interestExamples from "../data/interestExamples.json";
 import { useAuth } from "../context/AuthContext";
 import supabase from "../lib/supabase";
 import { readUserProfile, readUserQuizData } from "../data/userData";
+import { isItemBookmarked, toggleItemBookmark } from "../data/bookmarkData";
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
 
@@ -33,6 +34,21 @@ globalStyle.textContent = `
     --radius:     14px;
     --font-head:  'Playfair Display', Georgia, serif;
     --font-body:  'DM Sans', sans-serif;
+  }
+
+  html.dark-mode {
+    --bg:         #171412;
+    --bg-card:    #231b17;
+    --bg-right:   #1d1612;
+    --accent:     #d48b4e;
+    --accent-dk:  #e09f67;
+    --accent-lt:  #38291f;
+    --text:       #f7efe7;
+    --text-muted: #cbb9a8;
+    --border:     #3d2f26;
+    --success:    #34a869;
+    --danger:     #e05244;
+    --shadow:     0 4px 24px rgba(0,0,0,0.45);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -411,7 +427,7 @@ function RadioPills({ name, options, onChange, value }) {
 }
 
 // ─── Scholarship Card Component ───────────────────────────────────
-function ScholarshipCard({ scholarship, index, yourMerit }) {
+function ScholarshipCard({ scholarship, index, yourMerit, isSaved, onToggleBookmark }) {
   const hasMerit = scholarship.min_percentage != null;
 
   return (
@@ -454,6 +470,25 @@ function ScholarshipCard({ scholarship, index, yourMerit }) {
         <a href={scholarship.link} target="_blank" rel="noreferrer" className="uni-link primary">
           Apply Now →
         </a>
+        <button
+          type="button"
+          onClick={() => onToggleBookmark && onToggleBookmark(scholarship)}
+          className="uni-link"
+          style={{
+            border: isSaved ? "1.5px solid var(--accent)" : "1.5px solid var(--border)",
+            background: isSaved ? "var(--accent-lt)" : "var(--bg-card)",
+            color: isSaved ? "var(--accent-dk)" : "var(--text)",
+            fontWeight: 600,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "5px"
+          }}
+          title={isSaved ? "Remove from saved opportunities in profile" : "Save scholarship to profile"}
+        >
+          <span>{isSaved ? "★" : "☆"}</span>
+          <span>{isSaved ? "Saved" : "Save"}</span>
+        </button>
       </div>
     </div>
   );
@@ -468,7 +503,18 @@ const INTEREST_OPTS = [
 ];
 
 const BG_OPTS = ["ICS", "Pre-Medical", "Pre-Engineering", "Commerce", "Arts"].map(v => ({ val: v, label: v }));
-const CITY_OPTS = ["Lahore", "Islamabad"].map(v => ({ val: v, label: v }));
+const CITY_OPTS = [
+  { val: "", label: "All Cities (Nationwide)" },
+  { val: "Sukkur", label: "Sukkur" },
+  { val: "Islamabad", label: "Islamabad" },
+  { val: "Lahore", label: "Lahore" },
+  { val: "Karachi", label: "Karachi" },
+  { val: "Rawalpindi", label: "Rawalpindi" },
+  { val: "Peshawar", label: "Peshawar" },
+  { val: "Faisalabad", label: "Faisalabad" },
+  { val: "Multan", label: "Multan" },
+  { val: "Quetta", label: "Quetta" },
+];
 
 function getInterestDefaults(statement) {
   const category = Object.entries(interestExamples).find(([, statements]) => statements.includes(statement))?.[0] || '';
@@ -498,43 +544,100 @@ function UniversityRecommender() {
   const [useCustomText, setUseCustomText] = useState(false);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [autoSubmitted, setAutoSubmitted] = useState(false);
+  const [resultCityFilter, setResultCityFilter] = useState("");
+  const [bookmarkTick, setBookmarkTick] = useState(0);
   const resultRef = useRef(null);
+
+  const handleToggleUniBookmark = (uni) => {
+    toggleItemBookmark(currentUser?.id, "universities", uni);
+    setBookmarkTick((t) => t + 1);
+  };
+
+  const handleToggleScholarshipBookmark = (scholarship) => {
+    toggleItemBookmark(currentUser?.id, "scholarships", scholarship);
+    setBookmarkTick((t) => t + 1);
+  };
+
+  const isUniSaved = (uni) => isItemBookmarked(currentUser?.id, "universities", uni);
+  const isScholarshipSaved = (scholarship) => isItemBookmarked(currentUser?.id, "scholarships", scholarship);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadSavedProfile() {
-      if (!currentUser?.id) return;
-      const { data, error: profileError } = await supabase
-        .from("profiles")
-        .select("marks, intermediate_marks, intermediate_group, city, interests")
-        .eq("id", currentUser.id)
-        .maybeSingle();
+      const localProfile = readUserProfile(currentUser?.id);
+      const _quizData = readUserQuizData(currentUser?.id) || {};
+      const modelAnswers = _quizData.modelAnswers || {};
+      const savedScores = _quizData.scores || {};
 
-      const localProfile = readUserProfile(currentUser.id);
+      let remoteData = null;
+      if (currentUser?.id) {
+        try {
+          const { data } = await supabase
+            .from("profiles")
+            .select("marks, intermediate_marks, intermediate_group, city, interests")
+            .eq("id", currentUser.id)
+            .maybeSingle();
+          remoteData = data;
+        } catch {
+          // ignore offline sync
+        }
+      }
+
+      if (cancelled) return;
+
       const savedProfile = {
-        ...(data || {}),
+        ...(remoteData || {}),
         ...(localProfile || {}),
-        intermediate_marks: localProfile?.intermediateMarks ?? data?.intermediate_marks,
-        intermediate_group: localProfile?.intermediateGroup ?? data?.intermediate_group,
+        intermediate_marks: localProfile?.intermediateMarks ?? remoteData?.intermediate_marks,
+        intermediate_group: localProfile?.intermediateGroup ?? remoteData?.intermediate_group,
       };
-      const { modelAnswers, scores: savedScores = {} } = readUserQuizData(currentUser.id);
-      if (cancelled || !savedProfile) return;
 
-      setFormData((previous) => ({
-        ...previous,
-        ...getInterestDefaults(savedProfile.interests || savedProfile.Interests),
-        Math: modelAnswers.Math ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Math) / 20)))) : (savedScores.Technology ? '4' : previous.Math),
-        Biology: modelAnswers.Biology ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Biology) / 20)))) : (savedScores.Medical ? '4' : previous.Biology),
-        Computer: modelAnswers.Computer ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Computer) / 20)))) : (savedScores.Technology ? '5' : previous.Computer),
-        Communication: modelAnswers.Communication ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Communication) / 20)))) : previous.Communication,
-        Leadership: modelAnswers.Leadership ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Leadership) / 20)))) : previous.Leadership,
-        Matric: savedProfile.marks === null || savedProfile.marks === undefined ? previous.Matric : String(savedProfile.marks),
-        Inter: savedProfile.intermediate_marks || savedProfile.intermediateMarks || previous.Inter,
-        Background: savedProfile.intermediate_group || savedProfile.intermediateGroup || previous.Background,
-        City: savedProfile.city || previous.City,
-        Interests: savedProfile.interests || previous.Interests,
-      }));
+      const interestDefaults = getInterestDefaults(savedProfile.interests || savedProfile.Interests);
+
+      // Determine smart scores from model quiz OR general quiz scores OR interest defaults
+      const calcMath = modelAnswers.Math 
+        ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Math) / 20)))) 
+        : (savedScores.Technology ? '4' : (interestDefaults.Math || '3'));
+
+      const calcBiology = modelAnswers.Biology 
+        ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Biology) / 20)))) 
+        : (savedScores.Medical ? '5' : (interestDefaults.Biology || '2'));
+
+      const calcComputer = modelAnswers.Computer 
+        ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Computer) / 20)))) 
+        : (savedScores.Technology ? '5' : (interestDefaults.Computer || '4'));
+
+      const calcCommunication = modelAnswers.Communication 
+        ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Communication) / 20)))) 
+        : (savedScores.Arts || savedScores.SocialSciences || savedScores.Business ? '4' : (interestDefaults.Communication || '3'));
+
+      const calcLeadership = modelAnswers.Leadership 
+        ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Leadership) / 20)))) 
+        : (savedScores.Business ? '5' : (interestDefaults.Leadership || '3'));
+
+      const calcMatric = savedProfile.marks !== null && savedProfile.marks !== undefined && String(savedProfile.marks).trim() !== ''
+        ? String(savedProfile.marks)
+        : (modelAnswers.Marks ? String(modelAnswers.Marks) : '85');
+
+      const calcInter = savedProfile.intermediate_marks || savedProfile.intermediateMarks || '80';
+      const calcBackground = savedProfile.intermediate_group || savedProfile.intermediateGroup || modelAnswers.Background || 'Pre-Engineering';
+      const calcCity = (savedProfile.city && ["Lahore", "Islamabad"].includes(savedProfile.city)) ? savedProfile.city : (savedProfile.city || 'Islamabad');
+      const calcInterests = savedProfile.interests || "I enjoy technology, solving logical problems, and building modern software applications.";
+
+      setFormData({
+        Math: calcMath,
+        Biology: calcBiology,
+        Computer: calcComputer,
+        Communication: calcCommunication,
+        Leadership: calcLeadership,
+        Matric: calcMatric,
+        Inter: calcInter,
+        Background: calcBackground,
+        City: calcCity,
+        Interests: calcInterests,
+      });
+
       setProfileLoaded(true);
     }
 
@@ -638,6 +741,7 @@ function UniversityRecommender() {
       setAutoSubmitted(true);
       void handleSubmit({ preventDefault: () => {} });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSubmitted, formData, loading, profileLoaded]);
 
   const handleClearForm = () => {
@@ -657,14 +761,25 @@ function UniversityRecommender() {
       fontFamily: "var(--font-body)",
       background: "var(--bg)"
     }}>
-      <button type="button" onClick={() => navigate('/result')} style={{ position: "fixed", top: "82px", left: "16px", zIndex: 5, padding: "9px 14px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)" }}>
-        ← Back to results
-      </button>
+      <div style={{ position: "fixed", top: "76px", left: "16px", zIndex: 10, display: "flex", gap: "8px" }}>
+        <button type="button" onClick={() => navigate('/result')} style={{ padding: "8px 14px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontWeight: 600, cursor: "pointer" }}>
+          ← Back to results
+        </button>
+        <button type="button" onClick={() => navigate('/scholarships')} style={{ padding: "8px 14px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontWeight: 600, cursor: "pointer" }}>
+          🎓 Scholarships
+        </button>
+        <button type="button" onClick={() => navigate('/profile')} style={{ padding: "8px 14px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontWeight: 600, cursor: "pointer" }}>
+          Saved in Profile
+        </button>
+        <button type="button" onClick={() => navigate('/dashboard')} style={{ padding: "8px 14px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontWeight: 600, cursor: "pointer" }}>
+          📊 Dashboard
+        </button>
+      </div>
 
       {/* ── LEFT PANEL ── */}
       <div style={{
         width: "50%",
-        padding: "70px 28px 32px 28px",
+        padding: "85px 28px 32px 28px",
         background: "var(--bg)",
         overflowY: "auto",
         borderRight: "2px solid var(--border)"
@@ -680,6 +795,9 @@ function UniversityRecommender() {
                 Pakistan University Recommender
               </span>
             </h1>
+          </div>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(45, 122, 79, 0.12)', border: '1px solid #2d7a4f', borderRadius: '6px', padding: '4px 10px', fontSize: '12px', color: '#2d7a4f', fontWeight: 600, marginTop: '4px', marginBottom: '8px' }}>
+            ✓ Auto-populated from your Profile &amp; Quiz results
           </div>
           <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.6 }}>
             Answer the questions below based on your interests and academic performance to receive personalised university recommendations.
@@ -907,6 +1025,11 @@ function UniversityRecommender() {
                   {result.reasons.map((r, i) => <li key={i}>{r}</li>)}
                 </ul>
               )}
+              {result.city_notice && (
+                <p style={{ fontSize: "12.5px", color: "var(--accent-dk)", marginTop: "8px", background: "var(--accent-lt)", padding: "6px 12px", borderRadius: "6px" }}>
+                  ℹ️ {result.city_notice}
+                </p>
+              )}
               {result.matched_field && result.matched_field !== result.career && (
                 <p style={{ fontSize: "12.5px", color: "var(--text-muted)", marginTop: "10px" }}>
                   We don't have {result.career} programs in our university database yet —
@@ -945,138 +1068,195 @@ function UniversityRecommender() {
               </div>
             )}
 
-            {/* Subtitle */}
-            {result.universities && result.universities.length > 0 && (
-              <p style={{ fontSize: "13px", color: "var(--text-muted)", margin: "16px 0 4px" }}>
-                <strong style={{ color: "var(--text)" }}>{result.universities.length}</strong> matched universities found
-              </p>
-            )}
-
-            {/* University Cards */}
-            {result.universities && result.universities.map((uni, i) => (
-              <div className="uni-card" key={i}>
-
-                <div className="rank-badge">#{i + 1}</div>
-
-                <h4> {uni.University}</h4>
-
-                <div className="uni-meta">
-                  <span className="uni-tag"> {uni.Program}</span>
-                  <span className="uni-tag"> {uni.City}</span>
-
-                  <span
-                    className={`eligible-badge ${uni.eligibility === "Eligible"
-                        ? "yes"
-                        : uni.eligibility === "Not Eligible"
-                          ? "no"
-                          : "unknown"
-                      }`}
-                  >
-                    {uni.eligibility === "Eligible"
-                      ? "✓ Eligible"
-                      : uni.eligibility === "Not Eligible"
-                        ? "✗ Not Eligible"
-                        : "Merit not listed"}
-                  </span>
-                </div>
-
-                <div className="marks-row">
-                  <span>
-                    <strong>Your Marks:</strong>{" "}
-                    {uni.your_marks}%
-                  </span>
-
-                  <span>•</span>
-
-                  <span>
-                    <strong>Required Merit:</strong>{" "}
-                    {uni.Merit}%
-                  </span>
-                </div>
-
-                {/* Eligibility Progress Bar */}
-                {uni.your_marks && uni.Merit && (
-                  <>
-                    <div className="merit-meter">
-                      <div
-                        className="merit-fill"
-                        style={{
-                          width: `${Math.min(
-                            (uni.your_marks / uni.Merit) * 100,
-                            100
-                          )}%`,
-                        }}
-                      />
-                    </div>
-
-                    <p className="merit-label">
-                      {uni.your_marks >= uni.Merit
-                        ? "✓ Above merit requirement"
-                        : `${Math.round(
-                          uni.Merit - uni.your_marks
-                        )} points needed`}
+            {/* Subtitle & City Filter */}
+            {result.universities && result.universities.length > 0 && (() => {
+              // eslint-disable-next-line no-unused-expressions
+              bookmarkTick;
+              const allCities = [...new Set(result.universities.map((u) => u.City).filter(Boolean))];
+              const displayed = result.universities.filter((uni) => {
+                if (!resultCityFilter) return true;
+                return String(uni.City || "").toLowerCase().includes(resultCityFilter.toLowerCase());
+              });
+              return (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "16px 0 10px", flexWrap: "wrap", gap: "8px" }}>
+                    <p style={{ fontSize: "13px", color: "var(--text-muted)", margin: 0 }}>
+                      <strong style={{ color: "var(--text)" }}>{displayed.length}</strong> of {result.universities.length} matched universities
                     </p>
-                  </>
-                )}
+                    {allCities.length > 1 && (
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <label htmlFor="filter-uni-city" style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-muted)" }}>Filter by City:</label>
+                        <select
+                          id="filter-uni-city"
+                          value={resultCityFilter}
+                          onChange={(e) => setResultCityFilter(e.target.value)}
+                          style={{
+                            padding: "4px 8px",
+                            borderRadius: "6px",
+                            border: "1px solid var(--border)",
+                            background: "var(--bg-card)",
+                            color: "var(--text)",
+                            fontSize: "12px",
+                            fontWeight: 500,
+                          }}
+                        >
+                          <option value="">All Cities</option>
+                          {allCities.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
 
-                <p
-                  style={{
-                    fontSize: "13px",
-                    color: "var(--text-muted)",
-                    marginTop: "6px",
-                  }}
-                >
-                  <strong style={{ color: "var(--text)" }}>
-                    Requirements:
-                  </strong>{" "}
-                  {uni.requirements}
-                </p>
+                  {displayed.map((uni, i) => {
+                    const isSaved = isUniSaved(uni);
+                    return (
+                      <div className="uni-card" key={i}>
+                        <div className="rank-badge">#{i + 1}</div>
 
-                <div className="uni-links">
-                  <a
-                    href={uni.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="uni-link primary"
-                  >
-                    Official Website
-                  </a>
+                        <h4> {uni.University}</h4>
 
-                  <a
-                    href={uni.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="uni-link primary"
-                  >
-                    Apply Now →
-                  </a>
-                </div>
+                        <div className="uni-meta">
+                          <span className="uni-tag"> {uni.Program}</span>
+                          <span className="uni-tag"> {uni.City}</span>
 
-                {uni.guidance && uni.guidance.length > 0 && (
-                  <>
-                    <p
-                      style={{
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        color: "var(--text-muted)",
-                        marginTop: "12px",
-                        textTransform: "uppercase",
-                        letterSpacing: ".05em",
-                      }}
-                    >
-                      Guidance
-                    </p>
+                          <span
+                            className={`eligible-badge ${uni.eligibility === "Eligible"
+                                ? "yes"
+                                : uni.eligibility === "Not Eligible"
+                                  ? "no"
+                                  : "unknown"
+                              }`}
+                          >
+                            {uni.eligibility === "Eligible"
+                              ? "✓ Eligible"
+                              : uni.eligibility === "Not Eligible"
+                                ? "✗ Not Eligible"
+                                : "Merit not listed"}
+                          </span>
+                        </div>
 
-                    <ul className="guidance-list">
-                      {uni.guidance.map((g, idx) => (
-                        <li key={idx}>{g}</li>
-                      ))}
-                    </ul>
-                  </>
-                )}
+                        <div className="marks-row">
+                          <span>
+                            <strong>Your Marks:</strong>{" "}
+                            {uni.your_marks}%
+                          </span>
 
-              </div>
-            ))}
+                          <span>•</span>
+
+                          <span>
+                            <strong>Required Merit:</strong>{" "}
+                            {uni.Merit}%
+                          </span>
+                        </div>
+
+                        {/* Eligibility Progress Bar */}
+                        {uni.your_marks && uni.Merit && (
+                          <>
+                            <div className="merit-meter">
+                              <div
+                                className="merit-fill"
+                                style={{
+                                  width: `${Math.min(
+                                    (uni.your_marks / uni.Merit) * 100,
+                                    100
+                                  )}%`,
+                                }}
+                              />
+                            </div>
+
+                            <p className="merit-label">
+                              {uni.your_marks >= uni.Merit
+                                ? "✓ Above merit requirement"
+                                : `${Math.round(
+                                  uni.Merit - uni.your_marks
+                                )} points needed`}
+                            </p>
+                          </>
+                        )}
+
+                        <p
+                          style={{
+                            fontSize: "13px",
+                            color: "var(--text-muted)",
+                            marginTop: "6px",
+                          }}
+                        >
+                          <strong style={{ color: "var(--text)" }}>
+                            Requirements:
+                          </strong>{" "}
+                          {uni.requirements}
+                        </p>
+
+                        <div className="uni-links">
+                          <a
+                            href={uni.link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="uni-link primary"
+                          >
+                            Official Website
+                          </a>
+
+                          <a
+                            href={uni.link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="uni-link primary"
+                          >
+                            Apply Now →
+                          </a>
+
+                          <button
+                            type="button"
+                            onClick={() => handleToggleUniBookmark(uni)}
+                            className="uni-link"
+                            style={{
+                              border: isSaved ? "1.5px solid var(--accent)" : "1.5px solid var(--border)",
+                              background: isSaved ? "var(--accent-lt)" : "var(--bg-card)",
+                              color: isSaved ? "var(--accent-dk)" : "var(--text)",
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "5px"
+                            }}
+                            title={isSaved ? "Remove from saved opportunities in profile" : "Save university to Profile"}
+                          >
+                            <span>{isSaved ? "★" : "☆"}</span>
+                            <span>{isSaved ? "Saved" : "Save"}</span>
+                          </button>
+                        </div>
+
+                        {uni.guidance && uni.guidance.length > 0 && (
+                          <>
+                            <p
+                              style={{
+                                fontSize: "12px",
+                                fontWeight: 600,
+                                color: "var(--text-muted)",
+                                marginTop: "12px",
+                                textTransform: "uppercase",
+                                letterSpacing: ".05em",
+                              }}
+                            >
+                              Guidance
+                            </p>
+
+                            <ul className="guidance-list">
+                              {uni.guidance.map((g, idx) => (
+                                <li key={idx}>{g}</li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </>
+              );
+            })()}
 
             {/* Scholarship Recommendations */}
 
@@ -1110,7 +1290,14 @@ function UniversityRecommender() {
                       </div>
 
                       {result.pakistan_scholarships.map((scholarship, index) => (
-                        <ScholarshipCard key={index} scholarship={scholarship} index={index} yourMerit={yourMerit} />
+                        <ScholarshipCard
+                          key={index}
+                          scholarship={scholarship}
+                          index={index}
+                          yourMerit={yourMerit}
+                          isSaved={isScholarshipSaved(scholarship)}
+                          onToggleBookmark={handleToggleScholarshipBookmark}
+                        />
                       ))}
                     </div>
                   )}
@@ -1138,7 +1325,14 @@ function UniversityRecommender() {
                       </div>
 
                       {result.international_scholarships.map((scholarship, index) => (
-                        <ScholarshipCard key={index} scholarship={scholarship} index={index} yourMerit={yourMerit} />
+                        <ScholarshipCard
+                          key={index}
+                          scholarship={scholarship}
+                          index={index}
+                          yourMerit={yourMerit}
+                          isSaved={isScholarshipSaved(scholarship)}
+                          onToggleBookmark={handleToggleScholarshipBookmark}
+                        />
                       ))}
                     </div>
                   )}

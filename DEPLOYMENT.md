@@ -18,7 +18,7 @@ This project deploys across two free services (no credit card required for eithe
 - **Root Directory**: `backend`
 - **Start command**: comes from `backend/Procfile` (`web: gunicorn app:app`)
 - **Environment variables** (set in Zeabur → Variables):
-  - `ADMIN_EMAIL`
+  - `ADMIN_USERNAME`
   - `ADMIN_PASSWORD`
   - `SUPABASE_URL`
   - `SUPABASE_SERVICE_ROLE_KEY`
@@ -54,7 +54,7 @@ Access: http://localhost:3000
 - **Frontend**: 
 - **Backend API**: 
 - **Admin Login**: `[Frontend URL]/admin/login`
-  - Email: set via `ADMIN_EMAIL`
+  - Username: set via `ADMIN_USERNAME`
   - Password: set via `ADMIN_PASSWORD` (keep this long and random — it's a plain string comparison, not hashed)
 
 ## Known limitations (expected on free tiers, fine for a demo)

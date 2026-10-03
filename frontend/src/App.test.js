@@ -3,7 +3,8 @@ import App from './App';
 
 test('renders the modern landing page', () => {
   render(<App />);
-  expect(screen.getByText(/CareerGuide/i)).toBeInTheDocument();
-  expect(screen.getByText(/Know yourself\. Choose your path\. Own your future\./i)).toBeInTheDocument();
-  expect(screen.getByText(/AI-powered assessment/i)).toBeInTheDocument();
+  expect(screen.getAllByText(/CareerGuide/i)[0]).toBeInTheDocument();
+  expect(screen.getByText(/Comprehensive assessment that goes beyond/i)).toBeInTheDocument();
+  expect(screen.getByText(/Personalized assessment/i)).toBeInTheDocument();
+  expect(screen.getByText(/AI-powered matching/i)).toBeInTheDocument();
 });
