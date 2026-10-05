@@ -783,5 +783,66 @@
       "email": "john@gmail.com"
     },
     "createdAt": "2026-10-03T14:31:24Z"
+  },
+  {
+    "id": "3c314705a8436ce9",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "a72b0ad95509ebe78a28b1f1",
+      "email": "johnnn@gmail.com"
+    },
+    "createdAt": "2026-10-05T08:35:54Z"
+  },
+  {
+    "id": "c80c2fb6c100b3da",
+    "type": "admin_user_deleted",
+    "details": {
+      "userId": "a72b0ad95509ebe78a28b1f1"
+    },
+    "createdAt": "2026-10-05T08:36:27Z"
+  },
+  {
+    "id": "7f18c77f5ae09e38",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "0a4e2f64ad9a6467b4282810",
+      "email": "john@gmail.com"
+    },
+    "createdAt": "2026-10-05T08:39:56Z"
+  },
+  {
+    "id": "bb6417c75d858890",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "0a4e2f64ad9a6467b4282810",
+      "email": "john@gmail.com"
+    },
+    "createdAt": "2026-10-05T08:43:17Z"
+  },
+  {
+    "id": "200092be7095bcd4",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "0a4e2f64ad9a6467b4282810",
+      "email": "john@gmail.com"
+    },
+    "createdAt": "2026-10-05T08:43:20Z"
+  },
+  {
+    "id": "a5cb6c2ac69e7a5a",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "0a4e2f64ad9a6467b4282810",
+      "email": "john@gmail.com"
+    },
+    "createdAt": "2026-10-05T08:43:28Z"
+  },
+  {
+    "id": "b437022e2be6bcca",
+    "type": "admin_user_deleted",
+    "details": {
+      "userId": "0a4e2f64ad9a6467b4282810"
+    },
+    "createdAt": "2026-10-05T08:43:37Z"
   }
 ]

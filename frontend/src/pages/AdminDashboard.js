@@ -783,8 +783,23 @@ function AdminDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: user.name, email: user.email, blocked: nextBlocked }),
       });
-      setUsers(users.map((entry) => (entry.id === user.id ? result.user : entry)));
+      setUsers((prevUsers) => prevUsers.map((entry) => (entry.id === user.id ? result.user : entry)));
       setNotice(`User ${user.name || user.email} is now ${nextBlocked ? 'blocked' : 'active'}.`);
+    } catch (toggleError) {
+      setError(toggleError.message);
+    }
+  };
+
+  const toggleUserVerified = async (user) => {
+    try {
+      const nextVerified = !user.emailConfirmed;
+      const result = await api(`/api/admin/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: user.name, email: user.email, emailConfirmed: nextVerified }),
+      });
+      setUsers((prevUsers) => prevUsers.map((entry) => (entry.id === user.id ? result.user : entry)));
+      setNotice(`User ${user.name || user.email} is now ${nextVerified ? 'verified' : 'unverified'}.`);
     } catch (toggleError) {
       setError(toggleError.message);
     }
@@ -798,7 +813,7 @@ function AdminDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...editingUser, emailConfirmed: Boolean(editingUser.emailConfirmed) }),
       });
-      setUsers(users.map((user) => (user.id === result.user.id ? result.user : user)));
+      setUsers((prevUsers) => prevUsers.map((user) => (user.id === result.user.id ? result.user : user)));
       setEditingUser(null);
       setNotice('User updated successfully.');
     } catch (saveError) {
@@ -810,7 +825,7 @@ function AdminDashboard() {
     if (!window.confirm(`Delete the account for ${user.email}? This cannot be undone.`)) return;
     try {
       await api(`/api/admin/users/${user.id}`, { method: 'DELETE' });
-      setUsers(users.filter((entry) => entry.id !== user.id));
+      setUsers((prevUsers) => prevUsers.filter((entry) => entry.id !== user.id));
       setNotice('User deleted successfully.');
     } catch (deleteError) {
       setError(deleteError.message);
@@ -872,7 +887,16 @@ function AdminDashboard() {
                       <td>{user.name}</td>
                       <td>{user.email}</td>
                       <td>{user.authProvider}</td>
-                      <td><StatusPill tone={user.emailConfirmed ? 'good' : 'muted'}>{user.emailConfirmed ? 'Verified' : 'Unverified'}</StatusPill></td>
+                      <td>
+                        <button 
+                          className={`admin-action admin-action--toggle ${user.emailConfirmed ? 'admin-action--good' : ''}`}
+                          style={{ minWidth: '90px' }}
+                          type="button" 
+                          onClick={() => toggleUserVerified(user)}
+                        >
+                          {user.emailConfirmed ? 'Verified' : 'Unverified'}
+                        </button>
+                      </td>
                       <td>{formatDateTime(user.lastSignInAt)}</td>
                       <td><StatusPill tone={user.blocked ? 'warn' : 'good'}>{user.blocked ? 'Blocked' : 'Active'}</StatusPill></td>
                       <td>

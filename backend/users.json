@@ -61,27 +61,5 @@
     "securityQuestion": "What is your pet's name?",
     "securityAnswerHash": "95d9daee3b0998effd79f11fe4509bc010931002ee4e2ee0b736de1f8a6ae7f7",
     "authProvider": "local"
-  },
-  {
-    "id": "0a4e2f64ad9a6467b4282810",
-    "name": "john",
-    "email": "john@gmail.com",
-    "passwordHash": "0a4505a0e45a09c206e69495db0c1a670b0a6f83aa314caf82e29210c248eac4",
-    "securityQuestion": "What is your favorite childhood nickname?",
-    "securityAnswerHash": "7c1a4a1d4b462cb7b767e6d653440877683f11b5c1b069717c1fe75b5fc605ab",
-    "authProvider": "local",
-    "blocked": true,
-    "emailConfirmed": false
-  },
-  {
-    "id": "a72b0ad95509ebe78a28b1f1",
-    "name": "BBBB",
-    "email": "johnnn@gmail.com",
-    "passwordHash": "c79689c454b5f563fa9053002d199c586c4439a27a44b9d8d03c20860cabb1a7",
-    "securityQuestion": "What is the name of your first school?",
-    "securityAnswerHash": "3608bca1e44ea6c4d268eb6db02260269892c0b42b86bbf1e77a6fa16c3c9282",
-    "authProvider": "local",
-    "blocked": false,
-    "emailConfirmed": true
   }
 ]
