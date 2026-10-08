@@ -16,14 +16,12 @@ from urllib.error import HTTPError
 
 app = Flask(__name__)
 
-# Only allow requests from your actual frontend(s), not every website.
-# Set FRONTEND_URL on your hosting platform once you have your live Vercel URL
-# (e.g. https://career-counselling.vercel.app) -- no code change needed to update it.
-_allowed_origins = ["http://localhost:3000"]
+# Allow requests from localhost, configured FRONTEND_URL, and Vercel deployments
+_allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
 _frontend_url = os.environ.get("FRONTEND_URL", "").strip().rstrip("/")
 if _frontend_url:
     _allowed_origins.append(_frontend_url)
-CORS(app, origins=_allowed_origins)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=False)
 
 # Get backend directory path
 backend_dir = Path(__file__).resolve().parent
@@ -1433,6 +1431,21 @@ def get_scholarships():
         return jsonify({
             "error": str(e)
         })
+
+
+@app.errorhandler(404)
+def handle_404(e):
+    return jsonify({"message": "Resource or endpoint not found on the backend."}), 404
+
+
+@app.errorhandler(405)
+def handle_405(e):
+    return jsonify({"message": "Method not allowed for this endpoint."}), 405
+
+
+@app.errorhandler(500)
+def handle_500(e):
+    return jsonify({"message": "Internal server error occurred on backend."}), 500
 
 
 if __name__ == "__main__":
