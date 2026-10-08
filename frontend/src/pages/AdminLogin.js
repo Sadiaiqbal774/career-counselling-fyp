@@ -73,9 +73,6 @@ function AdminLogin() {
               placeholder="Enter admin password"
             />
           </div>
-          <p className="admin-login-note">
-            Notice: Administrator access requires a system <strong>Username</strong> (not an email address).
-          </p>
           {error && <p className="admin-error" role="alert">{error}</p>}
           <button className="primary-button admin-submit-btn" type="submit" disabled={loading}>
             <span className="admin-nowrap">{loading ? 'Signing in...' : 'Sign in as admin'}</span>

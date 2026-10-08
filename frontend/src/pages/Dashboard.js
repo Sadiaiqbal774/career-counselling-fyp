@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getEmptyScores } from '../data/quizData';
 import { getProfileCompletion, readUserProfile, readUserQuizData } from '../data/userData';
+import './Dashboard.css';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -12,11 +13,12 @@ function Dashboard() {
   const profileEmail = currentUser?.email || 'No email available';
   const profile = useMemo(() => readUserProfile(currentUser?.id), [currentUser?.id]);
   const profileCompletion = getProfileCompletion(profile);
+
+  // Stored scores with fallback to guest
   const storedScores = useMemo(() => {
     try {
       const userData = readUserQuizData(currentUser?.id);
       if (userData && userData.scores) return userData.scores;
-      // fallback to guest data
       const guestData = readUserQuizData('guest');
       return guestData ? guestData.scores : null;
     } catch {
@@ -26,174 +28,314 @@ function Dashboard() {
 
   const storedTopCategories = useMemo(() => {
     try {
-      return readUserQuizData(currentUser?.id).topCategories;
+      const userData = readUserQuizData(currentUser?.id);
+      if (userData && userData.topCategories) return userData.topCategories;
+      const guestData = readUserQuizData('guest');
+      return guestData ? guestData.topCategories : null;
     } catch {
       return null;
     }
   }, [currentUser?.id]);
 
   const hasQuizResults = Boolean(storedScores);
-  const scoreValues = storedScores ? Object.values(storedScores).map((value) => Number(value) || 0) : Object.values(getEmptyScores());
-  const totalScore = scoreValues.reduce((sum, value) => sum + value, 0);
-  // General quiz (8 questions x 5) + specific quiz (4 questions x 5) = 60 max
+  const scoreValues = storedScores ? Object.values(storedScores).map((v) => Number(v) || 0) : Object.values(getEmptyScores());
+  const totalScore = scoreValues.reduce((sum, v) => sum + v, 0);
   const maxScore = 60;
   const assessmentProgress = hasQuizResults
     ? Math.min(100, Math.round((totalScore / maxScore) * 100))
     : 0;
   const savedPathsCount = hasQuizResults ? Math.max(1, storedTopCategories?.length || 0) : 0;
-  const recommendedUniversitiesCount = hasQuizResults ? Math.max(3, savedPathsCount * 3) : 0;
+  const recommendedUniversitiesCount = hasQuizResults ? Math.max(3, savedPathsCount * 4) : 0;
+  const topMatchedCategory = storedTopCategories && storedTopCategories.length > 0 ? storedTopCategories[0] : null;
 
-  const dashboardMetrics = useMemo(
-    () => [
-      {
-        label: 'Assessment progress',
-        value: `${assessmentProgress}%`,
-        hint: hasQuizResults
-          ? 'Based on your saved quiz performance.'
-          : 'Take the quiz to generate your first result.',
-      },
-      {
-        label: 'Saved paths',
-        value: String(savedPathsCount),
-        hint: hasQuizResults
-          ? 'Career matches stored from your quiz results.'
-          : 'No saved career matches yet.',
-      },
-      {
-        label: 'Recommended universities',
-        value: String(recommendedUniversitiesCount),
-        hint: hasQuizResults
-          ? 'Universities aligned with your current performance.'
-          : 'Complete the assessment to see recommendations.',
-      },
-    ],
-    [assessmentProgress, hasQuizResults, recommendedUniversitiesCount, savedPathsCount],
-  );
-
-  const recommendedPaths = [
-    {
-      title: 'Career fit analysis',
-      description: 'Review your quiz results and compare how your interests map to technology, business, or medical pathways.',
-      // action/onClick will be set below to reflect whether the user has saved scores
-      action: '',
-      onClick: null,
-    },
-    {
-      title: 'University shortlist',
-      description: 'Compare programs, merit requirements, and degree options before you apply to a university.',
-      action: 'Open university recommender',
-      onClick: () => navigate('/university-recommender'),
-    },
-    {
-      title: 'Scholarship opportunities',
-      description: 'Check available scholarships to reduce cost and plan your application timeline more effectively.',
-      action: 'Browse scholarships',
-      onClick: () => navigate('/scholarships'),
-    },
-  ];
+  const handleOpenChatbot = () => {
+    const toggle = document.querySelector('.chatbot-toggle');
+    if (toggle) {
+      toggle.click();
+    } else {
+      navigate('/general-quiz');
+    }
+  };
 
   return (
-    <main className="cg-dashboard">
-      <div className="cg-dashboard__wrap">
-        <section className="cg-dashboard__top">
-          <article className="cg-card cg-dashboard__welcome">
+    <main className="cg-dashboard-page">
+      <div className="cg-dashboard-wrap">
+        {/* ========================================================
+            1. TOP SPLIT: WELCOME & PROFILE
+        ======================================================== */}
+        <section className="cg-dashboard-hero-row">
+          <div className="cg-dashboard-welcome-box">
             <p className="cg-eyebrow">CAREER COUNSELLING WORKSPACE</p>
-            <h1 className="cg-dashboard__welcome-title">Welcome, {firstName}.</h1>
-            <p className="cg-dashboard__welcome-body">
+            <h1 className="cg-welcome-heading">Welcome, {firstName}.</h1>
+            <p className="cg-welcome-text">
               Your dashboard brings together career match insights, next steps, and university suggestions in one place.
             </p>
-            <div className="cg-dashboard__chips">
-              <span className="cg-chip">Career guidance</span>
-              <span className="cg-chip">University planning</span>
-              <span className="cg-chip">Scholarship support</span>
+            <div className="cg-chips-row">
+              <span className="cg-badge-chip">Career guidance</span>
+              <span className="cg-badge-chip">University planning</span>
+              <span className="cg-badge-chip">Scholarship support</span>
+              <span className="cg-badge-chip">Aptitude assessment</span>
             </div>
-          </article>
 
-          <aside className="cg-card cg-dashboard__profile">
-            <div className="cg-dashboard__profile-top">
-              <div className="cg-dashboard__avatar" aria-hidden="true">
+            {/* Quick Actions Bar */}
+            <div className="cg-quick-actions-bar">
+              <button
+                type="button"
+                className="cg-action-btn cg-action-btn--primary"
+                onClick={() => navigate('/result')}
+              >
+                📊 View results
+              </button>
+              <button
+                type="button"
+                className="cg-action-btn cg-action-btn--secondary"
+                onClick={() => navigate('/general-quiz')}
+              >
+                {hasQuizResults ? '↻ Retake quiz' : '🚀 Take quiz'}
+              </button>
+              <button
+                type="button"
+                className="cg-action-btn cg-action-btn--ghost"
+                onClick={() => navigate('/university-recommender')}
+              >
+                🏛️ Universities
+              </button>
+              <button
+                type="button"
+                className="cg-action-btn cg-action-btn--ghost"
+                onClick={() => navigate('/scholarships')}
+              >
+                🎓 Scholarships
+              </button>
+            </div>
+          </div>
+
+          <aside className="cg-dashboard-profile-box">
+            <div className="cg-profile-header">
+              <div className="cg-avatar-circle" aria-hidden="true">
                 {firstName.charAt(0).toUpperCase()}
               </div>
-              <div className="cg-dashboard__profile-id">
-                <div className="cg-dashboard__profile-name">{studentName}</div>
-                <div className="cg-dashboard__profile-email">{profileEmail}</div>
+              <div className="cg-profile-details">
+                <div className="cg-profile-name">{studentName}</div>
+                <div className="cg-profile-email">{profileEmail}</div>
               </div>
             </div>
 
-            <div className="cg-dashboard__completion">
+            <div className="cg-profile-completion-row">
               <span>Profile completion</span>
-              <span>{profileCompletion}%</span>
+              <strong>{profileCompletion}%</strong>
             </div>
-            <div className="cg-dashboard__progress">
-              <span className="cg-dashboard__progress-fill" style={{ width: `${profileCompletion}%` }} />
+            <div className="cg-profile-meter">
+              <div className="cg-profile-meter-fill" style={{ width: `${profileCompletion}%` }} />
             </div>
-            <p className="cg-dashboard__hint">
-              Complete the quiz and explore your recommended universities to refine your plan.
+            <p className="cg-profile-hint">
+              {profileCompletion === 100
+                ? 'Your academic profile is fully up-to-date.'
+                : 'Complete the quiz and explore your recommended universities to refine your plan.'}
             </p>
             <button
               type="button"
-              className="cg-btn-primary"
+              className="cg-btn-edit-profile"
               onClick={() => navigate('/profile')}
-              style={{ marginTop: 16, width: '100%' }}
             >
-              Edit profile
+              Edit profile ✏️
             </button>
           </aside>
         </section>
 
-        <section className="cg-dashboard__metrics">
-          {dashboardMetrics.map((metric, index) => (
-            <article
-              key={metric.label}
-              className={`cg-card cg-dashboard__metric cg-dashboard__metric--${index}`}
-            >
-              <div className="cg-dashboard__metric-label">{metric.label}</div>
-              <div className="cg-dashboard__metric-value">{metric.value}</div>
-              <div className="cg-dashboard__metric-hint">{metric.hint}</div>
-            </article>
-          ))}
+        {/* ========================================================
+            2. HIGHLIGHT BANNER IF RESULTS EXIST
+        ======================================================== */}
+        {hasQuizResults && (
+          <section className="cg-results-highlight-card">
+            <div className="cg-highlight-left">
+              <span className="cg-highlight-icon">🎯</span>
+              <div>
+                <span className="cg-highlight-tag">LATEST ASSESSMENT REPORT</span>
+                <h3 className="cg-highlight-title">
+                  Top Matched Stream: {topMatchedCategory} ({assessmentProgress}% Compatibility)
+                </h3>
+                <p className="cg-highlight-desc">
+                  Your quiz responses have been analyzed. Explore your detailed radar chart, degree compatibility, and admission merit cutoff benchmarks.
+                </p>
+              </div>
+            </div>
+            <div className="cg-highlight-actions">
+              <button
+                type="button"
+                className="cg-highlight-btn-primary"
+                onClick={() => navigate('/result')}
+              >
+                View results breakdown →
+              </button>
+              <button
+                type="button"
+                className="cg-highlight-btn-secondary"
+                onClick={() => navigate('/general-quiz')}
+              >
+                Retake quiz
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* ========================================================
+            3. CORE METRIC CARDS
+        ======================================================== */}
+        <section className="cg-metrics-grid">
+          <div className="cg-metric-card cg-metric-card--0">
+            <div className="cg-metric-top">
+              <span className="cg-metric-label">Assessment progress</span>
+              <span className="cg-metric-icon">📝</span>
+            </div>
+            <div className="cg-metric-value">{assessmentProgress}%</div>
+            <div className="cg-metric-hint">
+              {hasQuizResults ? 'Based on your saved quiz performance.' : 'Take the quiz to generate your first result.'}
+            </div>
+          </div>
+
+          <div className="cg-metric-card cg-metric-card--1">
+            <div className="cg-metric-top">
+              <span className="cg-metric-label">Saved paths</span>
+              <span className="cg-metric-icon">🧭</span>
+            </div>
+            <div className="cg-metric-value">{savedPathsCount}</div>
+            <div className="cg-metric-hint">
+              {hasQuizResults ? 'Career matches stored from your quiz results.' : 'No saved career matches yet.'}
+            </div>
+          </div>
+
+          <div className="cg-metric-card cg-metric-card--2">
+            <div className="cg-metric-top">
+              <span className="cg-metric-label">Recommended universities</span>
+              <span className="cg-metric-icon">🏛️</span>
+            </div>
+            <div className="cg-metric-value">{recommendedUniversitiesCount || '50+'}</div>
+            <div className="cg-metric-hint">
+              {hasQuizResults ? 'Universities aligned with your current performance.' : 'Complete the assessment to see recommendations.'}
+            </div>
+          </div>
+
+          <div className="cg-metric-card cg-metric-card--3">
+            <div className="cg-metric-top">
+              <span className="cg-metric-label">Available scholarships</span>
+              <span className="cg-metric-icon">💰</span>
+            </div>
+            <div className="cg-metric-value">100+</div>
+            <div className="cg-metric-hint">Verified HEC, PEEF & Merit financial aid.</div>
+          </div>
         </section>
 
-        <section className="cg-dashboard__steps">
+        {/* ========================================================
+            4. RECOMMENDED NEXT STEPS (ACTION ROWS)
+        ======================================================== */}
+        <section className="cg-steps-section">
           <p className="cg-eyebrow cg-center">RECOMMENDED NEXT STEPS</p>
-          <h2 className="cg-dashboard__steps-title">Continue your guidance journey</h2>
+          <h2 className="cg-steps-heading">Continue your guidance journey</h2>
 
-          <div className="cg-dashboard__steps-list">
-            {recommendedPaths.map((item) => {
-              // derive dynamic action for the career item if not set
-              if (item.title === 'Career fit analysis') {
-                const hasScores = hasQuizResults;
-
-                item.action = hasScores ? 'View results' : 'Take quiz';
-                item.onClick = () => navigate(hasScores ? '/result' : '/general-quiz');
-              }
-
-              return (
-                <article key={item.title} className="cg-card cg-dashboard__step">
-                  <div className="cg-dashboard__step-left">
-                    <div
-                      className={`cg-dashboard__iconbox ${
-                        item.title === 'Career fit analysis'
-                          ? 'cg-dashboard__iconbox--career'
-                          : item.title === 'University shortlist'
-                            ? 'cg-dashboard__iconbox--university'
-                            : 'cg-dashboard__iconbox--scholarship'
-                      }`}
-                      aria-hidden="true"
-                    >
-                      {item.title === 'Career fit analysis' ? '↻' : item.title === 'University shortlist' ? '⌂' : '★'}
-                    </div>
-                    <div>
-                      <div className="cg-dashboard__step-title">{item.title}</div>
-                      <div className="cg-dashboard__step-desc">{item.description}</div>
-                    </div>
+          <div className="cg-steps-list">
+            {/* Step 1: Career fit analysis */}
+            <div className="cg-step-card">
+              <div className="cg-step-left">
+                <div className="cg-step-iconbox cg-step-iconbox--career" aria-hidden="true">
+                  <span>↻</span>
+                </div>
+                <div className="cg-step-copy">
+                  <div className="cg-step-title">Career fit analysis</div>
+                  <div className="cg-step-desc">
+                    Review your quiz results and compare how your interests map to technology, business, or medical pathways.
                   </div>
-                  <button className="cg-btn-primary" type="button" onClick={item.onClick}>
-                    {item.action}
-                  </button>
-                </article>
-              );
-            })}
+                </div>
+              </div>
+              <div className="cg-step-buttons">
+                <button
+                  type="button"
+                  className="cg-btn-step-primary"
+                  onClick={() => navigate('/result')}
+                >
+                  View results
+                </button>
+                <button
+                  type="button"
+                  className="cg-btn-step-secondary"
+                  onClick={() => navigate('/general-quiz')}
+                >
+                  {hasQuizResults ? 'Retake quiz' : 'Take quiz'}
+                </button>
+              </div>
+            </div>
+
+            {/* Step 2: University shortlist */}
+            <div className="cg-step-card">
+              <div className="cg-step-left">
+                <div className="cg-step-iconbox cg-step-iconbox--university" aria-hidden="true">
+                  <span>⌂</span>
+                </div>
+                <div className="cg-step-copy">
+                  <div className="cg-step-title">University shortlist</div>
+                  <div className="cg-step-desc">
+                    Compare programs, merit requirements, and degree options before you apply to a university.
+                  </div>
+                </div>
+              </div>
+              <div className="cg-step-buttons">
+                <button
+                  type="button"
+                  className="cg-btn-step-primary"
+                  onClick={() => navigate('/university-recommender')}
+                >
+                  Open university recommender
+                </button>
+              </div>
+            </div>
+
+            {/* Step 3: Scholarship opportunities */}
+            <div className="cg-step-card">
+              <div className="cg-step-left">
+                <div className="cg-step-iconbox cg-step-iconbox--scholarship" aria-hidden="true">
+                  <span>★</span>
+                </div>
+                <div className="cg-step-copy">
+                  <div className="cg-step-title">Scholarship opportunities</div>
+                  <div className="cg-step-desc">
+                    Check available scholarships to reduce cost and plan your application timeline more effectively.
+                  </div>
+                </div>
+              </div>
+              <div className="cg-step-buttons">
+                <button
+                  type="button"
+                  className="cg-btn-step-primary"
+                  onClick={() => navigate('/scholarships')}
+                >
+                  Browse scholarships
+                </button>
+              </div>
+            </div>
+
+            {/* Step 4: AI Career Chatbot */}
+            <div className="cg-step-card">
+              <div className="cg-step-left">
+                <div className="cg-step-iconbox cg-step-iconbox--chat" aria-hidden="true">
+                  <span>💬</span>
+                </div>
+                <div className="cg-step-copy">
+                  <div className="cg-step-title">Instant guidance assistant</div>
+                  <div className="cg-step-desc">
+                    Ask questions about entry test formats, fee structures, and application deadlines anytime.
+                  </div>
+                </div>
+              </div>
+              <div className="cg-step-buttons">
+                <button
+                  type="button"
+                  className="cg-btn-step-primary"
+                  onClick={handleOpenChatbot}
+                >
+                  Chat with assistant
+                </button>
+              </div>
+            </div>
           </div>
         </section>
       </div>

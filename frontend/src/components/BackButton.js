@@ -5,8 +5,8 @@ function BackButton() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Do not show on landing/root path
-  if (location.pathname === '/') return null;
+  // Do not show on landing or dashboard
+  if (location.pathname === '/' || location.pathname === '/dashboard') return null;
 
   return (
     <button
@@ -14,13 +14,13 @@ function BackButton() {
       onClick={() => navigate(-1)}
       aria-label="Go back"
       title="Go back"
-      /*style={{
+      style={{
         position: 'fixed',
-        top: 60,
-        left: 12,
+        top: 24,
+        left: 16,
         zIndex: 9999,
-         background: 'var(--accent-dk, #4f2909)',
-         border: '1px solid rgba(0,0,0,0.12)',
+        background: '#4f2909',
+        border: '1px solid rgba(0,0,0,0.12)',
         borderRadius: '50%',
         width: 32,
         height: 32,
@@ -28,12 +28,12 @@ function BackButton() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-         boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.14)',
         cursor: 'pointer',
         color: '#fff',
         fontSize: 14,
         lineHeight: 1,
-      }}*/
+      }}
     >
       ←
     </button>

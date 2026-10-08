@@ -18,7 +18,7 @@ const tabs = [
 
 // One-line context shown under the page title, keyed by top-level tab id.
 const tabDescriptions = {
-  dashboard: 'A live overview of platform activity, student engagement, and the latest system events.',
+  dashboard: 'Executive overview of student counselling, degree programs, and career assessments.',
   users: 'Everyone with an account on the platform, and their access.',
   scholarships: 'The scholarship listings shown in the Scholarship Finder.',
   universities: 'University profiles and the programs listed under each.',
@@ -81,6 +81,14 @@ const tabIcons = {
   ),
 };
 
+const logoutIcon = (
+  <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7.5 17H4.5A1.5 1.5 0 0 1 3 15.5v-11A1.5 1.5 0 0 1 4.5 3h3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M12.5 13.5 16 10l-3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M16 10H7.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 // Monitoring/audit logs — never editable or deletable from the UI.
 const readOnlyResources = ['assessments', 'chatbot-interactions', 'activity'];
 
@@ -95,6 +103,15 @@ const resourceLabels = {
   eligibility: 'Eligibility',
   activity: 'System reports',
 };
+
+function getResourceSingular(resource) {
+  if (resource === 'universities') return 'University';
+  if (resource === 'scholarships') return 'Scholarship';
+  if (resource === 'users') return 'User';
+  if (resource === 'eligibility') return 'Eligibility Rule';
+  if (resource === 'chatbot-responses') return 'Auto-Reply Rule';
+  return 'Record';
+}
 
 function displayName(record) {
   return record.University || record.name || record.field || record.keyword || record.type || record.id;
@@ -115,11 +132,42 @@ function scholarshipBasisLabel(basis) {
   return basis || 'Unspecified';
 }
 
-function scholarshipMatches(record, query) {
-  const searchText = query.trim().toLowerCase();
+function universityMatches(record, query) {
+  const searchText = (query || '').trim().toLowerCase();
   if (!searchText) return true;
-  return [record.name, record.provider, record.provinces, record.basis, record.provider_type, record.eligibility_raw, record.coverage]
-    .some((value) => String(value || '').toLowerCase().includes(searchText));
+  const terms = searchText.split(/\s+/).filter(Boolean);
+
+  const name = String(record.University || record.name || '').toLowerCase();
+  const city = String(record.City || record.city || '').toLowerCase();
+  const province = String(record.Province || record.province || '').toLowerCase();
+  const sector = String(record.Sector || record.sector || '').toLowerCase();
+  const website = String(record.Website || record.website || record.website_url || record.url || '').toLowerCase();
+  const programs = (record.programs || [])
+    .map((p) => `${p.degree_name || ''} ${p.merit_formula || ''}`)
+    .join(' ')
+    .toLowerCase();
+
+  const combined = `${name} ${city} ${province} ${sector} ${website} ${programs}`;
+  return terms.every((term) => combined.includes(term));
+}
+
+function scholarshipMatches(record, query) {
+  const searchText = (query || '').trim().toLowerCase();
+  if (!searchText) return true;
+  const terms = searchText.split(/\s+/).filter(Boolean);
+
+  const name = String(record.name || '').toLowerCase();
+  const provider = String(record.provider || '').toLowerCase();
+  const provinces = String(record.provinces || '').toLowerCase();
+  const basis = String(record.basis || '').toLowerCase();
+  const providerType = String(record.provider_type || '').toLowerCase();
+  const eligibility = String(record.eligibility_raw || '').toLowerCase();
+  const coverage = String(record.coverage || '').toLowerCase();
+  const minMerit = String(record.min_merit_pct || '').toLowerCase();
+  const incomeCap = String(record.income_cap_pkr || '').toLowerCase();
+
+  const combined = `${name} ${provider} ${provinces} ${basis} ${providerType} ${eligibility} ${coverage} ${minMerit} ${incomeCap}`;
+  return terms.every((term) => combined.includes(term));
 }
 
 function clampNonNegative(value) {
@@ -213,6 +261,57 @@ function exportActivityCsv(records) {
   exportToCsv(`system_activity_report_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
 }
 
+function exportUsersCsv(users) {
+  const headers = ['Name', 'Email', 'Auth Provider', 'Email Verified', 'Last Sign In', 'Status'];
+  const rows = users.map((user) => [
+    user.name || '-',
+    user.email || '-',
+    user.authProvider || 'Email',
+    user.emailConfirmed ? 'Verified' : 'Unverified',
+    formatDateTime(user.lastSignInAt),
+    user.blocked ? 'Blocked' : 'Active',
+  ]);
+  exportToCsv(`users_report_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+}
+
+function exportUniversitiesCsv(universities) {
+  const headers = ['University Name', 'City', 'Province', 'Sector', 'Website URL', 'Programs Count', 'Degree Programs'];
+  const rows = universities.map((u) => [
+    u.name || u.University || '',
+    u.city || u.City || '',
+    u.province || u.Province || '',
+    u.sector || u.Sector || '',
+    u.website || u.website_url || u.Website || '',
+    (u.programs || []).length,
+    (u.programs || []).map((p) => p.degree_name).join('; '),
+  ]);
+  exportToCsv(`universities_catalog_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+}
+
+function exportScholarshipsCsv(scholarships) {
+  const headers = ['Scholarship Name', 'Provider', 'Provinces', 'Basis', 'Provider Type', 'Eligibility', 'Income Cap (PKR)', 'Min Merit %', 'Coverage', 'Source URL'];
+  const rows = scholarships.map((s) => [
+    s.name || '',
+    s.provider || '',
+    s.provinces || '',
+    s.basis || '',
+    s.provider_type || '',
+    s.eligibility_raw || '',
+    s.income_cap_pkr ? String(s.income_cap_pkr) : 'None',
+    s.min_merit_pct ? String(s.min_merit_pct) : 'None',
+    s.coverage || '',
+    s.source_url || '',
+  ]);
+  exportToCsv(`scholarships_catalog_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+}
+
+function normalizeUrl(url) {
+  if (!url || !url.trim()) return '';
+  const trimmed = url.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
 function assessmentSummary(records) {
   const counts = {};
   let scoreSum = 0;
@@ -248,16 +347,47 @@ function assessmentSummary(records) {
   };
 }
 
+const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function formatShortDate(isoDateStr) {
+  if (!isoDateStr) return '';
+  const parts = isoDateStr.slice(0, 10).split('-');
+  if (parts.length === 3) {
+    const m = parseInt(parts[1], 10) - 1;
+    const d = parseInt(parts[2], 10);
+    return `${monthNames[m] || parts[1]} ${d}`;
+  }
+  return isoDateStr;
+}
+
 function activitySummary(records) {
   const counts = {};
   const timelineCounts = {};
+  const timelineDetails = {};
+  const careerCounts = {};
   const now = Date.now();
   let last24h = 0;
   const userSet = new Set();
 
+  let assessmentCount = 0;
+  let chatbotCount = 0;
+  let adminCount = 0;
+
   records.forEach((record) => {
     const type = record.type || record.eventType || 'unknown';
     counts[type] = (counts[type] || 0) + 1;
+
+    if (type.includes('assessment')) assessmentCount += 1;
+    else if (type.includes('chat')) chatbotCount += 1;
+    else if (type.startsWith('admin_user') || type.includes('block')) adminCount += 1;
+
+    const details = record.details;
+    if (type === 'assessment_completed' && details && typeof details === 'object') {
+      const career = details.matchedField || details.career;
+      if (career) {
+        careerCounts[career] = (careerCounts[career] || 0) + 1;
+      }
+    }
+
     const dateStr = record.createdAt || record.created_at || record.timestamp || '';
     const timestamp = new Date(dateStr).getTime();
     if (!Number.isNaN(timestamp)) {
@@ -265,9 +395,14 @@ function activitySummary(records) {
       const dayKey = dateStr.slice(0, 10);
       if (dayKey) {
         timelineCounts[dayKey] = (timelineCounts[dayKey] || 0) + 1;
+        if (!timelineDetails[dayKey]) {
+          timelineDetails[dayKey] = { assessments: 0, chatbot: 0, admin: 0 };
+        }
+        if (type.includes('assessment')) timelineDetails[dayKey].assessments += 1;
+        else if (type.includes('chat')) timelineDetails[dayKey].chatbot += 1;
+        else if (type.startsWith('admin_user') || type.includes('block')) timelineDetails[dayKey].admin += 1;
       }
     }
-    const details = record.details;
     if (details && typeof details === 'object') {
       if (details.email) userSet.add(details.email);
       else if (details.userId) userSet.add(details.userId);
@@ -275,9 +410,15 @@ function activitySummary(records) {
   });
 
   const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const rankedCareers = Object.entries(careerCounts).sort((a, b) => b[1] - a[1]);
   const timeline = Object.entries(timelineCounts)
     .sort((a, b) => a[0].localeCompare(b[0]))
-    .slice(-10);
+    .slice(-10)
+    .map(([day, total]) => ({
+      day,
+      total,
+      breakdown: timelineDetails[day] || { assessments: 0, chatbot: 0, admin: 0 }
+    }));
 
   return {
     total: records.length,
@@ -286,6 +427,12 @@ function activitySummary(records) {
     topType: ranked[0]?.[0] || '-',
     topTypeCount: ranked[0]?.[1] || 0,
     breakdown: ranked,
+    careerBreakdown: rankedCareers,
+    categories: {
+      assessments: assessmentCount,
+      chatbot: chatbotCount,
+      admin: adminCount,
+    },
     timeline,
   };
 }
@@ -338,21 +485,49 @@ function eventTone(type) {
   return 'login';
 }
 
+function eventCategoryMeta(type) {
+  if (type.includes('assessment')) return { key: 'assessments', label: 'Student Test', tone: 'assessment' };
+  if (type.includes('chat')) return { key: 'chatbot', label: 'AI Assistant', tone: 'chatbot' };
+  if (type.includes('block') || type.includes('unblock')) return { key: 'admin', label: 'Security Action', tone: 'admin' };
+  if (type.startsWith('admin_user')) return { key: 'admin', label: 'Admin Audit', tone: 'admin' };
+  return { key: 'other', label: 'System Event', tone: 'login' };
+}
+
 function SystemReportsView({ records, showHistory = true }) {
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [visibleHistoryCount, setVisibleHistoryCount] = useState(10);
+  const [hoveredDay, setHoveredDay] = useState(null);
+
   const summary = activitySummary(records);
   const maxTypeCount = summary.breakdown[0]?.[1] || 1;
-  const maxTimelineCount = Math.max(...summary.timeline.map((item) => item[1]), 1);
+  const maxTimelineCount = Math.max(...summary.timeline.map((item) => item.total), 1);
+  const maxCareerCount = summary.careerBreakdown[0]?.[1] || 1;
 
   const eventGradients = {
     user_registered: 'linear-gradient(90deg, #1f7a4d 0%, #2ecc71 100%)',
     user_login: 'linear-gradient(90deg, #2457a8 0%, #3498db 100%)',
     assessment_completed: 'linear-gradient(90deg, #b8863a 0%, #f39c12 100%)',
-    chatbot_interaction: 'linear-gradient(90deg, #6c768a 0%, #95a5a6 100%)',
-    admin_user_blocked: 'linear-gradient(90deg, #ad4030 0%, #e74c3c 100%)',
-    admin_user_unblocked: 'linear-gradient(90deg, #1f7a4d 0%, #27ae60 100%)',
-    admin_user_updated: 'linear-gradient(90deg, #2980b9 0%, #3498db 100%)',
-    admin_user_deleted: 'linear-gradient(90deg, #ad4030 0%, #c0392b 100%)',
+    chatbot_interaction: 'linear-gradient(90deg, #2563eb 0%, #60a5fa 100%)',
+    admin_user_blocked: 'linear-gradient(90deg, #dc2626 0%, #ef4444 100%)',
+    admin_user_unblocked: 'linear-gradient(90deg, #059669 0%, #10b981 100%)',
+    admin_user_updated: 'linear-gradient(90deg, #0284c7 0%, #38bdf8 100%)',
+    admin_user_deleted: 'linear-gradient(90deg, #b91c1c 0%, #dc2626 100%)',
   };
+
+  const careerGradients = [
+    'linear-gradient(90deg, #b8863a 0%, #d4a359 100%)',
+    'linear-gradient(90deg, #2563eb 0%, #60a5fa 100%)',
+    'linear-gradient(90deg, #059669 0%, #34d399 100%)',
+    'linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)',
+  ];
+
+  const filteredRecords = records.filter((record) => {
+    if (activeFilter === 'all') return true;
+    const cat = eventCategoryMeta(record.type || record.eventType || '').key;
+    return cat === activeFilter;
+  });
+
+  const visibleHistoryRecords = filteredRecords.slice(0, visibleHistoryCount);
 
   const renderDetails = (details) => {
     if (!details) return '-';
@@ -372,80 +547,164 @@ function SystemReportsView({ records, showHistory = true }) {
 
   return (
     <div className="admin-reports-container">
+      {/* 4 Overview Metrics */}
       <div className="admin-metrics">
         <div>
           <strong>{summary.total}</strong>
           <span>Total system events</span>
-          <span className="admin-metric-desc">Lifetime recorded activity log</span>
+          <span className="admin-metric-desc">Lifetime audit log operations</span>
         </div>
         <div>
-          <strong>{summary.last24h}</strong>
-          <span>Past 24 hours</span>
-          <span className="admin-metric-desc">Recent activity frequency</span>
+          <strong>{summary.categories.assessments}</strong>
+          <span>Career assessments</span>
+          <span className="admin-metric-desc">Completed quiz submissions</span>
         </div>
         <div>
-          <strong>{friendlyEventLabel(summary.topType)}</strong>
-          <span>Top event ({summary.topTypeCount})</span>
-          <span className="admin-metric-desc">Most frequent activity type</span>
+          <strong>{summary.categories.chatbot}</strong>
+          <span>Assistant queries</span>
+          <span className="admin-metric-desc">Queries asked to career bot</span>
         </div>
         <div>
-          <strong>{summary.activeUsers}</strong>
-          <span>Active accounts</span>
-          <span className="admin-metric-desc">Unique users in system logs</span>
+          <strong>{summary.categories.admin}</strong>
+          <span>Admin audit actions</span>
+          <span className="admin-metric-desc">User edits, deletions &amp; blocks</span>
         </div>
       </div>
 
-      <div className="admin-graphs-grid">
-        <div className="admin-graph-card">
-          <div className="admin-graph-title">
-            <span>Event Category Distribution</span>
-            <span style={{ fontSize: '0.82rem', color: 'var(--ink-muted)' }}>Distribution</span>
+      {/* 3 Domain Category Cards */}
+      <div className="admin-reports-category-cards">
+        <div className="admin-report-cat-card">
+          <div className="admin-report-cat-header">
+            <span className="admin-report-cat-icon">🎓</span>
+            <div>
+              <h3>Student Assessments</h3>
+              <p>Career evaluations and test submissions</p>
+            </div>
           </div>
-          <p className="admin-graph-subtitle">Breakdown of student and admin actions recorded across the application.</p>
-          <div className="admin-bar-list">
-            {summary.breakdown.map(([type, count]) => {
-              const pct = summary.total ? ((count / summary.total) * 100).toFixed(0) : 0;
-              const barWidth = Math.max(6, (count / maxTypeCount) * 100);
-              const gradient = eventGradients[type] || 'linear-gradient(90deg, #b8863a 0%, #8a5f1c 100%)';
-              return (
-                <div key={type} className="admin-bar-item">
-                  <div className="admin-bar-label" title={type}>{friendlyEventLabel(type)}</div>
-                  <div className="admin-bar-track">
-                    <div className="admin-bar-fill" style={{ width: `${barWidth}%`, background: gradient }} />
-                  </div>
-                  <div className="admin-bar-value">{count} <span style={{ fontSize: '0.74rem', color: 'var(--ink-faint)' }}>({pct}%)</span></div>
-                </div>
-              );
-            })}
+          <div className="admin-report-cat-metric">
+            <strong>{summary.categories.assessments}</strong>
+            <span className="admin-report-cat-pct">
+              {summary.total ? `${((summary.categories.assessments / summary.total) * 100).toFixed(0)}%` : '0%'} of activity
+            </span>
+          </div>
+          <div className="admin-bar-track" style={{ height: '8px', marginTop: '10px' }}>
+            <div
+              className="admin-bar-fill"
+              style={{
+                width: `${summary.total ? (summary.categories.assessments / summary.total) * 100 : 0}%`,
+                background: 'linear-gradient(90deg, #b8863a 0%, #f39c12 100%)',
+              }}
+            />
           </div>
         </div>
 
+        <div className="admin-report-cat-card">
+          <div className="admin-report-cat-header">
+            <span className="admin-report-cat-icon">💬</span>
+            <div>
+              <h3>AI Career Assistant</h3>
+              <p>Automated admissions &amp; scholarship replies</p>
+            </div>
+          </div>
+          <div className="admin-report-cat-metric">
+            <strong>{summary.categories.chatbot}</strong>
+            <span className="admin-report-cat-pct">
+              {summary.total ? `${((summary.categories.chatbot / summary.total) * 100).toFixed(0)}%` : '0%'} of activity
+            </span>
+          </div>
+          <div className="admin-bar-track" style={{ height: '8px', marginTop: '10px' }}>
+            <div
+              className="admin-bar-fill"
+              style={{
+                width: `${summary.total ? (summary.categories.chatbot / summary.total) * 100 : 0}%`,
+                background: 'linear-gradient(90deg, #2563eb 0%, #60a5fa 100%)',
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="admin-report-cat-card">
+          <div className="admin-report-cat-header">
+            <span className="admin-report-cat-icon">🛡️</span>
+            <div>
+              <h3>Administrative Audits</h3>
+              <p>Account status toggles, edits &amp; deletions</p>
+            </div>
+          </div>
+          <div className="admin-report-cat-metric">
+            <strong>{summary.categories.admin}</strong>
+            <span className="admin-report-cat-pct">
+              {summary.total ? `${((summary.categories.admin / summary.total) * 100).toFixed(0)}%` : '0%'} of activity
+            </span>
+          </div>
+          <div className="admin-bar-track" style={{ height: '8px', marginTop: '10px' }}>
+            <div
+              className="admin-bar-fill"
+              style={{
+                width: `${summary.total ? (summary.categories.admin / summary.total) * 100 : 0}%`,
+                background: 'linear-gradient(90deg, #059669 0%, #10b981 100%)',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 2 Visual Charts Side by Side */}
+      <div className="admin-graphs-grid">
+        {/* Chart 1: Daily Activity Volume */}
         <div className="admin-graph-card">
           <div className="admin-graph-title">
-            <span>Recent Activity Volume</span>
-            <span style={{ fontSize: '0.82rem', color: 'var(--ink-muted)' }}>Daily trends</span>
+            <span>Daily Activity Timeline</span>
+            <div className="admin-timeline-legend">
+              <span className="admin-legend-dot admin-legend-dot--assessment" /> Assessments
+              <span className="admin-legend-dot admin-legend-dot--chatbot" /> Chatbot
+              <span className="admin-legend-dot admin-legend-dot--admin" /> Admin
+            </div>
           </div>
-          <p className="admin-graph-subtitle">Total operations performed per day across recent activity dates.</p>
+          <p className="admin-graph-subtitle">Total operations performed per day. Hover a column to see the activity breakdown.</p>
           {summary.timeline.length > 0 ? (
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', height: '180px', paddingTop: '20px' }}>
-              {summary.timeline.map(([day, count]) => {
-                const heightPct = Math.max(14, Math.round((count / maxTimelineCount) * 100));
-                const label = day.slice(5);
+            <div className="admin-timeline-chart-wrap">
+              {summary.timeline.map((item) => {
+                const heightPct = Math.max(16, Math.round((item.total / maxTimelineCount) * 100));
+                const formattedDate = formatShortDate(item.day);
+                const isHovered = hoveredDay === item.day;
+                const tooltipText = `${formattedDate} (${item.day}): ${item.total} events — ${item.breakdown.assessments} assessments, ${item.breakdown.chatbot} chat queries, ${item.breakdown.admin} admin actions`;
                 return (
-                  <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
-                    <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--ink)', marginBottom: 4 }}>{count}</span>
+                  <div
+                    key={item.day}
+                    className="admin-timeline-column"
+                    onMouseEnter={() => setHoveredDay(item.day)}
+                    onMouseLeave={() => setHoveredDay(null)}
+                    title={tooltipText}
+                  >
+                    <span className="admin-timeline-col-count">{item.total}</span>
                     <div
-                      title={`${day}: ${count} events`}
-                      style={{
-                        width: '100%',
-                        maxWidth: '38px',
-                        height: `${heightPct}%`,
-                        background: 'linear-gradient(180deg, #b8863a 0%, #8a5f1c 100%)',
-                        borderRadius: '6px 6px 0 0',
-                        boxShadow: '0 2px 6px rgba(184, 134, 58, 0.25)',
-                      }}
-                    />
-                    <span style={{ fontSize: '0.7rem', color: 'var(--ink-muted)', marginTop: 6, whiteSpace: 'nowrap' }}>{label}</span>
+                      className={`admin-timeline-bar ${isHovered ? 'admin-timeline-bar--active' : ''}`}
+                      style={{ height: `${heightPct}%` }}
+                    >
+                      {item.breakdown.admin > 0 && (
+                        <div
+                          className="admin-bar-segment admin-bar-segment--admin"
+                          style={{ flex: item.breakdown.admin }}
+                          title={`Admin: ${item.breakdown.admin}`}
+                        />
+                      )}
+                      {item.breakdown.chatbot > 0 && (
+                        <div
+                          className="admin-bar-segment admin-bar-segment--chatbot"
+                          style={{ flex: item.breakdown.chatbot }}
+                          title={`Chatbot: ${item.breakdown.chatbot}`}
+                        />
+                      )}
+                      {item.breakdown.assessments > 0 && (
+                        <div
+                          className="admin-bar-segment admin-bar-segment--assessment"
+                          style={{ flex: item.breakdown.assessments }}
+                          title={`Assessments: ${item.breakdown.assessments}`}
+                        />
+                      )}
+                    </div>
+                    <span className="admin-timeline-col-date">{formattedDate}</span>
                   </div>
                 );
               })}
@@ -453,125 +712,388 @@ function SystemReportsView({ records, showHistory = true }) {
           ) : (
             <p style={{ color: 'var(--ink-muted)', textAlign: 'center', padding: '40px 0' }}>No timeline events recorded yet.</p>
           )}
+          {hoveredDay && (
+            <div className="admin-timeline-hover-info">
+              {(() => {
+                const found = summary.timeline.find((t) => t.day === hoveredDay);
+                if (!found) return null;
+                return (
+                  <span>
+                    <strong>{formatShortDate(found.day)}:</strong> {found.total} total operations (
+                    <span style={{ color: '#b8863a', fontWeight: 600 }}>{found.breakdown.assessments} assessments</span>,{' '}
+                    <span style={{ color: '#2563eb', fontWeight: 600 }}>{found.breakdown.chatbot} chat queries</span>,{' '}
+                    <span style={{ color: '#059669', fontWeight: 600 }}>{found.breakdown.admin} admin actions</span>)
+                  </span>
+                );
+              })()}
+            </div>
+          )}
+        </div>
+
+        {/* Chart 2: Top Student Career Fields Explored */}
+        <div className="admin-graph-card">
+          <div className="admin-graph-title">
+            <span>Top Student Career Fields</span>
+            <span style={{ fontSize: '0.82rem', color: 'var(--ink-muted)' }}>Top matches</span>
+          </div>
+          <p className="admin-graph-subtitle">Primary career pathways matched and explored by students during assessments.</p>
+          <div className="admin-bar-list">
+            {summary.careerBreakdown.length > 0 ? (
+              summary.careerBreakdown.map(([career, count], index) => {
+                const totalAssessments = summary.categories.assessments || 1;
+                const pct = ((count / totalAssessments) * 100).toFixed(1);
+                const barWidth = Math.max(8, (count / maxCareerCount) * 100);
+                const gradient = careerGradients[index % careerGradients.length];
+                return (
+                  <div key={career} className="admin-career-field-item">
+                    <div className="admin-career-field-header">
+                      <span className="admin-career-rank">#{index + 1}</span>
+                      <strong className="admin-career-title">{career}</strong>
+                      <span className="admin-career-count">{count} students ({pct}%)</span>
+                    </div>
+                    <div className="admin-bar-track" style={{ height: '10px' }}>
+                      <div className="admin-bar-fill" style={{ width: `${barWidth}%`, background: gradient }} />
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p style={{ color: 'var(--ink-muted)', textAlign: 'center', padding: '30px 0' }}>No career assessment data yet.</p>
+            )}
+          </div>
         </div>
       </div>
 
-      {showHistory && <div className="admin-card" style={{ marginTop: '14px' }}>
-        <div className="admin-section-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h2>Activity Event History</h2>
-            <span className="admin-count">{records.length} logged events</span>
+      {/* Chart 3: Detailed Event Type Distribution */}
+      <div className="admin-graph-card">
+        <div className="admin-graph-title">
+          <span>System Event Type Distribution</span>
+          <span style={{ fontSize: '0.82rem', color: 'var(--ink-muted)' }}>Audit breakdown</span>
+        </div>
+        <p className="admin-graph-subtitle">Frequency of every individual operation logged in the platform activity registry.</p>
+        <div className="admin-bar-list">
+          {summary.breakdown.map(([type, count]) => {
+            const pct = summary.total ? ((count / summary.total) * 100).toFixed(1) : 0;
+            const barWidth = Math.max(6, (count / maxTypeCount) * 100);
+            const gradient = eventGradients[type] || 'linear-gradient(90deg, #b8863a 0%, #8a5f1c 100%)';
+            const catMeta = eventCategoryMeta(type);
+            return (
+              <div key={type} className="admin-bar-item admin-bar-item--detailed">
+                <div className="admin-bar-label-group">
+                  <span className={`admin-event-pill admin-event-pill--${catMeta.tone}`} style={{ fontSize: '0.72rem', padding: '1px 6px' }}>
+                    {catMeta.label}
+                  </span>
+                  <span className="admin-bar-label" title={type}>{friendlyEventLabel(type)}</span>
+                </div>
+                <div className="admin-bar-track">
+                  <div className="admin-bar-fill" style={{ width: `${barWidth}%`, background: gradient }} />
+                </div>
+                <div className="admin-bar-value">{count} <span style={{ fontSize: '0.74rem', color: 'var(--ink-faint)' }}>({pct}%)</span></div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Activity Event History Table with Category Filter and Pagination */}
+      {showHistory && (
+        <div className="admin-card" style={{ marginTop: '14px' }}>
+          <div className="admin-section-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+            <div>
+              <h2>Activity Event History</h2>
+              <span className="admin-count">
+                Showing {visibleHistoryRecords.length} of {filteredRecords.length} {activeFilter === 'all' ? 'total' : activeFilter} events
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div className="admin-filter-pills" role="tablist">
+                <button
+                  type="button"
+                  className={`admin-filter-pill ${activeFilter === 'all' ? 'admin-filter-pill--active' : ''}`}
+                  onClick={() => { setActiveFilter('all'); setVisibleHistoryCount(10); }}
+                >
+                  All ({records.length})
+                </button>
+                <button
+                  type="button"
+                  className={`admin-filter-pill ${activeFilter === 'assessments' ? 'admin-filter-pill--active' : ''}`}
+                  onClick={() => { setActiveFilter('assessments'); setVisibleHistoryCount(10); }}
+                >
+                  Assessments ({summary.categories.assessments})
+                </button>
+                <button
+                  type="button"
+                  className={`admin-filter-pill ${activeFilter === 'chatbot' ? 'admin-filter-pill--active' : ''}`}
+                  onClick={() => { setActiveFilter('chatbot'); setVisibleHistoryCount(10); }}
+                >
+                  Chatbot ({summary.categories.chatbot})
+                </button>
+                <button
+                  type="button"
+                  className={`admin-filter-pill ${activeFilter === 'admin' ? 'admin-filter-pill--active' : ''}`}
+                  onClick={() => { setActiveFilter('admin'); setVisibleHistoryCount(10); }}
+                >
+                  Admin Actions ({summary.categories.admin})
+                </button>
+              </div>
+              <button
+                type="button"
+                className="admin-export-btn"
+                onClick={() => exportActivityCsv(filteredRecords)}
+                title="Download filtered activity report as CSV"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Export CSV
+              </button>
+            </div>
           </div>
-          <button
-            type="button"
-            className="admin-export-btn"
-            onClick={() => exportActivityCsv(records)}
-            title="Download activity report as CSV"
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            Export CSV
-          </button>
-        </div>
-        <div className="admin-table-wrap">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Event Type</th>
-                <th>Timestamp</th>
-                <th>Event Metadata</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.map((record) => (
-                <tr key={record.id}>
-                  <td>
-                    <span className={`admin-event-pill admin-event-pill--${eventTone(record.type || record.eventType || '')}`}>
-                      {friendlyEventLabel(record.type || record.eventType || 'system_event')}
-                    </span>
-                  </td>
-                  <td style={{ whiteSpace: 'nowrap', color: 'var(--ink-muted)', fontSize: '0.85rem' }}>
-                    {formatDateTime(dateValue(record))}
-                  </td>
-                  <td>{renderDetails(record.details)}</td>
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Event Type</th>
+                  <th>Category</th>
+                  <th>Timestamp</th>
+                  <th>Event Metadata</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {visibleHistoryRecords.map((record) => {
+                  const catMeta = eventCategoryMeta(record.type || record.eventType || '');
+                  return (
+                    <tr key={record.id}>
+                      <td>
+                        <span className={`admin-event-pill admin-event-pill--${eventTone(record.type || record.eventType || '')}`}>
+                          {friendlyEventLabel(record.type || record.eventType || 'system_event')}
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', fontWeight: 500 }}>
+                          {catMeta.label}
+                        </span>
+                      </td>
+                      <td style={{ whiteSpace: 'nowrap', color: 'var(--ink-muted)', fontSize: '0.85rem' }}>
+                        {formatDateTime(dateValue(record))}
+                      </td>
+                      <td>{renderDetails(record.details)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          {filteredRecords.length > visibleHistoryRecords.length && (
+            <div className="admin-load-more">
+              <button
+                type="button"
+                className="admin-small-button"
+                onClick={() => setVisibleHistoryCount((count) => count + 15)}
+              >
+                Show more ({filteredRecords.length - visibleHistoryRecords.length} remaining)
+              </button>
+            </div>
+          )}
         </div>
-      </div>}
+      )}
     </div>
   );
 }
 
 function AdminOverview({ data, onNavigate }) {
-  const [showAllActivity, setShowAllActivity] = useState(false);
-  const [showAllAssessments, setShowAllAssessments] = useState(false);
-  const activityRecords = data.activity || [];
-  const assessmentRecords = data.assessments || [];
-  const chatbotRecords = data.chatbot || [];
-  const activity = activitySummary(activityRecords);
-  const assessment = assessmentSummary(assessmentRecords);
-  const activityPreview = showAllActivity ? activityRecords : activityRecords.slice(0, 3);
-  const assessmentPreview = showAllAssessments ? assessmentRecords : assessmentRecords.slice(0, 3);
+  const [showAllUsers, setShowAllUsers] = useState(false);
+
+  const users = data.users || [];
+  const universities = data.universities || [];
+  const scholarships = data.scholarships || [];
+  const eligibility = data.eligibility || [];
+
+  const totalUsers = users.length;
+  const activeUsers = users.filter((u) => !u.blocked).length;
+  const blockedUsers = users.filter((u) => u.blocked).length;
+  const verifiedUsers = users.filter((u) => u.emailConfirmed).length;
+
+  const totalUniversities = universities.length;
+  const totalPrograms = universities.reduce((acc, u) => acc + (u.programs?.length || 0), 0);
+  const totalScholarships = scholarships.length;
+  const totalCriteria = eligibility.length;
+
+  const userPreview = showAllUsers ? users : users.slice(0, 6);
 
   return (
     <div className="admin-dashboard-overview">
-      <div className="admin-dashboard-stats">
-        <div className="admin-dashboard-stat admin-dashboard-stat--accent"><span>Registered users</span><strong>{data.users.length}</strong><small>Student accounts</small></div>
-        <div className="admin-dashboard-stat admin-dashboard-stat--good"><span>Assessments completed</span><strong>{assessment.total}</strong><small>Career and university results</small></div>
-        <div className="admin-dashboard-stat admin-dashboard-stat--info"><span>Assistant conversations</span><strong>{chatbotRecords.length}</strong><small>Visitor messages recorded</small></div>
-        <div className="admin-dashboard-stat admin-dashboard-stat--dark"><span>System events</span><strong>{activity.total}</strong><small>{activity.last24h} in the past 24 hours</small></div>
-      </div>
-
-      <SystemReportsView records={activityRecords} showHistory={false} />
-
-      <div className="admin-dashboard-grid">
-        <section className="admin-card admin-dashboard-list-card">
-          <div className="admin-section-heading">
-            <div><h2>Recent activity</h2><span className="admin-count">{activityRecords.length} total events</span></div>
-            <button type="button" className="admin-text-button" onClick={() => onNavigate('activity')}>View report</button>
-          </div>
-          {activityPreview.length > 0 ? (
-            <div className="admin-dashboard-list">
-              {activityPreview.map((record) => (
-                <div className="admin-dashboard-list-item" key={record.id}>
-                  <span className={`admin-event-pill admin-event-pill--${eventTone(record.type || record.eventType || '')}`}>{friendlyEventLabel(record.type || record.eventType || 'system_event')}</span>
-                  <span className="admin-dashboard-list-date">{formatDateTime(dateValue(record))}</span>
-                </div>
-              ))}
-            </div>
-          ) : <p className="admin-empty-state">No activity has been recorded yet.</p>}
-          {activityRecords.length > 3 && <button type="button" className="admin-show-more" onClick={() => setShowAllActivity((visible) => !visible)}>{showAllActivity ? 'Show less' : `Show more (${activityRecords.length - 3})`}</button>}
-        </section>
-
-        <section className="admin-card admin-dashboard-list-card">
-          <div className="admin-section-heading">
-            <div><h2>Recent assessments</h2><span className="admin-count">{assessment.total} total results</span></div>
-            <button type="button" className="admin-text-button" onClick={() => onNavigate('assessments')}>View results</button>
-          </div>
-          {assessmentPreview.length > 0 ? (
-            <div className="admin-dashboard-list">
-              {assessmentPreview.map((record) => (
-                <div className="admin-dashboard-list-item" key={record.id}>
-                  <span className="admin-dashboard-list-title">{record.userName || record.user?.name || record.user?.email || record.user_id || 'Unknown user'}</span>
-                  <span className="admin-dashboard-list-date">{formatDateTime(dateValue(record))}</span>
-                </div>
-              ))}
-            </div>
-          ) : <p className="admin-empty-state">No assessments have been completed yet.</p>}
-          {assessmentRecords.length > 3 && <button type="button" className="admin-show-more" onClick={() => setShowAllAssessments((visible) => !visible)}>{showAllAssessments ? 'Show less' : `Show more (${assessmentRecords.length - 3})`}</button>}
-        </section>
-      </div>
-
-      <section className="admin-card admin-dashboard-resources">
-        <div className="admin-section-heading"><div><h2>Manage platform data</h2><span className="admin-count">Quick access to every admin area</span></div></div>
-        <div className="admin-dashboard-resource-links">
-          {tabs.filter(([id]) => id !== 'dashboard').map(([id, label]) => <button type="button" key={id} onClick={() => onNavigate(id)}><span className="admin-nav-icon" aria-hidden="true">{tabIcons[id]}</span>{label}</button>)}
+      {/* 1. Header / Welcome Banner with Status Indicator */}
+      <div className="admin-welcome-card">
+        <div>
+          <h2 className="admin-welcome-title">Platform Overview</h2>
+          <p className="admin-welcome-sub">
+            Welcome to the Career Counselling Admin Portal. Monitor user accounts, institution listings, and platform data.
+          </p>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '20px', background: 'var(--good-tint)', color: 'var(--good)', fontWeight: 600, fontSize: '0.84rem' }}>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--good)' }}></span>
+          System Online
+        </div>
+      </div>
+
+      {/* 2. Top-Level Metric KPI Cards */}
+      <div className="admin-dashboard-stats">
+        <div className="admin-dashboard-stat admin-dashboard-stat--accent">
+          <span>Total Users</span>
+          <strong>{totalUsers}</strong>
+          <small>{activeUsers} Active &bull; {blockedUsers} Blocked</small>
+        </div>
+        <div className="admin-dashboard-stat admin-dashboard-stat--good">
+          <span>Universities</span>
+          <strong>{totalUniversities}</strong>
+          <small>{totalPrograms} Degree Programs</small>
+        </div>
+        <div className="admin-dashboard-stat admin-dashboard-stat--info">
+          <span>Scholarships</span>
+          <strong>{totalScholarships}</strong>
+          <small>Active Listings</small>
+        </div>
+        <div className="admin-dashboard-stat admin-dashboard-stat--dark">
+          <span>Eligibility Rules</span>
+          <strong>{totalCriteria}</strong>
+          <small>Threshold Criteria</small>
+        </div>
+      </div>
+
+      {/* 3. Platform Health & Breakdown Panels */}
+      <div className="admin-dashboard-grid">
+        <section className="admin-card">
+          <div className="admin-section-heading">
+            <div>
+              <h2>User Base Breakdown</h2>
+              <span className="admin-count">Account status distribution</span>
+            </div>
+            <button type="button" className="admin-text-button" onClick={() => onNavigate('users')}>
+              Manage Users
+            </button>
+          </div>
+          <div className="admin-health-grid" style={{ marginTop: '14px' }}>
+            <div className="admin-health-box">
+              <strong>{activeUsers}</strong>
+              <span>Active Students</span>
+              <small>{totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0}% of accounts</small>
+            </div>
+            <div className="admin-health-box">
+              <strong>{verifiedUsers}</strong>
+              <span>Verified Emails</span>
+              <small>{totalUsers > 0 ? Math.round((verifiedUsers / totalUsers) * 100) : 0}% verification rate</small>
+            </div>
+            <div className="admin-health-box">
+              <strong>{blockedUsers}</strong>
+              <span>Blocked Accounts</span>
+              <small>Suspended access</small>
+            </div>
+            <div className="admin-health-box">
+              <strong>{totalUsers - verifiedUsers}</strong>
+              <span>Pending Verification</span>
+              <small>Unverified accounts</small>
+            </div>
+          </div>
+        </section>
+
+        <section className="admin-card">
+          <div className="admin-section-heading">
+            <div>
+              <h2>Catalog &amp; Content Summary</h2>
+              <span className="admin-count">Database content overview</span>
+            </div>
+            <button type="button" className="admin-text-button" onClick={() => onNavigate('universities')}>
+              View Universities
+            </button>
+          </div>
+          <div className="admin-health-grid" style={{ marginTop: '14px' }}>
+            <div className="admin-health-box">
+              <strong>{totalUniversities}</strong>
+              <span>Listed Universities</span>
+              <small>Institutions in catalog</small>
+            </div>
+            <div className="admin-health-box">
+              <strong>{totalPrograms}</strong>
+              <span>Academic Programs</span>
+              <small>{totalUniversities > 0 ? (totalPrograms / totalUniversities).toFixed(1) : 0} avg per campus</small>
+            </div>
+            <div className="admin-health-box">
+              <strong>{totalScholarships}</strong>
+              <span>Scholarships</span>
+              <small>Aid &amp; grant opportunities</small>
+            </div>
+            <div className="admin-health-box">
+              <strong>{totalCriteria}</strong>
+              <span>Active Criteria</span>
+              <small>Field cut-off rules</small>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* 4. Recent Registered Users Table */}
+      <section className="admin-card">
+        <div className="admin-section-heading">
+          <div>
+            <h2>Recent User Accounts</h2>
+            <span className="admin-count">{totalUsers} registered students</span>
+          </div>
+          <button type="button" className="admin-text-button" onClick={() => onNavigate('users')}>
+            View all users &rarr;
+          </button>
+        </div>
+        {userPreview.length > 0 ? (
+          <div className="admin-table-wrap" style={{ marginTop: '10px' }}>
+            <table className="admin-feed-table">
+              <thead>
+                <tr>
+                  <th>Student Name</th>
+                  <th>Email Address</th>
+                  <th>Auth Method</th>
+                  <th>Account Status</th>
+                  <th>Registered</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userPreview.map((user) => (
+                  <tr key={user.id || user.email}>
+                    <td>
+                      <strong style={{ color: 'var(--ink)' }}>{user.name || 'Student'}</strong>
+                    </td>
+                    <td style={{ color: 'var(--ink-muted)', fontSize: '0.85rem' }}>{user.email}</td>
+                    <td>
+                      <span style={{ textTransform: 'capitalize', fontSize: '0.82rem', color: 'var(--ink-muted)' }}>
+                        {user.authProvider || 'Local'}
+                      </span>
+                    </td>
+                    <td>
+                      <StatusPill tone={user.blocked ? 'warn' : 'good'}>
+                        {user.blocked ? 'Blocked' : 'Active'}
+                      </StatusPill>
+                    </td>
+                    <td style={{ color: 'var(--ink-faint)', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+                      {formatDateTime(user.createdAt || user.registeredAt || user.lastSignInAt)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="admin-empty-state">No student accounts registered yet.</p>
+        )}
+        {users.length > 6 && (
+          <button
+            type="button"
+            className="admin-show-more"
+            onClick={() => setShowAllUsers((visible) => !visible)}
+          >
+            {showAllUsers ? 'Show less' : `Show more (${users.length - 6})`}
+          </button>
+        )}
       </section>
     </div>
   );
@@ -588,7 +1110,7 @@ function MonitoringSummary({ tab, records }) {
           <span className="admin-metric-desc">Completed quiz &amp; recommender submissions</span>
         </div>
         <div>
-          <strong>{summary.topCategory}</strong>
+          <strong className="admin-metric-text">{summary.topCategory}</strong>
           <span>Most common top interest ({summary.topCategoryCount})</span>
           <span className="admin-metric-desc">Primary career field chosen by students</span>
         </div>
@@ -642,22 +1164,22 @@ function EntityForm({ tab, record, onSave, onCancel }) {
   const submit = (event) => {
     event.preventDefault();
     const data = tab === 'universities'
-      ? { name: form.name, city: form.city, province: form.province, sector: form.sector, website_url: form.website }
+      ? { name: form.name, city: form.city, province: form.province, sector: form.sector, website_url: normalizeUrl(form.website) }
       : tab === 'scholarships'
-        ? { name: form.name, provider: form.provider, provinces: form.provinces, basis: form.basis, provider_type: form.providerType, eligibility_raw: form.eligibility, income_cap_pkr: form.incomeCap, min_merit_pct: form.minMerit, coverage: form.coverage, source_url: form.sourceUrl }
+        ? { name: form.name, provider: form.provider, provinces: form.provinces, basis: form.basis, provider_type: form.providerType, eligibility_raw: form.eligibility, income_cap_pkr: form.incomeCap, min_merit_pct: form.minMerit, coverage: form.coverage, source_url: normalizeUrl(form.sourceUrl) }
         : tab === 'chatbot-responses'
           ? { keyword: form.keyword, response: form.response, link: form.link, linkLabel: form.linkLabel }
           : { field: form.field, description: form.description, minimumMarks: Number(form.minimumMarks) || 0 };
     onSave(data);
   };
   return <form className="admin-edit-form" onSubmit={submit}>
-    <h2>{record ? 'Edit record' : 'Add record'}</h2>
+    <h2>{record ? `Edit ${getResourceSingular(tab)}` : `Add ${getResourceSingular(tab)}`}</h2>
     {tab === 'universities' && <>
       <label>Name<input value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="e.g. National University of Sciences and Technology" required /></label>
       <label>City<input value={form.city} onChange={(event) => update('city', event.target.value)} placeholder="e.g. Islamabad" /></label>
       <label>Province<select value={form.province} onChange={(event) => update('province', event.target.value)}><option value="">Select province or region</option>{['All Pakistan', 'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Azad Jammu & Kashmir', 'Gilgit-Baltistan'].map((province) => <option key={province}>{province}</option>)}{form.province && !['All Pakistan', 'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Azad Jammu & Kashmir', 'Gilgit-Baltistan'].includes(form.province) && <option>{form.province}</option>}</select></label>
       <label>Sector<select value={form.sector} onChange={(event) => update('sector', event.target.value)}><option value="">Select sector</option><option>Public</option><option>Private</option></select></label>
-      <label>Website URL<input type="url" value={form.website} onChange={(event) => update('website', event.target.value)} placeholder="https://university.edu.pk" /></label>
+      <label>Website URL<span className="admin-field-help">e.g. university.edu.pk (https:// is added automatically if omitted)</span><input type="text" value={form.website} onChange={(event) => update('website', event.target.value)} onBlur={(event) => update('website', normalizeUrl(event.target.value))} placeholder="https://university.edu.pk" /></label>
     </>}
     {tab === 'scholarships' && <>
       <label>Name<input value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="e.g. HEC Undergraduate Scholarship" required /></label>
@@ -669,7 +1191,7 @@ function EntityForm({ tab, record, onSave, onCancel }) {
       <label>Income cap (PKR)<span className="admin-field-help">Maximum household income. Leave blank if there is no limit.</span><input type="number" min="0" value={form.incomeCap || ''} onChange={(event) => update('incomeCap', clampNonNegative(event.target.value))} placeholder="e.g. 60000" /></label>
       <label>Minimum merit %<span className="admin-field-help">Minimum marks or merit percentage. Leave blank if not required.</span><input type="number" min="0" max="100" value={form.minMerit || ''} onChange={(event) => update('minMerit', clampNonNegative(event.target.value))} placeholder="e.g. 70" /></label>
       <label>Coverage<span className="admin-field-help">What the scholarship pays for, such as tuition, stipend, or books.</span><textarea value={form.coverage} onChange={(event) => update('coverage', event.target.value)} placeholder="e.g. Full tuition fee and monthly stipend" /></label>
-      <label>Source URL<span className="admin-field-help">Official webpage where students can verify or apply. Please enter the full URL.</span><input type="url" value={form.sourceUrl} onChange={(event) => update('sourceUrl', event.target.value)} placeholder="https://official-website.gov.pk/scholarship" /></label>
+      <label>Source URL<span className="admin-field-help">Official webpage where students can verify or apply. https:// is added automatically.</span><input type="text" value={form.sourceUrl} onChange={(event) => update('sourceUrl', event.target.value)} onBlur={(event) => update('sourceUrl', normalizeUrl(event.target.value))} placeholder="https://official-website.gov.pk/scholarship" /></label>
     </>}
     {tab === 'eligibility' && <>
       <label>Field / category name<input value={form.field} onChange={(event) => update('field', event.target.value)} placeholder="e.g. Computer Science" required /></label>
@@ -682,7 +1204,7 @@ function EntityForm({ tab, record, onSave, onCancel }) {
       <label>Link to page (optional)<select value={form.link} onChange={(event) => update('link', event.target.value)}><option value="">No link</option><option value="/quiz">Career quiz</option><option value="/university-recommender">University Recommender</option><option value="/scholarships">Scholarship Finder</option><option value="/profile">Profile</option><option value="/dashboard">Dashboard</option></select></label>
       {form.link && <label>Link button text<input value={form.linkLabel} onChange={(event) => update('linkLabel', event.target.value)} placeholder="e.g. Open Scholarship Finder" /></label>}
     </>}
-    <div className="admin-button-row"><button className="primary-button" type="submit">{record ? 'Update record' : 'Add record'}</button><button className="secondary-button" type="button" onClick={() => (record ? onCancel() : setForm(formValues(tab, null)))}>Cancel</button></div>
+    <div className="admin-button-row"><button className="primary-button" type="submit">{record ? `Update ${getResourceSingular(tab)}` : `Add ${getResourceSingular(tab)}`}</button></div>
   </form>;
 }
 
@@ -692,7 +1214,7 @@ function ProgramForm({ program, onSave, onCancel }) {
   const [eligibilityPct, setEligibilityPct] = useState(program?.eligibility_pct ?? '');
   const [url, setUrl] = useState(program?.url || '');
   const resetFields = () => { setDegreeName(''); setMeritFormula(''); setEligibilityPct(''); setUrl(''); };
-  return <form className="admin-program-form" onSubmit={(event) => { event.preventDefault(); onSave({ degree_name: degreeName, merit_formula: meritFormula, eligibility_pct: eligibilityPct, url }); }}><label>Degree / program<input value={degreeName} onChange={(event) => setDegreeName(event.target.value)} placeholder="e.g. BS Computer Science" required /></label><label>Minimum merit %<input type="number" min="0" max="100" value={eligibilityPct || ''} onChange={(event) => setEligibilityPct(clampNonNegative(event.target.value))} placeholder="e.g. 60" /></label><label>Merit formula<input value={meritFormula} onChange={(event) => setMeritFormula(event.target.value)} placeholder="e.g. Available upon contact" /></label><label>Program URL<input type="url" value={url} onChange={(event) => setUrl(event.target.value)} placeholder="Defaults to university website" /></label><div className="admin-button-row"><button className="primary-button" type="submit">{program ? 'Update program' : 'Add program'}</button><button className="secondary-button" type="button" onClick={() => (program ? onCancel() : resetFields())}>Cancel</button></div></form>;
+  return <form className="admin-program-form" onSubmit={(event) => { event.preventDefault(); onSave({ degree_name: degreeName, merit_formula: meritFormula, eligibility_pct: eligibilityPct, url: normalizeUrl(url) }); }}><label>Degree / program<input value={degreeName} onChange={(event) => setDegreeName(event.target.value)} placeholder="e.g. BS Computer Science" required /></label><label>Minimum merit %<input type="number" min="0" max="100" value={eligibilityPct || ''} onChange={(event) => setEligibilityPct(clampNonNegative(event.target.value))} placeholder="e.g. 60" /></label><label>Merit formula<input value={meritFormula} onChange={(event) => setMeritFormula(event.target.value)} placeholder="e.g. Available upon contact" /></label><label>Program URL<input type="text" value={url} onChange={(event) => setUrl(event.target.value)} onBlur={(event) => setUrl(normalizeUrl(event.target.value))} placeholder="Defaults to university website" /></label><div className="admin-button-row"><button className="primary-button" type="submit">{program ? 'Update Program' : 'Add Program'}</button><button className="secondary-button" type="button" onClick={() => (program ? onCancel() : resetFields())}>Cancel</button></div></form>;
 }
 
 // Read-only monitoring tables: no edit/delete actions — these are audit logs, not admin-managed content.
@@ -704,14 +1226,150 @@ function ExpandableCell({ value, empty = '-', previewLength = 130 }) {
 }
 
 function MonitoringTable({ tab, records }) {
-  const [visibleChatbotCount, setVisibleChatbotCount] = useState(3);
-  if (tab === 'assessments') return <div className="admin-table-wrap"><table className="admin-table admin-table--monitoring"><thead><tr><th>User</th><th>Source</th><th>Score / result</th><th>Date taken</th></tr></thead><tbody>{records.map((record) => <tr key={record.id}><td>{record.userName || record.user?.name || record.user?.full_name || record.user?.email || record.user_id || 'Unknown user'}</td><td>{record.source === 'university_recommender' ? 'University Recommender' : 'Career Quiz'}</td><td><ExpandableCell value={assessmentResult(record)} /></td><td>{formatDateTime(dateValue(record))}</td></tr>)}</tbody></table></div>;
+  const [visibleChatbotCount, setVisibleChatbotCount] = useState(10);
+  const [visibleAssessmentsCount, setVisibleAssessmentsCount] = useState(10);
+  const [chatbotSearch, setChatbotSearch] = useState('');
+  const [chatbotFilter, setChatbotFilter] = useState('all');
+  if (tab === 'assessments') {
+    const visibleRecords = records.slice(0, visibleAssessmentsCount);
+    return (
+      <>
+        <div className="admin-table-wrap">
+          <table className="admin-table admin-table--monitoring">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Source</th>
+                <th>Score / result</th>
+                <th>Date taken</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleRecords.map((record) => (
+                <tr key={record.id}>
+                  <td>{record.userName || record.user?.name || record.user?.full_name || record.user?.email || record.user_id || 'Unknown user'}</td>
+                  <td>{record.source === 'university_recommender' ? 'University Recommender' : 'Career Quiz'}</td>
+                  <td><ExpandableCell value={assessmentResult(record)} /></td>
+                  <td>{formatDateTime(dateValue(record))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {records.length > visibleRecords.length && (
+          <div className="admin-load-more">
+            <button
+              type="button"
+              className="admin-small-button"
+              onClick={() => setVisibleAssessmentsCount((count) => count + 10)}
+            >
+              Show more ({records.length - visibleRecords.length} remaining)
+            </button>
+          </div>
+        )}
+      </>
+    );
+  }
   if (tab === 'chatbot-interactions') {
-    const visibleRecords = records.slice(0, visibleChatbotCount);
-    return <>
-      <div className="admin-table-wrap"><table className="admin-table admin-table--monitoring"><thead><tr><th>User</th><th>Visitor message</th><th>Bot reply</th><th>Timestamp</th></tr></thead><tbody>{visibleRecords.map((record) => <tr key={record.id}><td>{record.userName || record.user?.name || record.userId || 'Anonymous'}</td><td className="admin-table__message"><ExpandableCell value={record.message} previewLength={80} /></td><td className="admin-table__message">{record.response ? <ExpandableCell value={record.response} previewLength={80} /> : <StatusPill tone="muted">No reply matched</StatusPill>}</td><td>{formatDateTime(dateValue(record))}</td></tr>)}</tbody></table></div>
-      {records.length > visibleRecords.length && <div className="admin-load-more"><button type="button" className="admin-small-button" onClick={() => setVisibleChatbotCount((count) => count + 1)}>Show more ({records.length - visibleRecords.length} remaining)</button></div>}
-    </>;
+    const unansweredCount = records.filter((r) => !String(r.response || '').trim()).length;
+    const filteredRecords = records.filter((record) => {
+      if (chatbotFilter === 'unanswered' && String(record.response || '').trim()) return false;
+      if (!chatbotSearch.trim()) return true;
+      const q = chatbotSearch.toLowerCase();
+      const message = (record.message || '').toLowerCase();
+      const response = (record.response || '').toLowerCase();
+      const user = (record.userName || record.user?.name || record.userId || '').toLowerCase();
+      return message.includes(q) || response.includes(q) || user.includes(q);
+    });
+    const visibleRecords = filteredRecords.slice(0, visibleChatbotCount);
+    return (
+      <>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
+          <div className="admin-search-wrapper" style={{ margin: 0, flex: '1 1 260px', maxWidth: '380px' }}>
+            <svg className="admin-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              className="admin-search"
+              type="text"
+              inputMode="search"
+              placeholder="Search queries or bot replies..."
+              aria-label="Search chatbot conversations"
+              value={chatbotSearch}
+              onChange={(e) => { setChatbotSearch(e.target.value); setVisibleChatbotCount(10); }}
+            />
+            {chatbotSearch && (
+              <button
+                type="button"
+                className="admin-search-clear"
+                onClick={() => setChatbotSearch('')}
+                aria-label="Clear search"
+                title="Clear search"
+              >
+                &times;
+              </button>
+            )}
+          </div>
+          <div className="admin-filter-pills" role="tablist">
+            <button
+              type="button"
+              className={`admin-filter-pill ${chatbotFilter === 'all' ? 'admin-filter-pill--active' : ''}`}
+              onClick={() => { setChatbotFilter('all'); setVisibleChatbotCount(10); }}
+            >
+              All ({records.length})
+            </button>
+            <button
+              type="button"
+              className={`admin-filter-pill ${chatbotFilter === 'unanswered' ? 'admin-filter-pill--active' : ''}`}
+              onClick={() => { setChatbotFilter('unanswered'); setVisibleChatbotCount(10); }}
+            >
+              Unanswered ({unansweredCount})
+            </button>
+          </div>
+        </div>
+        <div className="admin-table-wrap">
+          <table className="admin-table admin-table--monitoring">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Visitor message</th>
+                <th>Bot reply</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleRecords.map((record) => (
+                <tr key={record.id}>
+                  <td>{record.userName || record.user?.name || record.userId || 'Anonymous'}</td>
+                  <td className="admin-table__message"><ExpandableCell value={record.message} previewLength={80} /></td>
+                  <td className="admin-table__message">{record.response ? <ExpandableCell value={record.response} previewLength={80} /> : <StatusPill tone="muted">No reply matched</StatusPill>}</td>
+                  <td>{formatDateTime(dateValue(record))}</td>
+                </tr>
+              ))}
+              {visibleRecords.length === 0 && (
+                <tr>
+                  <td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: 'var(--ink-muted)' }}>
+                    No conversations match the search or filter criteria.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        {filteredRecords.length > visibleRecords.length && (
+          <div className="admin-load-more">
+            <button
+              type="button"
+              className="admin-small-button"
+              onClick={() => setVisibleChatbotCount((count) => count + 10)}
+            >
+              Show more ({filteredRecords.length - visibleRecords.length} remaining)
+            </button>
+          </div>
+        )}
+      </>
+    );
   }
   return <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Event type</th><th>Timestamp</th><th>Details</th></tr></thead><tbody>{records.map((record) => <tr key={record.id}><td>{record.type || record.eventType || '-'}</td><td>{dateValue(record)}</td><td>{typeof record.details === 'object' ? JSON.stringify(record.details) : record.details || '-'}</td></tr>)}</tbody></table></div>;
 }
@@ -726,6 +1384,8 @@ function AdminDashboard() {
   const [dashboardData, setDashboardData] = useState({ users: [], activity: [], assessments: [], chatbot: [], scholarships: [], universities: [] });
   const [editingUser, setEditingUser] = useState(null); const [editingRecord, setEditingRecord] = useState(null); const [editingProgram, setEditingProgram] = useState(null);
   const [universitySearch, setUniversitySearch] = useState(''); const [scholarshipSearch, setScholarshipSearch] = useState(''); const [error, setError] = useState(''); const [notice, setNotice] = useState(''); const [formResetKey, setFormResetKey] = useState(0);
+  const [userSearch, setUserSearch] = useState(''); const [userFilter, setUserFilter] = useState('all');
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const RECORDS_PAGE_SIZE = 50;
   const [visibleCount, setVisibleCount] = useState(RECORDS_PAGE_SIZE);
   const token = sessionStorage.getItem(ADMIN_TOKEN_KEY);
@@ -736,21 +1396,17 @@ function AdminDashboard() {
   const api = async (path, options = {}) => { const response = await fetch(`${API_URL}${path}`, { ...options, headers: { Authorization: `Bearer ${token}`, ...(options.headers || {}) } }); const result = await response.json(); if (response.status === 401) { sessionStorage.removeItem(ADMIN_TOKEN_KEY); navigate('/admin/login', { replace: true }); } if (!response.ok) throw new Error(result.message || 'Request failed.'); return result; };
   const load = async (resource) => { if (resource === 'users') { const result = await api('/api/admin/stats'); setUsers((result.users || []).sort((a, b) => timestampValue(b) - timestampValue(a))); } else { const result = await api(`/api/admin/${resource}`); setRecords((result.records || []).sort((a, b) => timestampValue(b) - timestampValue(a))); } };
   const loadDashboard = async () => {
-    const [stats, activity, assessments, chatbot, scholarships, universities] = await Promise.all([
+    const [stats, scholarships, universities, eligibility] = await Promise.all([
       api('/api/admin/stats'),
-      api('/api/admin/activity'),
-      api('/api/admin/assessments'),
-      api('/api/admin/chatbot-interactions'),
       api('/api/admin/scholarships'),
       api('/api/admin/universities'),
+      api('/api/admin/eligibility'),
     ]);
     setDashboardData({
       users: (stats.users || []).sort((a, b) => timestampValue(b) - timestampValue(a)),
-      activity: (activity.records || []).sort((a, b) => timestampValue(b) - timestampValue(a)),
-      assessments: (assessments.records || []).sort((a, b) => timestampValue(b) - timestampValue(a)),
-      chatbot: (chatbot.records || []).sort((a, b) => timestampValue(b) - timestampValue(a)),
       scholarships: scholarships.records || [],
       universities: universities.records || [],
+      eligibility: eligibility.records || [],
     });
   };
   useEffect(() => { loadDashboard().catch((loadError) => setError(loadError.message)); }, []);
@@ -758,10 +1414,19 @@ function AdminDashboard() {
   // enough to break browser rendering, so lists are paged; reset to page one on list/search change.
   useEffect(() => { setVisibleCount(RECORDS_PAGE_SIZE); }, [activeResource, universitySearch, scholarshipSearch]);
 
+  // Auto-dismiss transient notice banners after 3.5 seconds
+  useEffect(() => {
+    if (!notice) return;
+    const timer = setTimeout(() => {
+      setNotice('');
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, [notice]);
+
   const changeTab = (nextTab) => {
     setTab(nextTab);
     setResourceView('list');
-    setEditingRecord(null); setEditingProgram(null); setError('');
+    setEditingRecord(null); setEditingProgram(null); setError(''); setNotice('');
     if (nextTab === 'dashboard') {
       loadDashboard().catch((loadError) => setError(loadError.message));
       return;
@@ -771,7 +1436,7 @@ function AdminDashboard() {
   };
   const switchChatbotView = (view) => {
     setChatbotView(view);
-    setEditingRecord(null); setError('');
+    setEditingRecord(null); setError(''); setNotice('');
     load(view === 'log' ? 'chatbot-interactions' : 'chatbot-responses').catch((loadError) => setError(loadError.message));
   };
 
@@ -821,21 +1486,89 @@ function AdminDashboard() {
     }
   };
 
-  const deleteUser = async (user) => {
-    if (!window.confirm(`Delete the account for ${user.email}? This cannot be undone.`)) return;
+  const deleteUser = (user) => {
+    setDeleteTarget({
+      type: 'user',
+      payload: user,
+      title: user.name || user.email,
+      message: `Are you sure you want to delete user account "${user.name ? `${user.name} (${user.email})` : user.email}"? All associated quiz submissions and saved preferences will be permanently removed.`,
+    });
+  };
+  const saveRecord = async (data) => {
+    const wasEditing = Boolean(editingRecord);
+    const itemLabel = getResourceSingular(activeResource);
     try {
-      await api(`/api/admin/users/${user.id}`, { method: 'DELETE' });
-      setUsers((prevUsers) => prevUsers.filter((entry) => entry.id !== user.id));
-      setNotice('User deleted successfully.');
+      const path = editingRecord ? `/api/admin/${activeResource}/${editingRecord.id}` : `/api/admin/${activeResource}`;
+      await api(path, { method: editingRecord ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      await load(activeResource);
+      setEditingRecord(null);
+      setResourceView('list');
+      setFormResetKey((key) => key + 1);
+      setNotice(`${itemLabel} ${wasEditing ? 'updated' : 'added'} successfully.`);
+    } catch (saveError) {
+      setError(saveError.message);
+    }
+  };
+  const deleteRecord = (record) => {
+    const itemLabel = getResourceSingular(activeResource);
+    setDeleteTarget({
+      type: 'record',
+      payload: record,
+      title: displayName(record),
+      message: `Are you sure you want to delete ${itemLabel} "${displayName(record)}"? This will be permanently removed from the catalog.`,
+    });
+  };
+  const saveProgram = async (data) => { if (!editingRecord) return; const wasEditing = Boolean(editingProgram); try { const path = editingProgram ? `/api/admin/universities/${editingRecord.id}/programs/${editingProgram.id}` : `/api/admin/universities/${editingRecord.id}/programs`; await api(path, { method: editingProgram ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); await load('universities'); const updated = (await api('/api/admin/universities')).records.find((university) => String(university.id) === String(editingRecord.id)); setEditingRecord(updated); setEditingProgram(null); setFormResetKey((key) => key + 1); setNotice(wasEditing ? 'Program updated successfully.' : 'Program added successfully.'); } catch (saveError) { setError(saveError.message); } };
+  const deleteProgram = (program) => {
+    setDeleteTarget({
+      type: 'program',
+      payload: program,
+      title: program.degree_name,
+      message: `Are you sure you want to delete degree program "${program.degree_name}" from this university?`,
+    });
+  };
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    try {
+      if (target.type === 'user') {
+        const user = target.payload;
+        await api(`/api/admin/users/${user.id}`, { method: 'DELETE' });
+        setUsers((prevUsers) => prevUsers.filter((entry) => entry.id !== user.id));
+        setNotice('User deleted successfully.');
+      } else if (target.type === 'record') {
+        const record = target.payload;
+        const itemLabel = getResourceSingular(activeResource);
+        await api(`/api/admin/${activeResource}/${record.id}`, { method: 'DELETE' });
+        await load(activeResource);
+        setNotice(`${itemLabel} deleted successfully.`);
+      } else if (target.type === 'program') {
+        const program = target.payload;
+        if (!editingRecord) return;
+        await api(`/api/admin/universities/${editingRecord.id}/programs/${program.id}`, { method: 'DELETE' });
+        await load('universities');
+        const updated = (await api('/api/admin/universities')).records.find((u) => String(u.id) === String(editingRecord.id));
+        setEditingRecord(updated);
+        setNotice('Program deleted.');
+      }
     } catch (deleteError) {
       setError(deleteError.message);
     }
   };
-  const saveRecord = async (data) => { const wasEditing = Boolean(editingRecord); try { const path = editingRecord ? `/api/admin/${activeResource}/${editingRecord.id}` : `/api/admin/${activeResource}`; await api(path, { method: editingRecord ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); await load(activeResource); setEditingRecord(null); setFormResetKey((key) => key + 1); setNotice(wasEditing ? 'Record updated successfully.' : 'Record added successfully.'); } catch (saveError) { setError(saveError.message); } };
-  const deleteRecord = async (record) => { if (!window.confirm(`Are you sure you want to delete ${displayName(record)}? This cannot be undone.`)) return; try { await api(`/api/admin/${activeResource}/${record.id}`, { method: 'DELETE' }); await load(activeResource); setNotice('Record deleted.'); } catch (deleteError) { setError(deleteError.message); } };
-  const saveProgram = async (data) => { if (!editingRecord) return; const wasEditing = Boolean(editingProgram); try { const path = editingProgram ? `/api/admin/universities/${editingRecord.id}/programs/${editingProgram.id}` : `/api/admin/universities/${editingRecord.id}/programs`; await api(path, { method: editingProgram ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); await load('universities'); const updated = (await api('/api/admin/universities')).records.find((university) => String(university.id) === String(editingRecord.id)); setEditingRecord(updated); setEditingProgram(null); setFormResetKey((key) => key + 1); setNotice(wasEditing ? 'Program updated successfully.' : 'Program added successfully.'); } catch (saveError) { setError(saveError.message); } };
-  const deleteProgram = async (program) => { if (!editingRecord || !window.confirm(`Delete ${program.degree_name}? This cannot be undone.`)) return; try { await api(`/api/admin/universities/${editingRecord.id}/programs/${program.id}`, { method: 'DELETE' }); await load('universities'); const updated = (await api('/api/admin/universities')).records.find((university) => String(university.id) === String(editingRecord.id)); setEditingRecord(updated); setNotice('Program deleted.'); } catch (deleteError) { setError(deleteError.message); } };
-  const visibleRecords = activeResource === 'universities' ? records.filter((record) => displayName(record).toLowerCase().includes(universitySearch.trim().toLowerCase())) : activeResource === 'scholarships' ? records.filter((record) => scholarshipMatches(record, scholarshipSearch)) : records;
+  const filteredUsers = users.filter((u) => {
+    if (userFilter === 'active' && u.blocked) return false;
+    if (userFilter === 'blocked' && !u.blocked) return false;
+    if (userFilter === 'unverified' && u.emailConfirmed) return false;
+    if (!userSearch.trim()) return true;
+    const q = userSearch.toLowerCase();
+    return (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q);
+  });
+  const activeCount = users.filter((u) => !u.blocked).length;
+  const blockedCount = users.filter((u) => u.blocked).length;
+  const unverifiedCount = users.filter((u) => !u.emailConfirmed).length;
+
+  const visibleRecords = activeResource === 'universities' ? records.filter((record) => universityMatches(record, universitySearch)) : activeResource === 'scholarships' ? records.filter((record) => scholarshipMatches(record, scholarshipSearch)) : records;
   const pagedRecords = visibleRecords.slice(0, visibleCount);
 
   const signOut = () => { sessionStorage.removeItem(ADMIN_TOKEN_KEY); navigate('/admin/login', { replace: true }); };
@@ -860,29 +1593,206 @@ function AdminDashboard() {
           ))}
         </nav>
         <div className="admin-sidebar__footer">
-          <button className="admin-signout" type="button" onClick={signOut}>Sign out</button>
+          <button
+            className="admin-signout"
+            type="button"
+            onClick={signOut}
+            title={sidebarCollapsed ? 'Sign out' : undefined}
+            aria-label="Sign out"
+          >
+            <span className="admin-nav-icon" aria-hidden="true">{logoutIcon}</span>
+            {!sidebarCollapsed && <span>Sign out</span>}
+          </button>
         </div>
       </aside>
 
       <main className="admin-main">
         <div className="admin-topbar">
+          {tab !== 'dashboard' && (
+            <button
+              type="button"
+              className="admin-back-btn"
+              onClick={() => changeTab('dashboard')}
+              title="Return to Admin Dashboard"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>Back to Dashboard</span>
+            </button>
+          )}
           <h1>{resourceLabels[activeResource] || 'Administration'}</h1>
           {tabDescriptions[tab] && <p className="admin-topbar__subtitle">{tabDescriptions[tab]}</p>}
         </div>
 
-        {error && <p className="admin-error" role="alert">{error}</p>}
-        {notice && <p className="admin-notice" role="status">{notice}</p>}
-
-        {tab === 'dashboard' && <AdminOverview data={dashboardData} onNavigate={changeTab} />}
+        {tab === 'dashboard' && (
+          <>
+            {notice && (
+              <div className="admin-notice" role="status">
+                <span>{notice}</span>
+                <button
+                  type="button"
+                  className="admin-notice-close"
+                  onClick={() => setNotice('')}
+                  aria-label="Dismiss notification"
+                  title="Dismiss"
+                >
+                  &times;
+                </button>
+              </div>
+            )}
+            {error && (
+              <div className="admin-error" role="alert">
+                <span>{error}</span>
+                <button
+                  type="button"
+                  className="admin-notice-close"
+                  onClick={() => setError('')}
+                  aria-label="Dismiss error"
+                  title="Dismiss"
+                >
+                  &times;
+                </button>
+              </div>
+            )}
+            <AdminOverview data={dashboardData} onNavigate={changeTab} />
+          </>
+        )}
 
         {tab === 'users' && (
           <div className="admin-card">
-            <div className="admin-section-heading"><h2>Registered users</h2><span className="admin-count">{users.length} accounts</span></div>
+            <div className="admin-section-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+              <div>
+                <h2>Registered users</h2>
+                <span className="admin-count">
+                  {userSearch.trim() || userFilter !== 'all'
+                    ? `${filteredUsers.length} of ${users.length} accounts`
+                    : `${users.length} accounts`}
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="admin-export-btn"
+                  onClick={() => exportUsersCsv(filteredUsers)}
+                  title="Download users list as CSV"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  Export CSV
+                </button>
+                <button
+                  type="button"
+                  className="admin-back-btn admin-back-btn--outline"
+                  onClick={() => changeTab('dashboard')}
+                  title="Return to Admin Dashboard"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                  </svg>
+                  <span>Back to Dashboard</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Users Search & Status Filter Pills */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', margin: '14px 0 16px' }}>
+              <div className="admin-search-wrapper" style={{ margin: 0, flex: '1 1 280px', maxWidth: '420px' }}>
+                <svg className="admin-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input
+                  className="admin-search"
+                  type="text"
+                  inputMode="search"
+                  placeholder="Search users by name or email..."
+                  aria-label="Search registered users"
+                  value={userSearch}
+                  onChange={(event) => setUserSearch(event.target.value)}
+                />
+                {userSearch && (
+                  <button
+                    type="button"
+                    className="admin-search-clear"
+                    onClick={() => setUserSearch('')}
+                    aria-label="Clear search"
+                    title="Clear search"
+                  >
+                    &times;
+                  </button>
+                )}
+              </div>
+              <div className="admin-filter-pills" role="tablist">
+                <button
+                  type="button"
+                  className={`admin-filter-pill ${userFilter === 'all' ? 'admin-filter-pill--active' : ''}`}
+                  onClick={() => setUserFilter('all')}
+                >
+                  All ({users.length})
+                </button>
+                <button
+                  type="button"
+                  className={`admin-filter-pill ${userFilter === 'active' ? 'admin-filter-pill--active' : ''}`}
+                  onClick={() => setUserFilter('active')}
+                >
+                  Active ({activeCount})
+                </button>
+                <button
+                  type="button"
+                  className={`admin-filter-pill ${userFilter === 'blocked' ? 'admin-filter-pill--active' : ''}`}
+                  onClick={() => setUserFilter('blocked')}
+                >
+                  Blocked ({blockedCount})
+                </button>
+                <button
+                  type="button"
+                  className={`admin-filter-pill ${userFilter === 'unverified' ? 'admin-filter-pill--active' : ''}`}
+                  onClick={() => setUserFilter('unverified')}
+                >
+                  Unverified ({unverifiedCount})
+                </button>
+              </div>
+            </div>
+
+            {notice && (
+              <div className="admin-notice" role="status">
+                <span>{notice}</span>
+                <button
+                  type="button"
+                  className="admin-notice-close"
+                  onClick={() => setNotice('')}
+                  aria-label="Dismiss notification"
+                  title="Dismiss"
+                >
+                  &times;
+                </button>
+              </div>
+            )}
+            {error && (
+              <div className="admin-error" role="alert">
+                <span>{error}</span>
+                <button
+                  type="button"
+                  className="admin-notice-close"
+                  onClick={() => setError('')}
+                  aria-label="Dismiss error"
+                  title="Dismiss"
+                >
+                  &times;
+                </button>
+              </div>
+            )}
             <div className="admin-table-wrap">
               <table className="admin-table">
                 <thead><tr><th>Name</th><th>Email</th><th>Provider</th><th>Verified</th><th>Last login</th><th>Access</th><th>Actions</th></tr></thead>
                 <tbody>
-                  {users.map((user) => (
+                  {filteredUsers.map((user) => (
                     <tr key={user.id}>
                       <td>{user.name}</td>
                       <td>{user.email}</td>
@@ -906,6 +1816,20 @@ function AdminDashboard() {
                       </td>
                     </tr>
                   ))}
+                  {filteredUsers.length === 0 && (
+                    <tr>
+                      <td colSpan="7" style={{ textAlign: 'center', padding: '35px', color: 'var(--ink-muted)' }}>
+                        No accounts match the current filter or search "{userSearch || userFilter}".
+                        {userSearch && (
+                          <div style={{ marginTop: '10px' }}>
+                            <button type="button" className="admin-small-button" onClick={() => { setUserSearch(''); setUserFilter('all'); }}>
+                              Clear Search
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -973,7 +1897,7 @@ function AdminDashboard() {
           </div>
         )}
 
-        {tab !== 'users' && readOnlyResources.includes(activeResource) && (
+        {tab !== 'dashboard' && tab !== 'users' && readOnlyResources.includes(activeResource) && (
           activeResource === 'activity' ? (
             <SystemReportsView records={records} />
           ) : (
@@ -1008,23 +1932,200 @@ function AdminDashboard() {
           )
         )}
 
-        {tab !== 'users' && !readOnlyResources.includes(activeResource) && (
+        {tab !== 'dashboard' && tab !== 'users' && !readOnlyResources.includes(activeResource) && (
           <div className="admin-card">
-            {(activeResource === 'universities' || activeResource === 'scholarships') && <div className="admin-subnav admin-resource-subnav" role="tablist" aria-label={`${resourceLabels[activeResource]} views`}>
-              <button type="button" role="tab" aria-selected={resourceView === 'list'} className={resourceView === 'list' ? 'admin-subnav-item admin-subnav-item--active' : 'admin-subnav-item'} onClick={() => { setResourceView('list'); setEditingRecord(null); }}>Search {resourceLabels[activeResource].toLowerCase()}</button>
-              <button type="button" role="tab" aria-selected={resourceView === 'add'} className={resourceView === 'add' ? 'admin-subnav-item admin-subnav-item--active' : 'admin-subnav-item'} onClick={() => { setResourceView('add'); setEditingRecord(null); }}>Add record</button>
-            </div>}
+            {(activeResource === 'universities' || activeResource === 'scholarships') && (
+              <div className="admin-subnav admin-resource-subnav" role="tablist" aria-label={`${resourceLabels[activeResource]} views`}>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={resourceView === 'list'}
+                  className={resourceView === 'list' ? 'admin-subnav-item admin-subnav-item--active' : 'admin-subnav-item'}
+                  onClick={() => { setResourceView('list'); setEditingRecord(null); setNotice(''); setError(''); }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  Search {resourceLabels[activeResource]}
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={resourceView === 'add'}
+                  className={resourceView === 'add' ? 'admin-subnav-item admin-subnav-item--active' : 'admin-subnav-item'}
+                  onClick={() => { setResourceView('add'); setEditingRecord(null); setNotice(''); setError(''); }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Add {getResourceSingular(activeResource)}
+                </button>
+              </div>
+            )}
+            {notice && (
+              <div className="admin-notice" role="status">
+                <span>{notice}</span>
+                <button
+                  type="button"
+                  className="admin-notice-close"
+                  onClick={() => setNotice('')}
+                  aria-label="Dismiss notification"
+                  title="Dismiss"
+                >
+                  &times;
+                </button>
+              </div>
+            )}
+            {error && (
+              <div className="admin-error" role="alert">
+                <span>{error}</span>
+                <button
+                  type="button"
+                  className="admin-notice-close"
+                  onClick={() => setError('')}
+                  aria-label="Dismiss error"
+                  title="Dismiss"
+                >
+                  &times;
+                </button>
+              </div>
+            )}
             {resourceView === 'list' && <div>
-              <div className="admin-section-heading">
-                <h2>{resourceLabels[activeResource]}</h2>
-                <span className="admin-count">{activeResource === 'universities' ? `${records.length} universities` : activeResource === 'scholarships' ? `${records.length} scholarships` : activeResource === 'chatbot-responses' ? `${records.length} rules` : `${records.length} records`}</span>
-                {(activeResource !== 'universities' && activeResource !== 'scholarships') && <button className="admin-small-button" type="button" onClick={() => { setEditingRecord(null); setResourceView('add'); }}>Add</button>}
+              <div className="admin-section-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <h2>{resourceLabels[activeResource]}</h2>
+                  <span className="admin-count">
+                    {activeResource === 'universities'
+                      ? (universitySearch.trim()
+                          ? `${visibleRecords.length} of ${records.length} universities`
+                          : `${records.length} universities`)
+                      : activeResource === 'scholarships'
+                      ? (scholarshipSearch.trim()
+                          ? `${visibleRecords.length} of ${records.length} scholarships`
+                          : `${records.length} scholarships`)
+                      : activeResource === 'chatbot-responses'
+                      ? `${records.length} rules`
+                      : `${records.length} records`}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  {activeResource === 'universities' && (
+                    <button
+                      type="button"
+                      className="admin-export-btn"
+                      onClick={() => exportUniversitiesCsv(visibleRecords)}
+                      title="Download universities catalog as CSV"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                      Export CSV
+                    </button>
+                  )}
+                  {activeResource === 'scholarships' && (
+                    <button
+                      type="button"
+                      className="admin-export-btn"
+                      onClick={() => exportScholarshipsCsv(visibleRecords)}
+                      title="Download scholarships catalog as CSV"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                      Export CSV
+                    </button>
+                  )}
+                  {(activeResource !== 'universities' && activeResource !== 'scholarships') && (
+                    <button className="admin-small-button" type="button" onClick={() => { setEditingRecord(null); setResourceView('add'); }}>Add</button>
+                  )}
+                </div>
               </div>
               {activeResource === 'chatbot-responses' && (
                 <p className="admin-hint">Keyword-triggered canned replies the assistant sends automatically. The conversation log (above) is where you monitor what visitors actually asked.</p>
               )}
-              {activeResource === 'universities' && <input className="admin-search" type="search" placeholder="Search universities" aria-label="Search universities" value={universitySearch} onChange={(event) => setUniversitySearch(event.target.value)} />}
-              {activeResource === 'scholarships' && <input className="admin-search" type="search" placeholder="Search scholarships, providers, or criteria" aria-label="Search scholarships" value={scholarshipSearch} onChange={(event) => setScholarshipSearch(event.target.value)} />}
+              {activeResource === 'universities' && (
+                <div className="admin-search-wrapper">
+                  <svg className="admin-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input
+                    className="admin-search"
+                    type="text"
+                    inputMode="search"
+                    placeholder="Search universities by name, city, province, sector, or program (e.g. NUST, Lahore, CS)..."
+                    aria-label="Search universities"
+                    value={universitySearch}
+                    onChange={(event) => setUniversitySearch(event.target.value)}
+                  />
+                  {universitySearch && (
+                    <button
+                      type="button"
+                      className="admin-search-clear"
+                      onClick={() => setUniversitySearch('')}
+                      aria-label="Clear search"
+                      title="Clear search"
+                    >
+                      &times;
+                    </button>
+                  )}
+                </div>
+              )}
+              {activeResource === 'scholarships' && (
+                <div className="admin-search-wrapper">
+                  <svg className="admin-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input
+                    className="admin-search"
+                    type="text"
+                    inputMode="search"
+                    placeholder="Search scholarships by name, provider, province, merit/need, criteria..."
+                    aria-label="Search scholarships"
+                    value={scholarshipSearch}
+                    onChange={(event) => setScholarshipSearch(event.target.value)}
+                  />
+                  {scholarshipSearch && (
+                    <button
+                      type="button"
+                      className="admin-search-clear"
+                      onClick={() => setScholarshipSearch('')}
+                      aria-label="Clear search"
+                      title="Clear search"
+                    >
+                      &times;
+                    </button>
+                  )}
+                </div>
+              )}
+              {visibleRecords.length === 0 && (
+                <div className="admin-empty-search-state">
+                  <p>
+                    No {activeResource} found matching "
+                    <strong>
+                      {activeResource === 'universities' ? universitySearch : scholarshipSearch}
+                    </strong>
+                    ".
+                  </p>
+                  <button
+                    type="button"
+                    className="admin-small-button"
+                    onClick={() => {
+                      if (activeResource === 'universities') setUniversitySearch('');
+                      if (activeResource === 'scholarships') setScholarshipSearch('');
+                    }}
+                  >
+                    Clear Search
+                  </button>
+                </div>
+              )}
               {pagedRecords.map((record) => (
                 <div className="admin-record" key={record.id}>
                   <div className="admin-record__content">
@@ -1066,7 +2167,7 @@ function AdminDashboard() {
               )}
             </div>}
             {resourceView === 'add' && <div className="admin-form-screen">
-              <div className="admin-section-heading"><div><h2>{editingRecord ? 'Edit record' : `Add ${resourceLabels[activeResource].toLowerCase().replace(/s$/, '')}`}</h2><span className="admin-count">Complete the fields, then save when ready.</span></div>{(activeResource !== 'universities' && activeResource !== 'scholarships') && <button type="button" className="admin-text-button" onClick={() => { setResourceView('list'); setEditingRecord(null); }}>Back to records</button>}</div>
+              <div className="admin-section-heading"><div><h2>{editingRecord ? `Edit ${getResourceSingular(activeResource)}` : `Add ${getResourceSingular(activeResource)}`}</h2><span className="admin-count">Complete the fields, then save when ready.</span></div><button type="button" className="admin-text-button" onClick={() => { setResourceView('list'); setEditingRecord(null); setNotice(''); setError(''); }}>&larr; Back to {resourceLabels[activeResource] || 'records'}</button></div>
               <EntityForm key={`${activeResource}-${formResetKey}`} tab={activeResource} record={editingRecord} onSave={saveRecord} onCancel={() => setEditingRecord(null)} />
               {activeResource === 'universities' && editingRecord && (
                 <div className="admin-programs-panel">
@@ -1087,6 +2188,38 @@ function AdminDashboard() {
                 </div>
               )}
             </div>}
+          </div>
+        )}
+
+        {deleteTarget && (
+          <div className="admin-modal-overlay" onClick={() => setDeleteTarget(null)}>
+            <div className="admin-modal-card admin-modal-card--danger" onClick={(e) => e.stopPropagation()}>
+              <div className="admin-modal-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span className="admin-danger-icon" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                  </span>
+                  <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--ink)' }}>Confirm Deletion</h2>
+                </div>
+                <button type="button" className="admin-modal-close" onClick={() => setDeleteTarget(null)} aria-label="Close dialog">×</button>
+              </div>
+              <div className="admin-modal-body">
+                <p style={{ margin: '6px 0 8px 0', fontSize: '0.94rem', color: 'var(--ink)', lineHeight: '1.45' }}>
+                  {deleteTarget.message}
+                </p>
+                <p style={{ margin: '0 0 18px 0', fontSize: '0.82rem', color: '#b91c1c', fontWeight: 600 }}>
+                  Warning: This action is permanent and cannot be undone.
+                </p>
+                <div className="admin-modal-actions">
+                  <button type="button" className="secondary-button" onClick={() => setDeleteTarget(null)}>Cancel</button>
+                  <button type="button" className="admin-action-btn-danger" onClick={confirmDelete}>Confirm Delete</button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </main>

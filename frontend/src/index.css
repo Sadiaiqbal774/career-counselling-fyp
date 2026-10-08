@@ -515,27 +515,34 @@ html.dark-mode .scholarship-apply-btn:hover {
 }
 
 .admin-shell {
-  min-height: calc(100vh - 84px);
+  min-height: 100vh;
   display: grid;
   place-items: center;
   padding: 32px 20px;
-  background: #10121e;
+  background:
+    radial-gradient(circle at top left, rgba(214, 191, 168, 0.25), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(124, 93, 66, 0.12), transparent 30%),
+    linear-gradient(180deg, #F6EFE7 0%, #FAF8F5 100%);
+}
+
+html.dark-mode .admin-shell {
+  background: #171412;
 }
 
 .admin-panel {
-  width: min(500px, 100%);
-  padding: 36px;
+  width: min(480px, 100%);
+  padding: 38px 36px;
   background: #ffffff;
-  border: 1px solid #e3e6ee;
-  border-radius: 16px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
-  color: #161a24;
+  border: 1px solid rgba(43, 33, 24, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 20px 48px rgba(43, 33, 24, 0.08);
+  color: #2b1b0e;
 }
 
 html.dark-mode .admin-panel {
-  background: #1a1e2b;
-  border-color: #2e3549;
-  color: #f0f2f7;
+  background: #211b18;
+  border-color: #40342d;
+  color: #f7efe7;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
 }
 
@@ -547,16 +554,17 @@ html.dark-mode .admin-panel {
 }
 
 .admin-login-brand .admin-brand-mark {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: linear-gradient(155deg, #b8863a 0%, #8a5f1c 100%);
-  color: #fff;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #7c5d42, #5a3e29);
+  color: #fff8f0;
   display: grid;
   place-items: center;
-  font-family: 'Source Serif 4', Georgia, serif;
-  font-weight: 700;
-  font-size: 1.1rem;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 1.15rem;
+  box-shadow: 0 8px 20px rgba(124, 93, 66, 0.22);
 }
 
 .admin-login-brand-text {
@@ -567,46 +575,51 @@ html.dark-mode .admin-panel {
 
 .admin-login-brand-name {
   display: block;
-  font-family: 'Source Serif 4', Georgia, serif;
+  font-family: inherit;
   font-weight: 700;
-  font-size: 1.15rem !important;
-  color: #161a24 !important;
+  font-size: 1.2rem !important;
+  color: #2b1b0e !important;
 }
 
 html.dark-mode .admin-login-brand-name {
-  color: #f0f2f7 !important;
+  color: #f7efe7 !important;
 }
 
 .admin-login-brand-sub {
   display: block;
   font-size: 0.78rem !important;
-  color: #647087 !important;
+  color: #8c7362 !important;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-weight: 600;
 }
 
 html.dark-mode .admin-login-brand-sub {
-  color: #a6b0c2 !important;
+  color: #c9b4a4 !important;
 }
 
 .admin-login-title {
-  font-family: 'Source Serif 4', Georgia, serif;
+  font-family: inherit;
+  font-weight: 700;
   font-size: 1.75rem !important;
   line-height: 1.25 !important;
-  margin: 6px 0 10px !important;
-  color: inherit;
+  margin: 6px 0 8px !important;
+  color: #2b1b0e;
+}
+
+html.dark-mode .admin-login-title {
+  color: #f7efe7;
 }
 
 .admin-login-desc {
-  color: #647087;
+  color: #6d5b4e;
   font-size: 0.94rem;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
   line-height: 1.45;
 }
 
 html.dark-mode .admin-login-desc {
-  color: #a6b0c2;
+  color: #c9b4a4;
 }
 
 .admin-nowrap {
@@ -616,14 +629,14 @@ html.dark-mode .admin-login-desc {
 
 .admin-form {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .admin-form label {
   font-weight: 600;
   font-size: 0.92rem;
-  color: #161a24;
-  margin-bottom: 4px;
+  color: #2b1b0e;
+  margin-bottom: 5px;
   display: block;
 }
 
@@ -634,44 +647,29 @@ html.dark-mode .admin-form label {
 .admin-form input {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid #e3e6ee;
+  border: 1px solid rgba(43, 33, 24, 0.16);
   border-radius: 10px;
   background: #fff;
-  color: #161a24;
+  color: #2b1b0e;
   font-size: 0.95rem;
   font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 html.dark-mode .admin-form input {
-  background: #12141c;
+  background: #171412;
   color: #f0f2f7;
-  border-color: #2e3549;
+  border-color: #40342d;
 }
 
 .admin-form input:focus {
-  outline: 2px solid #b8863a;
-  outline-offset: 1px;
-}
-
-.admin-login-note {
-  font-size: 0.85rem;
-  color: #647087;
-  background: rgba(184, 134, 58, 0.08);
-  border: 1px solid rgba(184, 134, 58, 0.2);
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin: 2px 0 8px;
-  line-height: 1.4;
-}
-
-html.dark-mode .admin-login-note {
-  background: rgba(184, 134, 58, 0.12);
-  border-color: rgba(184, 134, 58, 0.3);
-  color: #d1b894;
+  outline: none;
+  border-color: #7c5d42;
+  box-shadow: 0 0 0 3px rgba(124, 93, 66, 0.15);
 }
 
 .admin-submit-btn {
-  background: linear-gradient(155deg, #b8863a 0%, #8a5f1c 100%) !important;
+  background: linear-gradient(135deg, #7c5d42, #5a3e29) !important;
   color: #ffffff !important;
   border: none !important;
   padding: 13px 20px !important;
@@ -684,10 +682,12 @@ html.dark-mode .admin-login-note {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  box-shadow: 0 4px 14px rgba(90, 62, 41, 0.25) !important;
 }
 
 .admin-submit-btn:hover {
   opacity: 0.92;
+  transform: translateY(-1px);
 }
 
 .admin-error {
@@ -2529,12 +2529,27 @@ h2 {
 
 .app-content {
   background: #FAF8F5;
-  padding: 2rem;
-  padding-top: calc(80px + 2rem);
+  padding: 1.25rem 2rem 2.5rem;
+  padding-top: calc(80px + 1rem);
 }
 
 .app-content--admin {
-  padding-top: 60px;
+  padding: 0;
+}
+
+.app-content--landing {
+  padding: 0;
+  padding-top: 80px;
+  width: 100%;
+}
+
+.app-content--recommender {
+  padding: 0;
+  padding-top: 80px;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
 }
 
 .app-footer {
@@ -2683,201 +2698,134 @@ html.dark-mode .app-footer__admin-link {
 
 .landing-feature-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 1.5rem;
 }
 
 .landing-feature-card {
   background: #fff;
-  border-radius: 12px;
-  height: 230px;
-  border: 0.5px solid rgba(61, 43, 31, 0.08);
-  border-top-width: 3px;
-  padding: 1rem;
-}
-
-.landing-feature-card:nth-child(1) {
-  border-top-color: #2E1B0E;
-}
-
-.landing-feature-card:nth-child(2) {
-  border-top-color: #1D9E75;
-}
-
-.landing-feature-card:nth-child(3) {
-  border-top-color: #378ADD;
-}
-
-.landing-feature-card:nth-child(4) {
-  border-top-color: #854F0B;
-}
-
-.landing-feature-card__icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  background: linear-gradient(135deg, rgba(46, 27, 14, 0.12), rgba(200, 168, 130, 0.2));
+  border-radius: 14px;
+  min-height: auto;
+  border: 1px solid rgba(61, 43, 31, 0.08);
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(44, 28, 14, 0.04);
 }
 
 .landing-feature-card h3 {
   margin: 0.9rem 0 0;
-  font-size: 20px;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #1C0E05;
 }
 
 .landing-feature-card p {
   margin: 0.45rem 0 0;
-  font-size: 18px;
+  font-size: 0.92rem;
   line-height: 1.6;
   color: #6B5347;
 }
 
 .landing-method-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 1.5rem;
 }
 
 .landing-method-card {
   background: #fff;
-  border-radius: 12px;
-  height: 190px;
-  border: 0.5px solid rgba(61, 43, 31, 0.08);
-  padding: 1rem;
-}
-
-.landing-method-card__number {
-  font-family: Georgia, serif;
-  font-size: 13px;
-  font-weight: 700;
-  color: #9C8478;
+  border-radius: 14px;
+  min-height: auto;
+  border: 1px solid rgba(61, 43, 31, 0.08);
+  padding: 1.5rem;
 }
 
 .landing-method-card h3 {
   margin: 0.75rem 0 0;
-  font-size: 22px;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #1C0E05;
 }
 
 .landing-method-card p {
   margin: 0.45rem 0 0;
-  font-size: 20px;
+  font-size: 0.94rem;
   line-height: 1.6;
   color: #6B5347;
 }
 
 .landing-career-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 1.5rem;
 }
 
 .landing-career-card {
   background: #fff;
-  border-radius: 12px;
-  height: 160px;
-  border: 0.5px solid rgba(61, 43, 31, 0.08);
-  padding: 1rem;
-}
-
-.landing-career-card__icon {
-  width: 28px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  border-radius: 7px;
-  background: rgba(46, 27, 14, 0.08);
-  font-size: 15px;
+  border-radius: 14px;
+  min-height: auto;
+  border: 1px solid rgba(61, 43, 31, 0.08);
+  padding: 1.5rem;
 }
 
 .landing-career-card h3 {
   margin: 0.8rem 0 0;
-  font-size: 22px;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #1C0E05;
 }
 
 .landing-faq-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+  margin-top: 1.5rem;
 }
 
 .landing-faq-card {
   background: #fff;
-  border-radius: 12px;
-  height: 180px;
-  border: 0.5px solid rgba(61, 43, 31, 0.08);
-  padding: 1rem;
+  border-radius: 14px;
+  min-height: auto;
+  border: 1px solid rgba(61, 43, 31, 0.08);
+  padding: 1.5rem;
 }
 
 .landing-faq-card h3 {
   margin: 0;
-  font-size: 22px;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #1C0E05;
 }
 
 .landing-faq-card p {
   margin: 0.45rem 0 0;
-  font-size: 20px;
+  font-size: 0.94rem;
   line-height: 1.6;
   color: #6B5347;
 }
 
-.landing-privacy-card,
-.landing-cta-card {
-  background: #fff;
-  border-radius: 18px;
-  border: 0.5px solid rgba(61, 43, 31, 0.08);
-  padding: 1.5rem;
-}
-
 .landing-testimonial-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 1.5rem;
 }
 
 .landing-testimonial-card {
   background: #fff;
-  border-radius: 12px;
-  height: 180px;
-  border: 0.5px solid rgba(61, 43, 31, 0.08);
-  padding: 1rem;
+  border-radius: 14px;
+  min-height: auto;
+  border: 1px solid rgba(61, 43, 31, 0.08);
+  padding: 1.5rem;
 }
 
 .landing-testimonial-card blockquote {
   margin: 0;
-  font-size: 20px;
-  line-height: 1.7;
-  color: #6B5347;
-}
-
-.landing-testimonial-card figcaption {
-  margin-top: 1rem;
-  padding-top: 0.8rem;
-  border-top: 0.5px solid rgba(61, 43, 31, 0.08);
-  font-size: 12px;
-  color: #6B5347;
-}
-
-.landing-cta-section {
-  padding-bottom: 2rem;
-}
-
-.landing-cta-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #2E1B0E;
 }
 
 .landing-footer {
