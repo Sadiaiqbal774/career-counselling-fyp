@@ -388,6 +388,8 @@ def supabase_admin_request(method, path, body=None, params=None):
         except (json.JSONDecodeError, AttributeError):
             pass
         raise RuntimeError(message or f"Supabase admin request failed ({error.code})")
+    except Exception as error:
+        raise RuntimeError(f"Database connection error: {str(error)}")
 
 
 def list_supabase_users():
@@ -875,52 +877,49 @@ def admin_update_user(user_id):
     if not name or not email:
         return jsonify({"message": "Name and email are required."}), 400
 
-    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-        users = load_users()
-        user = next((entry for entry in users if entry["id"] == user_id), None)
-        if not user:
-            return jsonify({"message": "User not found."}), 404
-        user["name"] = name
-        user["email"] = email
+    # 1. First check if user exists in local users.json store
+    users = load_users()
+    local_user = next((entry for entry in users if str(entry.get("id")) == str(user_id)), None)
+    if local_user:
+        local_user["name"] = name
+        local_user["email"] = email
         if "blocked" in payload:
-            user["blocked"] = bool(payload["blocked"])
+            local_user["blocked"] = bool(payload["blocked"])
         if "emailConfirmed" in payload:
-            user["emailConfirmed"] = bool(payload["emailConfirmed"])
+            local_user["emailConfirmed"] = bool(payload["emailConfirmed"])
         save_users(users)
         log_activity("admin_user_updated", {"userId": user_id, "email": email})
-        return jsonify({"user": sanitize_user(user)}), 200
+        return jsonify({"user": sanitize_user(local_user)}), 200
+
+    # 2. Otherwise update via Supabase if configured
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        return jsonify({"message": "User not found."}), 404
 
     try:
         current = supabase_admin_request("GET", f"/auth/v1/admin/users/{user_id}")
-    except RuntimeError as error:
-        return jsonify({"message": str(error)}), 502
-    if not current or not current.get("id"):
-        return jsonify({"message": "User not found."}), 404
+        if not current or not current.get("id"):
+            return jsonify({"message": "User not found."}), 404
 
-    update_body = {
-        "email": email,
-        "user_metadata": {**(current.get("user_metadata") or {}), "name": name},
-    }
-    will_block = None
-    if "blocked" in payload:
-        will_block = bool(payload["blocked"])
-        update_body["ban_duration"] = "876000h" if will_block else "none"
-    if "emailConfirmed" in payload:
-        update_body["email_confirm"] = bool(payload["emailConfirmed"])
+        update_body = {
+            "email": email,
+            "user_metadata": {**(current.get("user_metadata") or {}), "name": name},
+        }
+        will_block = None
+        if "blocked" in payload:
+            will_block = bool(payload["blocked"])
+            update_body["ban_duration"] = "876000h" if will_block else "none"
+        if "emailConfirmed" in payload:
+            update_body["email_confirm"] = bool(payload["emailConfirmed"])
 
-    try:
         updated = supabase_admin_request("PUT", f"/auth/v1/admin/users/{user_id}", body=update_body)
-    except RuntimeError as error:
-        message = str(error)
-        status = 409 if "already been registered" in message.lower() or "already exists" in message.lower() else 502
-        return jsonify({"message": message}), status
+        if will_block is not None:
+            log_activity("admin_user_blocked" if will_block else "admin_user_unblocked", {"userId": user_id, "email": email})
+        else:
+            log_activity("admin_user_updated", {"userId": user_id, "email": email})
 
-    if will_block is not None:
-        log_activity("admin_user_blocked" if will_block else "admin_user_unblocked", {"userId": user_id, "email": email})
-    else:
-        log_activity("admin_user_updated", {"userId": user_id, "email": email})
-
-    return jsonify({"user": sanitize_supabase_user(updated)}), 200
+        return jsonify({"user": sanitize_supabase_user(updated)}), 200
+    except Exception as error:
+        return jsonify({"message": str(error)}), 500
 
 
 @app.route("/api/admin/users/<user_id>", methods=["DELETE"])
@@ -929,30 +928,30 @@ def admin_delete_user(user_id):
     if auth_error:
         return auth_error
 
-    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-        users = load_users()
-        remaining_users = [entry for entry in users if entry["id"] != user_id]
-        if len(remaining_users) == len(users):
-            return jsonify({"message": "User not found."}), 404
+    # 1. First check if user exists in local users.json store
+    users = load_users()
+    remaining_users = [entry for entry in users if str(entry.get("id")) != str(user_id)]
+    if len(remaining_users) < len(users):
         save_users(remaining_users)
         log_activity("admin_user_deleted", {"userId": user_id})
         return jsonify({"message": "User deleted successfully."}), 200
 
+    # 2. Otherwise delete via Supabase if configured
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        return jsonify({"message": "User not found."}), 404
+
     try:
         supabase_admin_request("DELETE", f"/auth/v1/admin/users/{user_id}")
-    except RuntimeError as error:
-        message = str(error)
-        status = 404 if "not found" in message.lower() else 502
-        return jsonify({"message": message}), status
+        for resource in ("profiles", "quiz_scores"):
+            try:
+                supabase_admin_request("DELETE", f"/rest/v1/{resource}", params={"user_id" if resource == "quiz_scores" else "id": f"eq.{user_id}"})
+            except Exception:
+                pass
 
-    for resource in ("profiles", "quiz_scores"):
-        try:
-            supabase_admin_request("DELETE", f"/rest/v1/{resource}", params={"user_id" if resource == "quiz_scores" else "id": f"eq.{user_id}"})
-        except RuntimeError:
-            pass
-
-    log_activity("admin_user_deleted", {"userId": user_id})
-    return jsonify({"message": "User deleted successfully."}), 200
+        log_activity("admin_user_deleted", {"userId": user_id})
+        return jsonify({"message": "User deleted successfully."}), 200
+    except Exception as error:
+        return jsonify({"message": str(error)}), 500
 
 
 @app.route("/api/admin/assessments", methods=["GET"])
