@@ -77,7 +77,7 @@ function AppNavigation() {
 
 function AppFooter() {
   const location = useLocation();
-  if (location.pathname.startsWith('/admin')) return null;
+  if (location.pathname.startsWith('/admin') || location.pathname === '/' || location.pathname === '/university-recommender') return null;
 
   return (
     <footer className="app-footer">
@@ -90,6 +90,8 @@ function AppFooter() {
 function AppLayout() {
   const location = useLocation();
   const isAdminPortal = location.pathname.startsWith('/admin');
+  const isLandingPage = location.pathname === '/';
+  const isRecommenderPage = location.pathname === '/university-recommender';
 
   useEffect(() => {
     try {
@@ -104,7 +106,7 @@ function AppLayout() {
     <>
       {!isAdminPortal && <BackButton />}
       {!isAdminPortal && <AppNavigation />}
-      <div className={isAdminPortal ? 'app-content app-content--admin' : 'app-content'}>
+      <div className={isAdminPortal ? 'app-content app-content--admin' : isLandingPage ? 'app-content app-content--landing' : isRecommenderPage ? 'app-content app-content--recommender' : 'app-content'}>
         <Routes>
           <Route path="/" Component={ModernLanding} />
           <Route path="/login" Component={Login} />

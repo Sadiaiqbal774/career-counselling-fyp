@@ -203,23 +203,18 @@ globalStyle.textContent = `
     background: var(--bg-card);
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
-    padding: 18px;
+    padding: 20px;
     margin-top: 14px;
     box-shadow: var(--shadow);
-    transition: transform .15s, box-shadow .15s;
+    transition: box-shadow .15s, border-color .15s;
     position: relative;
-    height: 310px;
-    overflow-y: auto;
+    min-height: auto;
+    height: auto;
+    overflow: visible;
     display: flex;
     flex-direction: column;
-    animation: slideUp 0.5s ease-out forwards;
   }
-  .uni-card:nth-child(1) { animation-delay: 0.1s; }
-  .uni-card:nth-child(2) { animation-delay: 0.2s; }
-  .uni-card:nth-child(3) { animation-delay: 0.3s; }
-  .uni-card:nth-child(4) { animation-delay: 0.4s; }
-  .uni-card:nth-child(5) { animation-delay: 0.5s; }
-  .uni-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(100,60,20,.13); }
+  .uni-card:hover { border-color: var(--accent); box-shadow: 0 6px 20px rgba(100,60,20,.10); }
   .uni-card .uni-links { margin-top: auto; }
   .uni-card h4 { font-family: var(--font-head); font-size: 16px; color: var(--accent-dk); margin-bottom: 10px; margin-right: 45px; }
   
@@ -308,6 +303,7 @@ globalStyle.textContent = `
   .guidance-list li::marker { color: var(--accent); }
 
   /* summary stats */
+  /* summary stats */
   .summary-stats {
     background: linear-gradient(135deg, var(--accent-lt) 0%, #f9f1e8 100%);
     border: 1.5px solid var(--border);
@@ -317,7 +313,6 @@ globalStyle.textContent = `
     display: flex;
     justify-content: space-around;
     text-align: center;
-    animation: slideUp 0.5s ease-out forwards;
   }
   .summary-stat-item {
     flex: 1;
@@ -345,8 +340,7 @@ globalStyle.textContent = `
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
     padding: 20px;
-    margin-bottom: 8px;
-    animation: slideUp 0.5s ease-out forwards;
+    margin-bottom: 16px;
   }
   .career-header h3 {
     font-family: var(--font-head);
@@ -386,16 +380,31 @@ globalStyle.textContent = `
     transition: width .3s ease;
   }
 
-  /* slide up animation */
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  /* tabs pill */
+  .recommender-tabs {
+    display: flex;
+    gap: 8px;
+    margin: 14px 0 16px;
+    background: rgba(0,0,0,0.04);
+    padding: 4px;
+    border-radius: 10px;
+  }
+  .recommender-tab-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .recommender-tab-btn.active {
+    background: var(--bg-card);
+    color: var(--accent-dk);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
   }
 `;
 document.head.appendChild(globalStyle);
@@ -428,48 +437,113 @@ function RadioPills({ name, options, onChange, value }) {
 
 // ─── Scholarship Card Component ───────────────────────────────────
 function ScholarshipCard({ scholarship, index, yourMerit, isSaved, onToggleBookmark }) {
-  const hasMerit = scholarship.min_percentage != null;
+  const hasMerit = scholarship.min_percentage !== null && scholarship.min_percentage !== undefined && String(scholarship.min_percentage).trim() !== "";
+  const numericMerit = Number(yourMerit) || 0;
+  const reqMerit = Number(scholarship.min_percentage) || 0;
+  const isEligible = !hasMerit || numericMerit >= reqMerit;
 
   return (
-    <div className="uni-card">
+    <div className="uni-card" style={{ minHeight: "auto", height: "auto" }}>
       <div className="rank-badge">#{index + 1}</div>
 
-      <h4>{scholarship.name}</h4>
+      <h4 style={{ fontSize: "16px", fontWeight: 700, color: "var(--accent-dk)", margin: "0 40px 4px 0", lineHeight: 1.3 }}>
+        {scholarship.name}
+      </h4>
 
-      <div className="uni-meta">
-        <span className="uni-tag">{scholarship.field}</span>
-        <span className={`eligible-badge ${hasMerit ? "yes" : "unknown"}`}>
-          {hasMerit ? "✓ Eligible" : "Merit not listed"}
+      {scholarship.provider && (
+        <p style={{ fontSize: "12.5px", fontWeight: 600, color: "var(--text-muted)", marginBottom: "8px" }}>
+          🏛️ {scholarship.provider}
+        </p>
+      )}
+
+      <div className="uni-meta" style={{ margin: "6px 0 10px" }}>
+        {scholarship.field && <span className="uni-tag">{scholarship.field}</span>}
+        {scholarship.basis && (
+          <span className="uni-tag" style={{ background: "rgba(193, 123, 63, 0.12)" }}>
+            {scholarship.basis}
+          </span>
+        )}
+        {scholarship.provinces && (
+          <span className="uni-tag" style={{ background: "rgba(45, 122, 79, 0.10)", color: "var(--success)" }}>
+            📍 {scholarship.provinces}
+          </span>
+        )}
+        <span className={`eligible-badge ${isEligible ? "yes" : "unknown"}`}>
+          {hasMerit ? (isEligible ? "✓ Eligible" : "✗ Below Cutoff") : "✓ Open / Need-Based"}
         </span>
       </div>
 
-      <div className="marks-row">
+      <div className="marks-row" style={{ background: "rgba(0,0,0,0.025)", padding: "7px 12px", borderRadius: "8px", margin: "6px 0 10px" }}>
         <span>
-          <strong>Your Merit:</strong> {yourMerit}%
+          <strong>Your Percentage:</strong> {yourMerit}%
         </span>
-        {hasMerit && (
+        {hasMerit ? (
           <>
             <span>•</span>
             <span>
-              <strong>Required Merit:</strong> {scholarship.min_percentage}%
+              <strong>Required Cutoff:</strong> {scholarship.min_percentage}%
+            </span>
+          </>
+        ) : (
+          <>
+            <span>•</span>
+            <span style={{ color: "var(--success)", fontWeight: 500 }}>
+              ✓ No minimum cutoff required
             </span>
           </>
         )}
       </div>
 
       {hasMerit && (
-        <>
+        <div style={{ marginBottom: "10px" }}>
           <div className="merit-meter">
-            <div className="merit-fill" style={{ width: "100%" }} />
+            <div
+              className="merit-fill"
+              style={{
+                width: `${Math.min(100, Math.max(15, (numericMerit / Math.max(reqMerit, 1)) * 100))}%`,
+                background: isEligible ? "var(--success)" : "var(--danger)"
+              }}
+            />
           </div>
-          <p className="merit-label">✓ Eligible based on your academic percentage</p>
-        </>
+          <p className="merit-label">
+            {isEligible
+              ? `✓ Your score (${yourMerit}%) satisfies the ${scholarship.min_percentage}% requirement`
+              : `Requires ${Math.round(reqMerit - numericMerit)}% more to meet the requirement`}
+          </p>
+        </div>
       )}
 
-      <div className="uni-links">
-        <a href={scholarship.link} target="_blank" rel="noreferrer" className="uni-link primary">
-          Apply Now →
-        </a>
+      {scholarship.coverage ? (
+        <div style={{ fontSize: "12.5px", color: "var(--text)", background: "rgba(193, 123, 63, 0.08)", padding: "8px 12px", borderRadius: "8px", margin: "8px 0" }}>
+          <strong style={{ color: "var(--accent-dk)" }}>💰 Award &amp; Coverage:</strong>{" "}
+          <span>{scholarship.coverage}</span>
+        </div>
+      ) : (
+        <div style={{ fontSize: "12.5px", color: "var(--text-muted)", background: "rgba(0,0,0,0.02)", padding: "8px 12px", borderRadius: "8px", margin: "8px 0" }}>
+          <strong style={{ color: "var(--text)" }}>💰 Award:</strong> Full / partial tuition fee coverage &amp; academic grant support
+        </div>
+      )}
+
+      {scholarship.eligibility_raw ? (
+        <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "6px", lineHeight: 1.5 }}>
+          <strong style={{ color: "var(--text)" }}>📋 Eligibility:</strong> {scholarship.eligibility_raw}
+        </p>
+      ) : (
+        <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "6px", lineHeight: 1.5 }}>
+          <strong style={{ color: "var(--text)" }}>📋 Eligibility:</strong> Open to Pakistani students fulfilling designated academic and institution criteria.
+        </p>
+      )}
+
+      <div className="uni-links" style={{ marginTop: "14px", paddingTop: "10px", borderTop: "1px solid var(--border)" }}>
+        {scholarship.link ? (
+          <a href={scholarship.link} target="_blank" rel="noreferrer" className="uni-link primary">
+            Apply Now →
+          </a>
+        ) : (
+          <span className="uni-link primary" style={{ opacity: 0.7 }}>
+            Details Available on Portal
+          </span>
+        )}
         <button
           type="button"
           onClick={() => onToggleBookmark && onToggleBookmark(scholarship)}
@@ -493,6 +567,7 @@ function ScholarshipCard({ scholarship, index, yourMerit, isSaved, onToggleBookm
     </div>
   );
 }
+
 
 const INTEREST_OPTS = [
   { val: "1", label: "Low" },
@@ -545,6 +620,7 @@ function UniversityRecommender() {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [autoSubmitted, setAutoSubmitted] = useState(false);
   const [resultCityFilter, setResultCityFilter] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
   const [bookmarkTick, setBookmarkTick] = useState(0);
   const resultRef = useRef(null);
 
@@ -720,10 +796,6 @@ function UniversityRecommender() {
         return;
       }
       setResult(data);
-      // Auto-scroll to results
-      setTimeout(() => {
-        resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
     } catch (err) {
       setError("Server not responding. Please make sure the backend is running.");
       setResult(null);
@@ -757,33 +829,36 @@ function UniversityRecommender() {
 
   return (
     <div style={{
-      display: "flex", height: "100vh",
+      display: "flex",
+      height: "calc(100vh - 80px)",
       fontFamily: "var(--font-body)",
-      background: "var(--bg)"
+      background: "var(--bg)",
+      overflow: "hidden"
     }}>
-      <div style={{ position: "fixed", top: "76px", left: "16px", zIndex: 10, display: "flex", gap: "8px" }}>
-        <button type="button" onClick={() => navigate('/result')} style={{ padding: "8px 14px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontWeight: 600, cursor: "pointer" }}>
-          ← Back to results
-        </button>
-        <button type="button" onClick={() => navigate('/scholarships')} style={{ padding: "8px 14px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontWeight: 600, cursor: "pointer" }}>
-          🎓 Scholarships
-        </button>
-        <button type="button" onClick={() => navigate('/profile')} style={{ padding: "8px 14px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontWeight: 600, cursor: "pointer" }}>
-          Saved in Profile
-        </button>
-        <button type="button" onClick={() => navigate('/dashboard')} style={{ padding: "8px 14px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontWeight: 600, cursor: "pointer" }}>
-          📊 Dashboard
-        </button>
-      </div>
-
       {/* ── LEFT PANEL ── */}
       <div style={{
-        width: "50%",
-        padding: "85px 28px 32px 28px",
+        width: "48%",
+        height: "100%",
+        padding: "24px 28px 36px 28px",
         background: "var(--bg)",
         overflowY: "auto",
-        borderRight: "2px solid var(--border)"
+        borderRight: "1.5px solid var(--border)"
       }}>
+        {/* Navigation Toolbar */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "18px" }}>
+          <button type="button" onClick={() => navigate('/result')} style={{ padding: "7px 13px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
+            ← Back to results
+          </button>
+          <button type="button" onClick={() => navigate('/scholarships')} style={{ padding: "7px 13px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
+            🎓 Scholarship Finder
+          </button>
+          <button type="button" onClick={() => navigate('/profile')} style={{ padding: "7px 13px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
+            Saved in Profile
+          </button>
+          <button type="button" onClick={() => navigate('/dashboard')} style={{ padding: "7px 13px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
+            📊 Dashboard
+          </button>
+        </div>
 
         {/* Header */}
         <div style={{ marginBottom: "4px" }}>
@@ -971,8 +1046,9 @@ function UniversityRecommender() {
       <div
         ref={resultRef}
         style={{
-          width: "50%",
-          padding: "70px 28px 32px 28px",
+          width: "52%",
+          height: "100%",
+          padding: "24px 28px 40px 28px",
           background: "var(--bg-right)",
           overflowY: "auto"
         }}
@@ -1068,8 +1144,39 @@ function UniversityRecommender() {
               </div>
             )}
 
-            {/* Subtitle & City Filter */}
-            {result.universities && result.universities.length > 0 && (() => {
+            {/* Recommendation Type Tabs */}
+            {(() => {
+              const uniCount = result.universities ? result.universities.length : 0;
+              const schCount = (result.pakistan_scholarships?.length || 0) + (result.international_scholarships?.length || 0);
+              return (
+                <div className="recommender-tabs">
+                  <button
+                    type="button"
+                    className={`recommender-tab-btn ${activeTab === 'all' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('all')}
+                  >
+                    ✨ All Matches ({uniCount + schCount})
+                  </button>
+                  <button
+                    type="button"
+                    className={`recommender-tab-btn ${activeTab === 'universities' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('universities')}
+                  >
+                    🏛️ Universities ({uniCount})
+                  </button>
+                  <button
+                    type="button"
+                    className={`recommender-tab-btn ${activeTab === 'scholarships' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('scholarships')}
+                  >
+                    🎓 Scholarships ({schCount})
+                  </button>
+                </div>
+              );
+            })()}
+
+            {/* Universities Section */}
+            {(activeTab === 'all' || activeTab === 'universities') && result.universities && result.universities.length > 0 && (() => {
               // eslint-disable-next-line no-unused-expressions
               bookmarkTick;
               const allCities = [...new Set(result.universities.map((u) => u.City).filter(Boolean))];
@@ -1078,7 +1185,7 @@ function UniversityRecommender() {
                 return String(uni.City || "").toLowerCase().includes(resultCityFilter.toLowerCase());
               });
               return (
-                <>
+                <div style={{ marginBottom: "28px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "16px 0 10px", flexWrap: "wrap", gap: "8px" }}>
                     <p style={{ fontSize: "13px", color: "var(--text-muted)", margin: 0 }}>
                       <strong style={{ color: "var(--text)" }}>{displayed.length}</strong> of {result.universities.length} matched universities
@@ -1115,11 +1222,11 @@ function UniversityRecommender() {
                       <div className="uni-card" key={i}>
                         <div className="rank-badge">#{i + 1}</div>
 
-                        <h4> {uni.University}</h4>
+                        <h4>{uni.University}</h4>
 
                         <div className="uni-meta">
-                          <span className="uni-tag"> {uni.Program}</span>
-                          <span className="uni-tag"> {uni.City}</span>
+                          <span className="uni-tag">{uni.Program}</span>
+                          <span className="uni-tag">{uni.City}</span>
 
                           <span
                             className={`eligible-badge ${uni.eligibility === "Eligible"
@@ -1147,7 +1254,7 @@ function UniversityRecommender() {
 
                           <span>
                             <strong>Required Merit:</strong>{" "}
-                            {uni.Merit}%
+                            {uni.Merit ? `${uni.Merit}%` : "Not Listed"}
                           </span>
                         </div>
 
@@ -1254,38 +1361,77 @@ function UniversityRecommender() {
                       </div>
                     );
                   })}
-                </>
+                </div>
               );
             })()}
 
             {/* Scholarship Recommendations */}
-
-            {(() => {
+            {(activeTab === 'all' || activeTab === 'scholarships') && (() => {
               const yourMerit = (
-                (parseFloat(formData.Matric) + parseFloat(formData.Inter)) / 2
+                (parseFloat(formData.Matric || 0) + parseFloat(formData.Inter || 0)) / 2
               ).toFixed(1);
 
+              const hasPak = result.pakistan_scholarships && result.pakistan_scholarships.length > 0;
+              const hasIntl = result.international_scholarships && result.international_scholarships.length > 0;
+
               return (
-                <>
-                  {result.pakistan_scholarships && result.pakistan_scholarships.length > 0 && (
-                    <div style={{ marginTop: "30px" }}>
+                <div style={{ marginTop: activeTab === 'all' ? "26px" : "10px" }}>
+                  {!hasPak && !hasIntl && (
+                    <div
+                      style={{
+                        padding: "28px",
+                        background: "var(--bg-card)",
+                        border: "1.5px dashed var(--border)",
+                        borderRadius: "var(--radius)",
+                        textAlign: "center",
+                        marginTop: "16px"
+                      }}
+                    >
+                      <span style={{ fontSize: "36px", display: "block", marginBottom: "8px" }}>🎓</span>
+                      <h4 style={{ fontFamily: "var(--font-head)", fontSize: "18px", color: "var(--accent-dk)", marginBottom: "8px" }}>
+                        Explore 220+ Verified Scholarships
+                      </h4>
+                      <p style={{ fontSize: "13px", color: "var(--text-muted)", maxWidth: "420px", margin: "0 auto 16px", lineHeight: 1.6 }}>
+                        No direct threshold matches found for your exact cut-off, but hundreds of need-based and open scholarships are available in our database.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/scholarships')}
+                        style={{
+                          padding: "10px 20px",
+                          borderRadius: "8px",
+                          background: "var(--accent)",
+                          color: "#fff",
+                          border: "none",
+                          fontWeight: 600,
+                          fontSize: "13.5px",
+                          cursor: "pointer"
+                        }}
+                      >
+                        Browse All in Scholarship Finder →
+                      </button>
+                    </div>
+                  )}
+
+                  {hasPak && (
+                    <div style={{ marginBottom: "26px" }}>
                       <div
                         style={{
-                          marginBottom: "18px",
-                          padding: "18px",
+                          marginBottom: "16px",
+                          padding: "16px 20px",
                           background: "linear-gradient(135deg, var(--accent-lt) 0%, #f9f1e8 100%)",
                           border: "1.5px solid var(--border)",
                           borderRadius: "var(--radius)",
                         }}
                       >
-                        <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--accent)", letterSpacing: ".08em", textTransform: "uppercase", marginBottom: "6px" }}>
+                        <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--accent)", letterSpacing: ".08em", textTransform: "uppercase", marginBottom: "4px" }}>
                           Scholarship Opportunities
                         </p>
-                        <h3 style={{ fontFamily: "var(--font-head)", fontSize: "22px", color: "var(--accent-dk)" }}>
-                          🎓 Scholarships in Pakistan
+                        <h3 style={{ fontFamily: "var(--font-head)", fontSize: "20px", color: "var(--accent-dk)" }}>
+                          🎓 Scholarships in Pakistan ({result.pakistan_scholarships.length})
                         </h3>
-                        <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "8px" }}>
-                          Government and provider scholarships available within Pakistan.
+                        <p style={{ fontSize: "12.5px", color: "var(--text-muted)", marginTop: "4px" }}>
+                          Verified national, provincial, and government financial aid programs available within Pakistan.
                         </p>
                       </div>
 
@@ -1302,25 +1448,25 @@ function UniversityRecommender() {
                     </div>
                   )}
 
-                  {result.international_scholarships && result.international_scholarships.length > 0 && (
-                    <div style={{ marginTop: "30px" }}>
+                  {hasIntl && (
+                    <div style={{ marginBottom: "26px" }}>
                       <div
                         style={{
-                          marginBottom: "18px",
-                          padding: "18px",
+                          marginBottom: "16px",
+                          padding: "16px 20px",
                           background: "linear-gradient(135deg, var(--accent-lt) 0%, #f9f1e8 100%)",
                           border: "1.5px solid var(--border)",
                           borderRadius: "var(--radius)",
                         }}
                       >
-                        <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--accent)", letterSpacing: ".08em", textTransform: "uppercase", marginBottom: "6px" }}>
-                          Scholarship Opportunities
+                        <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--accent)", letterSpacing: ".08em", textTransform: "uppercase", marginBottom: "4px" }}>
+                          International Opportunities
                         </p>
-                        <h3 style={{ fontFamily: "var(--font-head)", fontSize: "22px", color: "var(--accent-dk)" }}>
-                          🌍 International Scholarships
+                        <h3 style={{ fontFamily: "var(--font-head)", fontSize: "20px", color: "var(--accent-dk)" }}>
+                          🌍 International Scholarships ({result.international_scholarships.length})
                         </h3>
-                        <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "8px" }}>
-                          Scholarships to study abroad, open to Pakistani students.
+                        <p style={{ fontSize: "12.5px", color: "var(--text-muted)", marginTop: "4px" }}>
+                          Fully and partially funded programs to study abroad, open to Pakistani students.
                         </p>
                       </div>
 
@@ -1336,7 +1482,26 @@ function UniversityRecommender() {
                       ))}
                     </div>
                   )}
-                </>
+
+                  <div style={{ marginTop: "20px", textAlign: "center" }}>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/scholarships')}
+                      style={{
+                        padding: "10px 22px",
+                        borderRadius: "8px",
+                        border: "1.5px solid var(--accent)",
+                        background: "var(--bg-card)",
+                        color: "var(--accent-dk)",
+                        fontWeight: 600,
+                        fontSize: "13.5px",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Explore All 220+ Scholarships in Scholarship Finder →
+                    </button>
+                  </div>
+                </div>
               );
             })()}
 

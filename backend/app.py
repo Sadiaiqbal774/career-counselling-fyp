@@ -252,8 +252,10 @@ def load_scholarships_df():
             "provider_type": record.get("provider_type", ""),
             "min_merit_pct": float(raw) if raw not in (None, "") else None,
             "source_url": record.get("source_url", ""),
+            "coverage": record.get("coverage", ""),
+            "eligibility_raw": record.get("eligibility_raw", ""),
         })
-    return pd.DataFrame(rows, columns=["name", "provider", "provinces", "basis", "provider_type", "min_merit_pct", "source_url"])
+    return pd.DataFrame(rows, columns=["name", "provider", "provinces", "basis", "provider_type", "min_merit_pct", "source_url", "coverage", "eligibility_raw"])
 
 
 def load_university_programs_df():
@@ -1338,20 +1340,25 @@ def predict():
             )
 
             return {
-                "name": row["name"],
-                "provider": row["provider"],
-                "field": row["provider_type"] or row["basis"] or "General",
+                "name": str(row["name"] or ""),
+                "provider": str(row["provider"] or ""),
+                "field": str(row["provider_type"] or row["basis"] or "General"),
                 "min_percentage": merit,
-                "eligibility":
-                "Merit not specified"
-                if merit is None
-                else "Eligible",
-                "basis": row["basis"],
-                "link": row["source_url"],
+                "eligibility": (
+                    "Merit not specified"
+                    if merit is None
+                    else "Eligible"
+                ),
+                "basis": str(row["basis"] or "Merit + Need"),
+                "provinces": str(row["provinces"] or "National"),
+                "coverage": str(row.get("coverage") or "") if pd.notna(row.get("coverage")) else "",
+                "eligibility_raw": str(row.get("eligibility_raw") or "") if pd.notna(row.get("eligibility_raw")) else "",
+                "link": str(row["source_url"] or ""),
             }
 
-        is_international = eligible_scholarships["provinces"].str.contains(
-            "international", case=False, na=False
+        is_international = (
+            eligible_scholarships["provinces"].str.contains("international", case=False, na=False)
+            | eligible_scholarships["provider_type"].str.contains("international", case=False, na=False)
         )
 
         international_scholarships = [
@@ -1361,10 +1368,14 @@ def predict():
             .iterrows()
         ]
 
+        pakistan_pool = eligible_scholarships[~is_international]
+        if pakistan_pool.empty:
+            pakistan_pool = scholarship_df[~scholarship_df["provinces"].str.contains("international", case=False, na=False)]
+
         pakistan_scholarships = [
             build_scholarship_entry(row)
-            for _, row in eligible_scholarships[~is_international]
-            .head(6)
+            for _, row in pakistan_pool
+            .head(8)
             .iterrows()
         ]
 
@@ -1409,6 +1420,8 @@ def get_scholarships():
                 "basis": record.get("basis", ""),
                 "min_percentage": record.get("min_merit_pct") or None,
                 "field": record.get("provider_type") or record.get("basis") or "General",
+                "coverage": record.get("coverage", ""),
+                "eligibility_raw": record.get("eligibility_raw", ""),
                 "link": record.get("source_url", ""),
             }
             for record in records

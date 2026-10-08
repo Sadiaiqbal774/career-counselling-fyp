@@ -215,5 +215,19 @@
     "message": "quiz",
     "response": "You can take the career assessment anytime! It takes only 5 minutes, evaluating your academic background and interests to match you with top degrees and careers.",
     "createdAt": "2026-09-09T04:58:41Z"
+  },
+  {
+    "id": "6be1d56fddc617bf",
+    "userId": "c0f87ac233b443e0936876e0",
+    "message": "opportunities",
+    "response": "I can help you with your assessment results, university recommendations, scholarships, or your profile. What would you like to know?",
+    "createdAt": "2026-10-08T10:43:53Z"
+  },
+  {
+    "id": "89b3c1fa140c7d82",
+    "userId": "c0f87ac233b443e0936876e0",
+    "message": "university",
+    "response": "Use the University Recommender to find universities across Pakistan. We recommend completing the quick assessment first so we can recommend programs suited to your strengths.",
+    "createdAt": "2026-10-08T10:43:59Z"
   }
 ]

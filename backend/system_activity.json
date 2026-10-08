@@ -844,5 +844,191 @@
       "userId": "0a4e2f64ad9a6467b4282810"
     },
     "createdAt": "2026-10-05T08:43:37Z"
+  },
+  {
+    "id": "d532cabec18ba6db",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "774f64e66472129035190703",
+      "email": "sarah.ahmed@outlook.com"
+    },
+    "createdAt": "2026-10-08T07:59:26Z"
+  },
+  {
+    "id": "24ce78fe16ea17b3",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "d7f38cc3428dd312c5f796d8",
+      "email": "ali.khan@gmail.com"
+    },
+    "createdAt": "2026-10-08T08:32:02Z"
+  },
+  {
+    "id": "ca9662a3cc66d733",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "774f64e66472129035190703",
+      "email": "sarah.ahmed@outlook.com"
+    },
+    "createdAt": "2026-10-08T08:39:50Z"
+  },
+  {
+    "id": "8d45f76667949bee",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "774f64e66472129035190703",
+      "email": "sarah.ahmed@outlook.com"
+    },
+    "createdAt": "2026-10-08T08:39:53Z"
+  },
+  {
+    "id": "1a4b182a231afdd7",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "774f64e66472129035190703",
+      "email": "sarah.ahmed@outlook.com"
+    },
+    "createdAt": "2026-10-08T08:43:32Z"
+  },
+  {
+    "id": "d553bc495a4d91cc",
+    "type": "admin_user_updated",
+    "details": {
+      "userId": "774f64e66472129035190703",
+      "email": "sarah.ahmed@outlook.com"
+    },
+    "createdAt": "2026-10-08T09:54:07Z"
+  },
+  {
+    "id": "9815f9e8b2f74f9d",
+    "type": "admin_user_deleted",
+    "details": {
+      "userId": "774f64e66472129035190703"
+    },
+    "createdAt": "2026-10-08T10:13:54Z"
+  },
+  {
+    "id": "ccd99ae13d3fd64a",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-10-08T10:34:36Z"
+  },
+  {
+    "id": "5c506ed61b9b20e3",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-10-08T10:41:50Z"
+  },
+  {
+    "id": "82f284059ab2f03f",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "c0f87ac233b443e0936876e0"
+    },
+    "createdAt": "2026-10-08T10:43:53Z"
+  },
+  {
+    "id": "c8e732208debfcd4",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "c0f87ac233b443e0936876e0"
+    },
+    "createdAt": "2026-10-08T10:43:59Z"
+  },
+  {
+    "id": "b6fa862f0a5b8d91",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-10-08T10:52:46Z"
+  },
+  {
+    "id": "87a9088808f95646",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-10-08T10:56:41Z"
+  },
+  {
+    "id": "58b1a38d28bef4d0",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-10-08T10:58:34Z"
+  },
+  {
+    "id": "2693c27a2b90b21f",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-10-08T11:05:17Z"
+  },
+  {
+    "id": "88a666003b914aa4",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Social Sciences & Humanities",
+      "matchedField": "Social Sciences & Humanities"
+    },
+    "createdAt": "2026-10-08T11:05:52Z"
+  },
+  {
+    "id": "bb75aa2b03b9affe",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-10-08T11:09:19Z"
+  },
+  {
+    "id": "f052dd8700260e5f",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-10-08T11:11:42Z"
+  },
+  {
+    "id": "d5cab28874989828",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-10-08T11:12:12Z"
+  },
+  {
+    "id": "8b95bfe07b7a062e",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-10-08T11:15:44Z"
+  },
+  {
+    "id": "d86116faffc08320",
+    "type": "assessment_completed",
+    "details": {
+      "career": "Computer Science & Technology",
+      "matchedField": "Computer Science & Technology"
+    },
+    "createdAt": "2026-10-08T11:18:27Z"
   }
 ]

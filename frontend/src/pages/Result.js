@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import supabase from '../lib/supabase';
@@ -18,7 +18,7 @@ function Result() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [isExporting, setIsExporting] = useState(false);
-  const storedScores = readUserQuizData(currentUser?.id).scores;
+  const storedScores = readUserQuizData(currentUser?.id).scores || readUserQuizData('guest').scores;
   const scoreKey = JSON.stringify(storedScores);
 
   useEffect(() => {
@@ -41,7 +41,25 @@ function Result() {
   }, [currentUser?.id, scoreKey]);
 
   if (!storedScores) {
-    return <Navigate to="/" replace />;
+    return (
+      <main className="page-shell">
+        <section className="card" style={{ textAlign: 'center', padding: '48px 24px', maxWidth: '560px', margin: '0 auto' }}>
+          <div style={{ fontSize: '3.2rem', marginBottom: '14px' }}>📊</div>
+          <h2 style={{ fontFamily: 'Georgia, serif', margin: '0 0 12px 0', fontSize: '1.75rem', color: '#1C0E05' }}>No Assessment Results Found</h2>
+          <p style={{ color: '#6B5347', maxWidth: '440px', margin: '0 auto 24px auto', lineHeight: '1.6', fontSize: '1rem' }}>
+            You haven't completed the career assessment quiz yet. Take our 5-minute quiz to generate your career compatibility report and degree radar chart.
+          </p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button type="button" className="primary-button" onClick={() => navigate('/general-quiz')}>
+              Take Career Quiz Now →
+            </button>
+            <button type="button" className="secondary-button" onClick={() => navigate('/dashboard')}>
+              Back to Dashboard
+            </button>
+          </div>
+        </section>
+      </main>
+    );
   }
 
   const highestCategory = getHighestCategory(storedScores);

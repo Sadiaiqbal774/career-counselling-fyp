@@ -1,0 +1,674 @@
+/* ==========================================================================
+   Dashboard.css - Polished, Highly Functional Student Counselling Dashboard
+   ========================================================================== */
+
+:root {
+  --cg-dash-bg: #FAF8F5;
+  --cg-dash-surface: #FFFFFF;
+  --cg-dash-ink: #1C0E05;
+  --cg-dash-ink-muted: #6B5347;
+  --cg-dash-ink-faint: #9C8478;
+  --cg-dash-bronze: #b8863a;
+  --cg-dash-bronze-dark: #8c6020;
+  --cg-dash-bronze-deep: #674718;
+  --cg-dash-bronze-tint: rgba(184, 134, 58, 0.12);
+  --cg-dash-line: rgba(61, 43, 31, 0.1);
+  --cg-dash-shadow: 0 6px 18px rgba(44, 28, 14, 0.06);
+  --cg-dash-radius: 16px;
+}
+
+.cg-dashboard-page {
+  background: var(--cg-dash-bg);
+  min-height: calc(100vh - 80px);
+  padding: 0 0 40px;
+}
+
+.cg-dashboard-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ==========================================================================
+   1. HERO ROW: WELCOME BOX + PROFILE BOX
+   ========================================================================== */
+.cg-dashboard-hero-row {
+  display: grid;
+  grid-template-columns: 1fr 310px;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.cg-dashboard-welcome-box {
+  background: var(--cg-dash-surface);
+  border: 1px solid var(--cg-dash-line);
+  border-left: 4px solid var(--cg-dash-bronze-dark);
+  border-radius: var(--cg-dash-radius);
+  padding: 26px 28px;
+  box-shadow: var(--cg-dash-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cg-eyebrow {
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cg-dash-bronze-dark);
+}
+
+.cg-eyebrow.cg-center {
+  text-align: center;
+}
+
+.cg-welcome-heading {
+  margin: 0;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(1.8rem, 3vw, 2.25rem);
+  font-weight: 700;
+  color: var(--cg-dash-ink);
+  line-height: 1.2;
+}
+
+.cg-welcome-text {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--cg-dash-ink-muted);
+  max-width: 680px;
+}
+
+.cg-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.cg-badge-chip {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #FAF8F5;
+  border: 1px solid var(--cg-dash-line);
+  color: var(--cg-dash-ink-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Quick Actions Bar */
+.cg-quick-actions-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--cg-dash-line);
+}
+
+.cg-action-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.cg-action-btn--primary {
+  background: linear-gradient(135deg, #8c6020 0%, #674718 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(140, 96, 32, 0.25);
+}
+
+.cg-action-btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(140, 96, 32, 0.35);
+}
+
+.cg-action-btn--secondary {
+  background: #FAF8F5;
+  border-color: var(--cg-dash-line);
+  color: var(--cg-dash-ink);
+}
+
+.cg-action-btn--secondary:hover {
+  border-color: var(--cg-dash-bronze);
+  color: var(--cg-dash-bronze-dark);
+}
+
+.cg-action-btn--ghost {
+  background: transparent;
+  border-color: var(--cg-dash-line);
+  color: var(--cg-dash-ink-muted);
+}
+
+.cg-action-btn--ghost:hover {
+  background: #FAF8F5;
+  color: var(--cg-dash-ink);
+  border-color: var(--cg-dash-bronze);
+}
+
+/* Profile Box */
+.cg-dashboard-profile-box {
+  background: var(--cg-dash-surface);
+  border: 1px solid var(--cg-dash-line);
+  border-radius: var(--cg-dash-radius);
+  padding: 22px 24px;
+  box-shadow: var(--cg-dash-shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cg-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cg-avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #b8863a 0%, #8c6020 100%);
+  color: #FFFFFF;
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(184, 134, 58, 0.25);
+  flex-shrink: 0;
+}
+
+.cg-profile-details {
+  min-width: 0;
+}
+
+.cg-profile-name {
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: var(--cg-dash-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cg-profile-email {
+  font-size: 0.8rem;
+  color: var(--cg-dash-ink-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cg-profile-completion-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cg-dash-ink);
+  margin-top: 4px;
+}
+
+.cg-profile-meter {
+  height: 6px;
+  background: #E8E2D9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.cg-profile-meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #b8863a 0%, #8c6020 100%);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+.cg-profile-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--cg-dash-ink-faint);
+  line-height: 1.45;
+}
+
+.cg-btn-edit-profile {
+  background: #FAF8F5;
+  border: 1px solid var(--cg-dash-line);
+  color: var(--cg-dash-ink);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.cg-btn-edit-profile:hover {
+  border-color: var(--cg-dash-bronze);
+  color: var(--cg-dash-bronze-dark);
+  background: #FFFFFF;
+}
+
+/* ==========================================================================
+   2. HIGHLIGHT CARD (WHEN RESULTS ARE READY)
+   ========================================================================== */
+.cg-results-highlight-card {
+  background: linear-gradient(135deg, rgba(184, 134, 58, 0.12) 0%, rgba(140, 96, 32, 0.04) 100%), #FFFFFF;
+  border: 1.5px solid rgba(184, 134, 58, 0.35);
+  border-radius: var(--cg-dash-radius);
+  padding: 22px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: var(--cg-dash-shadow);
+}
+
+.cg-highlight-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cg-highlight-icon {
+  font-size: 2rem;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(184, 134, 58, 0.15);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.cg-highlight-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--cg-dash-bronze-dark);
+  text-transform: uppercase;
+}
+
+.cg-highlight-title {
+  margin: 3px 0 4px;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--cg-dash-ink);
+}
+
+.cg-highlight-desc {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--cg-dash-ink-muted);
+}
+
+.cg-highlight-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.cg-highlight-btn-primary {
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #8c6020 0%, #674718 100%);
+  color: #FFFFFF;
+  border: none;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(140, 96, 32, 0.25);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.cg-highlight-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(140, 96, 32, 0.35);
+}
+
+.cg-highlight-btn-secondary {
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: #FFFFFF;
+  border: 1px solid var(--cg-dash-line);
+  color: var(--cg-dash-ink);
+  font-weight: 600;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.cg-highlight-btn-secondary:hover {
+  border-color: var(--cg-dash-bronze);
+  color: var(--cg-dash-bronze-dark);
+}
+
+/* ==========================================================================
+   3. FOUR CORE METRICS
+   ========================================================================== */
+.cg-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.cg-metric-card {
+  background: var(--cg-dash-surface);
+  border: 1px solid var(--cg-dash-line);
+  border-radius: var(--cg-dash-radius);
+  padding: 20px 22px;
+  box-shadow: var(--cg-dash-shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  border-top-width: 3px;
+  transition: transform 0.2s ease;
+}
+
+.cg-metric-card:hover {
+  transform: translateY(-2px);
+}
+
+.cg-metric-card--0 { border-top-color: #8c6020; }
+.cg-metric-card--1 { border-top-color: #10b981; }
+.cg-metric-card--2 { border-top-color: #2563eb; }
+.cg-metric-card--3 { border-top-color: #f59e0b; }
+
+.cg-metric-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cg-metric-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cg-dash-ink-faint);
+}
+
+.cg-metric-icon {
+  font-size: 1.25rem;
+}
+
+.cg-metric-value {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--cg-dash-ink);
+  line-height: 1;
+  margin: 4px 0 2px;
+}
+
+.cg-metric-hint {
+  font-size: 0.8rem;
+  color: var(--cg-dash-ink-muted);
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   4. RECOMMENDED NEXT STEPS (ACTION ROWS)
+   ========================================================================== */
+.cg-steps-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cg-steps-heading {
+  margin: 0;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--cg-dash-ink);
+  text-align: center;
+}
+
+.cg-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cg-step-card {
+  background: var(--cg-dash-surface);
+  border: 1px solid var(--cg-dash-line);
+  border-radius: var(--cg-dash-radius);
+  padding: 18px 24px;
+  box-shadow: var(--cg-dash-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.cg-step-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(184, 134, 58, 0.35);
+}
+
+.cg-step-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.cg-step-iconbox {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cg-step-iconbox--career {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.cg-step-iconbox--university {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.cg-step-iconbox--scholarship {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.cg-step-iconbox--chat {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.cg-step-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cg-step-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--cg-dash-ink);
+}
+
+.cg-step-desc {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--cg-dash-ink-muted);
+}
+
+.cg-step-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.cg-btn-step-primary {
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #8c6020 0%, #674718 100%);
+  color: #FFFFFF;
+  border: none;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(140, 96, 32, 0.2);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.cg-btn-step-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px rgba(140, 96, 32, 0.3);
+}
+
+.cg-btn-step-secondary {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #FAF8F5;
+  border: 1px solid var(--cg-dash-line);
+  color: var(--cg-dash-ink);
+  font-weight: 600;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.cg-btn-step-secondary:hover {
+  border-color: var(--cg-dash-bronze);
+  color: var(--cg-dash-bronze-dark);
+}
+
+/* ==========================================================================
+   5. RESPONSIVE BREAKPOINTS
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .cg-dashboard-hero-row {
+    grid-template-columns: 1fr;
+  }
+
+  .cg-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cg-results-highlight-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cg-highlight-actions {
+    width: 100%;
+  }
+
+  .cg-highlight-btn-primary,
+  .cg-highlight-btn-secondary {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .cg-step-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cg-step-buttons {
+    width: 100%;
+  }
+
+  .cg-btn-step-primary,
+  .cg-btn-step-secondary {
+    flex: 1;
+    text-align: center;
+  }
+
+  .cg-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   6. DARK MODE OVERRIDES
+   ========================================================================== */
+html.dark-mode .cg-dashboard-page {
+  background: #171412;
+  color: #f7efe7;
+}
+
+html.dark-mode .cg-dashboard-welcome-box,
+html.dark-mode .cg-dashboard-profile-box,
+html.dark-mode .cg-metric-card,
+html.dark-mode .cg-step-card {
+  background: #231b17;
+  border-color: #3d2f26;
+}
+
+html.dark-mode .cg-welcome-heading,
+html.dark-mode .cg-profile-name,
+html.dark-mode .cg-metric-value,
+html.dark-mode .cg-step-title,
+html.dark-mode .cg-steps-heading {
+  color: #f7efe7;
+}
+
+html.dark-mode .cg-welcome-text,
+html.dark-mode .cg-step-desc,
+html.dark-mode .cg-metric-hint,
+html.dark-mode .cg-profile-hint {
+  color: #cbb9a8;
+}
+
+html.dark-mode .cg-badge-chip,
+html.dark-mode .cg-action-btn--secondary,
+html.dark-mode .cg-btn-step-secondary,
+html.dark-mode .cg-btn-edit-profile {
+  background: #1e1713;
+  border-color: #3d2f26;
+  color: #f7efe7;
+}
+
+html.dark-mode .cg-results-highlight-card {
+  background: #231b17;
+  border-color: rgba(184, 134, 58, 0.4);
+}
+
+html.dark-mode .cg-highlight-title {
+  color: #f7efe7;
+}
+
+html.dark-mode .cg-highlight-desc {
+  color: #cbb9a8;
+}

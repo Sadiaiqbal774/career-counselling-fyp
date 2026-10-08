@@ -1,11 +1,5 @@
 [
   {
-    "id": "computer-science",
-    "field": "Computer Science & Technology",
-    "description": "",
-    "minimumMarks": 70.8
-  },
-  {
     "id": "engineering",
     "field": "Engineering",
     "description": "",

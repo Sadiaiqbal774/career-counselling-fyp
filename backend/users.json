@@ -51,15 +51,17 @@
     "passwordHash": "a109e36947ad56de1dca1cc49f0ef8ac9ad9a7b1aa0df41fb3c4cb73c1ff01ea",
     "securityQuestion": "What is the name of your first school?",
     "securityAnswerHash": "58bb885ac2bc28232bd08fb562bff2b071a80957d67d39c5b614e73e8087887f",
-    "authProvider": "local"
+    "authProvider": "local",
+    "emailConfirmed": true
   },
   {
-    "id": "774f64e66472129035190703",
-    "name": "Sarah Ahmed",
-    "email": "sarah.ahmed@outlook.com",
-    "passwordHash": "a109e36947ad56de1dca1cc49f0ef8ac9ad9a7b1aa0df41fb3c4cb73c1ff01ea",
-    "securityQuestion": "What is your pet's name?",
-    "securityAnswerHash": "95d9daee3b0998effd79f11fe4509bc010931002ee4e2ee0b736de1f8a6ae7f7",
-    "authProvider": "local"
+    "id": "c0f87ac233b443e0936876e0",
+    "name": "sadia",
+    "email": "sadia@gmail.com",
+    "passwordHash": "fcb7e60f606db3c031f75b121529348d93eb702dd2dd4d26c4a48ff01bcb2955",
+    "securityQuestion": "What is your favorite childhood nickname?",
+    "securityAnswerHash": "7c1a4a1d4b462cb7b767e6d653440877683f11b5c1b069717c1fe75b5fc605ab",
+    "authProvider": "local",
+    "createdAt": "2026-10-08T10:16:52Z"
   }
 ]

@@ -8899,5 +8899,2911 @@
       ]
     },
     "createdAt": "2026-09-09T04:58:20Z"
+  },
+  {
+    "id": "431309be99f98dd0",
+    "answers": {
+      "Math": 3,
+      "Biology": 3,
+      "Computer": 3,
+      "Communication": 3,
+      "Leadership": 3,
+      "Marks": 82.5,
+      "Background": "Pre-Engineering",
+      "City": "Islamabad",
+      "Interests": "I enjoy technology, solving logical problems, and building modern software applications."
+    },
+    "result": {
+      "career": "Computer Science & Technology",
+      "confidence": 0.248,
+      "low_confidence": true,
+      "matched_field": "Computer Science & Technology",
+      "city_notice": null,
+      "reasons": [],
+      "universities": [
+        {
+          "University": "Al-Hamd Islamic University",
+          "Program": "BS Computer Science",
+          "City": "Quetta (also Islamabad campus)",
+          "Merit": 50.0,
+          "your_marks": 82.5,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.au.edu.pk/pages/admission/eligibility_criteria.aspx",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Al-Karam International Institute",
+          "Program": "BS Computer Science",
+          "City": "Bhera, Sargodha District (also Al-Karam International University, Islamabad)",
+          "Merit": 60.0,
+          "your_marks": 82.5,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 60.0% merit required",
+          "link": "https://pmdc.org.pk/al-hamd-islamic-university-aiu-admission-guide/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Bahria University",
+          "Program": "BS Computer Science",
+          "City": "Islamabad",
+          "Merit": 45.0,
+          "your_marks": 82.5,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 45.0% merit required",
+          "link": "https://www.result.pk/merit-list/bahauddin-zakariya-university-bzu-multan/multan-latest/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "COMSATS University Islamabad",
+          "Program": "BS Computer Science",
+          "City": "Islamabad",
+          "Merit": 50.0,
+          "your_marks": 82.5,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.cecos.edu.pk/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Capital University of Science & Technology",
+          "Program": "BS (Artificial Intelligence)",
+          "City": "Islamabad",
+          "Merit": null,
+          "your_marks": 82.5,
+          "eligibility": "Merit not specified",
+          "requirements": "Merit criteria not listed \u2014 check with the university",
+          "link": "https://lahore.comsats.edu.pk/Academics/Offered-Programs.aspx",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Capital University of Science & Technology",
+          "Program": "BS (Computer Engineering)",
+          "City": "Islamabad",
+          "Merit": null,
+          "your_marks": 82.5,
+          "eligibility": "Merit not specified",
+          "requirements": "Merit criteria not listed \u2014 check with the university",
+          "link": "https://lahore.comsats.edu.pk/Academics/Offered-Programs.aspx",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        }
+      ],
+      "international_scholarships": [
+        {
+          "name": "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)",
+          "provider": "HEC (foreign-funded, via diplomatic channel)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/lao/pages/default.aspx"
+        },
+        {
+          "name": "Chinese Government Scholarship (CSC) - Bilateral Program",
+          "provider": "China Scholarship Council; nominated by HEC Pakistan; Embassy of PR China",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "hec.gov.pk (CGSP eligibility page); pk.china-embassy.gov.cn"
+        },
+        {
+          "name": "Turkiye Burslari (Turkish Government Scholarship)",
+          "provider": "Turkiye Scholarships (Government of Turkiye)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "turkiyeburslari.gov.tr"
+        },
+        {
+          "name": "USEFP Global UGRAD (Global Undergraduate Exchange Program)",
+          "provider": "U.S. Department of State Bureau of Educational and Cultural Affairs; administered in Pakistan by USEFP, in US by IREX",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "usefp.org/scholarships/global-ugrad.cfm; exchanges.state.gov"
+        },
+        {
+          "name": "Fulbright (USEFP)",
+          "provider": "USEFP",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "USEFP official site"
+        },
+        {
+          "name": "Commonwealth Scholarships",
+          "provider": "Commonwealth Scholarship Commission (UK/FCDO); HEC nominates in Pakistan",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "CSC UK official page"
+        }
+      ],
+      "pakistan_scholarships": [
+        {
+          "name": "Benazir/Ehsaas Undergraduate Scholarship Program",
+          "provider": "Higher Education Commission (HEC) / BISP",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://ehsaas.hec.gov.pk"
+        },
+        {
+          "name": "HEC Need Based Scholarship Program (NBS)",
+          "provider": "Higher Education Commission (HEC)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/NBS/Pages/default.aspx"
+        },
+        {
+          "name": "Pak-USAID Merit and Needs-Based Scholarship Program",
+          "provider": "USAID + HEC",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/USAID-NeedsBased/Pages/default.aspx"
+        },
+        {
+          "name": "Pakistan Bait-ul-Mal (PBM) Individual Financial Assistance - Education",
+          "provider": "Pakistan Bait-ul-Mal (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.pbm.gov.pk/education.html"
+        },
+        {
+          "name": "Federal Employees Benevolent & Group Insurance Fund (FEB&GIF) - Educational Stipend/Fee Reimbursement",
+          "provider": "FEB&GIF (Establishment Division)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://febgif.gov.pk"
+        },
+        {
+          "name": "Workers Welfare Fund (WWF) Education Scholarship",
+          "provider": "Workers Welfare Fund (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://wwf.gov.pk"
+        }
+      ]
+    },
+    "createdAt": "2026-10-08T10:34:36Z"
+  },
+  {
+    "id": "64eaee26dbe21815",
+    "answers": {
+      "Math": 3,
+      "Biology": 3,
+      "Computer": 3,
+      "Communication": 3,
+      "Leadership": 3,
+      "Marks": 82.5,
+      "Background": "Pre-Engineering",
+      "City": "Islamabad",
+      "Interests": "I enjoy technology, solving logical problems, and building modern software applications."
+    },
+    "result": {
+      "career": "Computer Science & Technology",
+      "confidence": 0.248,
+      "low_confidence": true,
+      "matched_field": "Computer Science & Technology",
+      "city_notice": null,
+      "reasons": [],
+      "universities": [
+        {
+          "University": "Al-Hamd Islamic University",
+          "Program": "BS Computer Science",
+          "City": "Quetta (also Islamabad campus)",
+          "Merit": 50.0,
+          "your_marks": 82.5,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.au.edu.pk/pages/admission/eligibility_criteria.aspx",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Al-Karam International Institute",
+          "Program": "BS Computer Science",
+          "City": "Bhera, Sargodha District (also Al-Karam International University, Islamabad)",
+          "Merit": 60.0,
+          "your_marks": 82.5,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 60.0% merit required",
+          "link": "https://pmdc.org.pk/al-hamd-islamic-university-aiu-admission-guide/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Bahria University",
+          "Program": "BS Computer Science",
+          "City": "Islamabad",
+          "Merit": 45.0,
+          "your_marks": 82.5,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 45.0% merit required",
+          "link": "https://www.result.pk/merit-list/bahauddin-zakariya-university-bzu-multan/multan-latest/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "COMSATS University Islamabad",
+          "Program": "BS Computer Science",
+          "City": "Islamabad",
+          "Merit": 50.0,
+          "your_marks": 82.5,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.cecos.edu.pk/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Capital University of Science & Technology",
+          "Program": "BS (Artificial Intelligence)",
+          "City": "Islamabad",
+          "Merit": null,
+          "your_marks": 82.5,
+          "eligibility": "Merit not specified",
+          "requirements": "Merit criteria not listed \u2014 check with the university",
+          "link": "https://lahore.comsats.edu.pk/Academics/Offered-Programs.aspx",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Capital University of Science & Technology",
+          "Program": "BS (Computer Engineering)",
+          "City": "Islamabad",
+          "Merit": null,
+          "your_marks": 82.5,
+          "eligibility": "Merit not specified",
+          "requirements": "Merit criteria not listed \u2014 check with the university",
+          "link": "https://lahore.comsats.edu.pk/Academics/Offered-Programs.aspx",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        }
+      ],
+      "international_scholarships": [
+        {
+          "name": "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)",
+          "provider": "HEC (foreign-funded, via diplomatic channel)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/lao/pages/default.aspx"
+        },
+        {
+          "name": "Chinese Government Scholarship (CSC) - Bilateral Program",
+          "provider": "China Scholarship Council; nominated by HEC Pakistan; Embassy of PR China",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "hec.gov.pk (CGSP eligibility page); pk.china-embassy.gov.cn"
+        },
+        {
+          "name": "Turkiye Burslari (Turkish Government Scholarship)",
+          "provider": "Turkiye Scholarships (Government of Turkiye)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "turkiyeburslari.gov.tr"
+        },
+        {
+          "name": "USEFP Global UGRAD (Global Undergraduate Exchange Program)",
+          "provider": "U.S. Department of State Bureau of Educational and Cultural Affairs; administered in Pakistan by USEFP, in US by IREX",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "usefp.org/scholarships/global-ugrad.cfm; exchanges.state.gov"
+        },
+        {
+          "name": "Fulbright (USEFP)",
+          "provider": "USEFP",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "USEFP official site"
+        },
+        {
+          "name": "Commonwealth Scholarships",
+          "provider": "Commonwealth Scholarship Commission (UK/FCDO); HEC nominates in Pakistan",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "CSC UK official page"
+        }
+      ],
+      "pakistan_scholarships": [
+        {
+          "name": "Benazir/Ehsaas Undergraduate Scholarship Program",
+          "provider": "Higher Education Commission (HEC) / BISP",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://ehsaas.hec.gov.pk"
+        },
+        {
+          "name": "HEC Need Based Scholarship Program (NBS)",
+          "provider": "Higher Education Commission (HEC)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/NBS/Pages/default.aspx"
+        },
+        {
+          "name": "Pak-USAID Merit and Needs-Based Scholarship Program",
+          "provider": "USAID + HEC",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/USAID-NeedsBased/Pages/default.aspx"
+        },
+        {
+          "name": "Pakistan Bait-ul-Mal (PBM) Individual Financial Assistance - Education",
+          "provider": "Pakistan Bait-ul-Mal (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.pbm.gov.pk/education.html"
+        },
+        {
+          "name": "Federal Employees Benevolent & Group Insurance Fund (FEB&GIF) - Educational Stipend/Fee Reimbursement",
+          "provider": "FEB&GIF (Establishment Division)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://febgif.gov.pk"
+        },
+        {
+          "name": "Workers Welfare Fund (WWF) Education Scholarship",
+          "provider": "Workers Welfare Fund (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://wwf.gov.pk"
+        }
+      ]
+    },
+    "createdAt": "2026-10-08T10:41:50Z"
+  },
+  {
+    "id": "419cf55e791d2f4c",
+    "answers": {
+      "Math": 4,
+      "Biology": 3,
+      "Computer": 5,
+      "Communication": 3,
+      "Leadership": 3,
+      "Marks": 85,
+      "Background": "Pre-Engineering",
+      "City": "Sukkur",
+      "Interests": "I love coding and building mobile apps"
+    },
+    "result": {
+      "career": "Computer Science & Technology",
+      "confidence": 0.197,
+      "low_confidence": true,
+      "matched_field": "Computer Science & Technology",
+      "city_notice": null,
+      "reasons": [
+        "Strong interest in Computer",
+        "Good analytical skills"
+      ],
+      "universities": [
+        {
+          "University": "Begum Nusrat Bhutto Women University",
+          "Program": "BS Computer Science / Software Engineering / Artificial Intelligence",
+          "City": "Rohri Bypass N-5, Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://jaamiah.com/university/beaconhouse-national-university-lahore/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Computer Science",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bscs",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Software Engineering",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsse",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Artificial Intelligence",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsai",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Data Science",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsds",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        }
+      ],
+      "international_scholarships": [
+        {
+          "name": "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)",
+          "provider": "HEC (foreign-funded, via diplomatic channel)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/lao/pages/default.aspx"
+        },
+        {
+          "name": "Chinese Government Scholarship (CSC) - Bilateral Program",
+          "provider": "China Scholarship Council; nominated by HEC Pakistan; Embassy of PR China",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "hec.gov.pk (CGSP eligibility page); pk.china-embassy.gov.cn"
+        },
+        {
+          "name": "Turkiye Burslari (Turkish Government Scholarship)",
+          "provider": "Turkiye Scholarships (Government of Turkiye)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "turkiyeburslari.gov.tr"
+        },
+        {
+          "name": "USEFP Global UGRAD (Global Undergraduate Exchange Program)",
+          "provider": "U.S. Department of State Bureau of Educational and Cultural Affairs; administered in Pakistan by USEFP, in US by IREX",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "usefp.org/scholarships/global-ugrad.cfm; exchanges.state.gov"
+        },
+        {
+          "name": "Fulbright (USEFP)",
+          "provider": "USEFP",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "USEFP official site"
+        },
+        {
+          "name": "Commonwealth Scholarships",
+          "provider": "Commonwealth Scholarship Commission (UK/FCDO); HEC nominates in Pakistan",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "CSC UK official page"
+        }
+      ],
+      "pakistan_scholarships": [
+        {
+          "name": "Benazir/Ehsaas Undergraduate Scholarship Program",
+          "provider": "Higher Education Commission (HEC) / BISP",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://ehsaas.hec.gov.pk"
+        },
+        {
+          "name": "HEC Need Based Scholarship Program (NBS)",
+          "provider": "Higher Education Commission (HEC)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/NBS/Pages/default.aspx"
+        },
+        {
+          "name": "Pak-USAID Merit and Needs-Based Scholarship Program",
+          "provider": "USAID + HEC",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/USAID-NeedsBased/Pages/default.aspx"
+        },
+        {
+          "name": "Pakistan Bait-ul-Mal (PBM) Individual Financial Assistance - Education",
+          "provider": "Pakistan Bait-ul-Mal (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.pbm.gov.pk/education.html"
+        },
+        {
+          "name": "Federal Employees Benevolent & Group Insurance Fund (FEB&GIF) - Educational Stipend/Fee Reimbursement",
+          "provider": "FEB&GIF (Establishment Division)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://febgif.gov.pk"
+        },
+        {
+          "name": "Workers Welfare Fund (WWF) Education Scholarship",
+          "provider": "Workers Welfare Fund (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://wwf.gov.pk"
+        }
+      ]
+    },
+    "createdAt": "2026-10-08T10:52:46Z"
+  },
+  {
+    "id": "8a8dff7ccad703df",
+    "answers": {
+      "Math": 4,
+      "Biology": 5,
+      "Computer": 5,
+      "Communication": 4,
+      "Leadership": 5,
+      "Marks": 85,
+      "Background": "Pre-Engineering",
+      "City": "Sukkur",
+      "Interests": "I love coding and building mobile apps"
+    },
+    "result": {
+      "career": "Computer Science & Technology",
+      "confidence": 0.197,
+      "low_confidence": true,
+      "matched_field": "Computer Science & Technology",
+      "city_notice": null,
+      "reasons": [
+        "Strong interest in Computer",
+        "High interest in Biology",
+        "Good analytical skills"
+      ],
+      "universities": [
+        {
+          "University": "Begum Nusrat Bhutto Women University",
+          "Program": "BS Computer Science / Software Engineering / Artificial Intelligence",
+          "City": "Rohri Bypass N-5, Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://jaamiah.com/university/beaconhouse-national-university-lahore/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Computer Science",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bscs",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Software Engineering",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsse",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Artificial Intelligence",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsai",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Data Science",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsds",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        }
+      ],
+      "international_scholarships": [
+        {
+          "name": "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)",
+          "provider": "HEC (foreign-funded, via diplomatic channel)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/lao/pages/default.aspx"
+        },
+        {
+          "name": "Chinese Government Scholarship (CSC) - Bilateral Program",
+          "provider": "China Scholarship Council; nominated by HEC Pakistan; Embassy of PR China",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "hec.gov.pk (CGSP eligibility page); pk.china-embassy.gov.cn"
+        },
+        {
+          "name": "Turkiye Burslari (Turkish Government Scholarship)",
+          "provider": "Turkiye Scholarships (Government of Turkiye)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "turkiyeburslari.gov.tr"
+        },
+        {
+          "name": "USEFP Global UGRAD (Global Undergraduate Exchange Program)",
+          "provider": "U.S. Department of State Bureau of Educational and Cultural Affairs; administered in Pakistan by USEFP, in US by IREX",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "usefp.org/scholarships/global-ugrad.cfm; exchanges.state.gov"
+        },
+        {
+          "name": "Fulbright (USEFP)",
+          "provider": "USEFP",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "USEFP official site"
+        },
+        {
+          "name": "Commonwealth Scholarships",
+          "provider": "Commonwealth Scholarship Commission (UK/FCDO); HEC nominates in Pakistan",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "CSC UK official page"
+        }
+      ],
+      "pakistan_scholarships": [
+        {
+          "name": "Benazir/Ehsaas Undergraduate Scholarship Program",
+          "provider": "Higher Education Commission (HEC) / BISP",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://ehsaas.hec.gov.pk"
+        },
+        {
+          "name": "HEC Need Based Scholarship Program (NBS)",
+          "provider": "Higher Education Commission (HEC)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/NBS/Pages/default.aspx"
+        },
+        {
+          "name": "Pak-USAID Merit and Needs-Based Scholarship Program",
+          "provider": "USAID + HEC",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/USAID-NeedsBased/Pages/default.aspx"
+        },
+        {
+          "name": "Pakistan Bait-ul-Mal (PBM) Individual Financial Assistance - Education",
+          "provider": "Pakistan Bait-ul-Mal (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.pbm.gov.pk/education.html"
+        },
+        {
+          "name": "Federal Employees Benevolent & Group Insurance Fund (FEB&GIF) - Educational Stipend/Fee Reimbursement",
+          "provider": "FEB&GIF (Establishment Division)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://febgif.gov.pk"
+        },
+        {
+          "name": "Workers Welfare Fund (WWF) Education Scholarship",
+          "provider": "Workers Welfare Fund (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://wwf.gov.pk"
+        }
+      ]
+    },
+    "createdAt": "2026-10-08T10:56:41Z"
+  },
+  {
+    "id": "f247a3d069e13600",
+    "answers": {
+      "Math": 4,
+      "Biology": 5,
+      "Computer": 5,
+      "Communication": 4,
+      "Leadership": 5,
+      "Marks": 85,
+      "Background": "Pre-Engineering",
+      "City": "Sukkur",
+      "Interests": "I love coding and building mobile apps"
+    },
+    "result": {
+      "career": "Computer Science & Technology",
+      "confidence": 0.197,
+      "low_confidence": true,
+      "matched_field": "Computer Science & Technology",
+      "city_notice": null,
+      "reasons": [
+        "Strong interest in Computer",
+        "High interest in Biology",
+        "Good analytical skills"
+      ],
+      "universities": [
+        {
+          "University": "Begum Nusrat Bhutto Women University",
+          "Program": "BS Computer Science / Software Engineering / Artificial Intelligence",
+          "City": "Rohri Bypass N-5, Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://jaamiah.com/university/beaconhouse-national-university-lahore/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Computer Science",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bscs",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Software Engineering",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsse",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Artificial Intelligence",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsai",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Data Science",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsds",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        }
+      ],
+      "international_scholarships": [
+        {
+          "name": "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)",
+          "provider": "HEC (foreign-funded, via diplomatic channel)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/lao/pages/default.aspx"
+        },
+        {
+          "name": "Chinese Government Scholarship (CSC) - Bilateral Program",
+          "provider": "China Scholarship Council; nominated by HEC Pakistan; Embassy of PR China",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "hec.gov.pk (CGSP eligibility page); pk.china-embassy.gov.cn"
+        },
+        {
+          "name": "Turkiye Burslari (Turkish Government Scholarship)",
+          "provider": "Turkiye Scholarships (Government of Turkiye)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "turkiyeburslari.gov.tr"
+        },
+        {
+          "name": "USEFP Global UGRAD (Global Undergraduate Exchange Program)",
+          "provider": "U.S. Department of State Bureau of Educational and Cultural Affairs; administered in Pakistan by USEFP, in US by IREX",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "usefp.org/scholarships/global-ugrad.cfm; exchanges.state.gov"
+        },
+        {
+          "name": "Fulbright (USEFP)",
+          "provider": "USEFP",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "USEFP official site"
+        },
+        {
+          "name": "Commonwealth Scholarships",
+          "provider": "Commonwealth Scholarship Commission (UK/FCDO); HEC nominates in Pakistan",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "CSC UK official page"
+        }
+      ],
+      "pakistan_scholarships": [
+        {
+          "name": "Benazir/Ehsaas Undergraduate Scholarship Program",
+          "provider": "Higher Education Commission (HEC) / BISP",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://ehsaas.hec.gov.pk"
+        },
+        {
+          "name": "HEC Need Based Scholarship Program (NBS)",
+          "provider": "Higher Education Commission (HEC)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/NBS/Pages/default.aspx"
+        },
+        {
+          "name": "Pak-USAID Merit and Needs-Based Scholarship Program",
+          "provider": "USAID + HEC",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/USAID-NeedsBased/Pages/default.aspx"
+        },
+        {
+          "name": "Pakistan Bait-ul-Mal (PBM) Individual Financial Assistance - Education",
+          "provider": "Pakistan Bait-ul-Mal (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.pbm.gov.pk/education.html"
+        },
+        {
+          "name": "Federal Employees Benevolent & Group Insurance Fund (FEB&GIF) - Educational Stipend/Fee Reimbursement",
+          "provider": "FEB&GIF (Establishment Division)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://febgif.gov.pk"
+        },
+        {
+          "name": "Workers Welfare Fund (WWF) Education Scholarship",
+          "provider": "Workers Welfare Fund (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://wwf.gov.pk"
+        }
+      ]
+    },
+    "createdAt": "2026-10-08T10:58:34Z"
+  },
+  {
+    "id": "6ad4d872c240a78c",
+    "answers": {
+      "Math": 8,
+      "Biology": 3,
+      "Computer": 9,
+      "Communication": 7,
+      "Leadership": 6,
+      "Marks": 85.0,
+      "Background": "Pre-Engineering",
+      "City": "Lahore",
+      "Interests": "I love programming software development and web design"
+    },
+    "result": {
+      "career": "Computer Science & Technology",
+      "confidence": 0.214,
+      "low_confidence": true,
+      "matched_field": "Computer Science & Technology",
+      "city_notice": null,
+      "reasons": [
+        "Strong interest in Computer",
+        "Good analytical skills"
+      ],
+      "universities": [
+        {
+          "University": "Forman Christian College University",
+          "Program": "BS Computer Science / Artificial Intelligence / Cyber Security",
+          "City": "Lahore",
+          "Merit": 50.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://sciknowledgehub.com/federal-urdu-university-of-arts-sciences-technology-fuuast-admission-details/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Government College University Lahore",
+          "Program": "BS Computer Science",
+          "City": "Lahore",
+          "Merit": 50.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://pmdc.org.pk/government-college-university-faisalabad-gcuf-admission-guide/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Green International University",
+          "Program": "BS Computer Science / Software Engineering",
+          "City": "Lahore",
+          "Merit": 50.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://pmdc.org.pk/grand-asian-university-sialkot-gaus-admission-guide/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Hajvery University",
+          "Program": "BS Computer Engineering",
+          "City": "Lahore (also Sheikhupura campus)",
+          "Merit": 60.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 60.0% merit required",
+          "link": "https://www.ilmkidunya.com/colleges/habib-university-karachi-admission.aspx",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Hajvery University",
+          "Program": "BS Computer Science",
+          "City": "Lahore (also Sheikhupura campus)",
+          "Merit": 65.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 65.0% merit required",
+          "link": "https://blog.maqsad.io/blog/habib-university-admission",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Imperial College of Business Studies",
+          "Program": "BS Computer Science / Artificial Intelligence / Software Engineering",
+          "City": "Lahore",
+          "Merit": 50.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.ilmkidunya.com/colleges/ilma-university-karachi-admission.aspx",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        }
+      ],
+      "international_scholarships": [
+        {
+          "name": "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)",
+          "provider": "HEC (foreign-funded, via diplomatic channel)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/lao/pages/default.aspx"
+        },
+        {
+          "name": "Chinese Government Scholarship (CSC) - Bilateral Program",
+          "provider": "China Scholarship Council; nominated by HEC Pakistan; Embassy of PR China",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "hec.gov.pk (CGSP eligibility page); pk.china-embassy.gov.cn"
+        },
+        {
+          "name": "Turkiye Burslari (Turkish Government Scholarship)",
+          "provider": "Turkiye Scholarships (Government of Turkiye)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "turkiyeburslari.gov.tr"
+        },
+        {
+          "name": "USEFP Global UGRAD (Global Undergraduate Exchange Program)",
+          "provider": "U.S. Department of State Bureau of Educational and Cultural Affairs; administered in Pakistan by USEFP, in US by IREX",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "usefp.org/scholarships/global-ugrad.cfm; exchanges.state.gov"
+        },
+        {
+          "name": "Fulbright (USEFP)",
+          "provider": "USEFP",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "USEFP official site"
+        },
+        {
+          "name": "Commonwealth Scholarships",
+          "provider": "Commonwealth Scholarship Commission (UK/FCDO); HEC nominates in Pakistan",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "CSC UK official page"
+        }
+      ],
+      "pakistan_scholarships": [
+        {
+          "name": "Benazir/Ehsaas Undergraduate Scholarship Program",
+          "provider": "Higher Education Commission (HEC) / BISP",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://ehsaas.hec.gov.pk"
+        },
+        {
+          "name": "HEC Need Based Scholarship Program (NBS)",
+          "provider": "Higher Education Commission (HEC)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/NBS/Pages/default.aspx"
+        },
+        {
+          "name": "Pak-USAID Merit and Needs-Based Scholarship Program",
+          "provider": "USAID + HEC",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/USAID-NeedsBased/Pages/default.aspx"
+        },
+        {
+          "name": "Pakistan Bait-ul-Mal (PBM) Individual Financial Assistance - Education",
+          "provider": "Pakistan Bait-ul-Mal (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.pbm.gov.pk/education.html"
+        },
+        {
+          "name": "Federal Employees Benevolent & Group Insurance Fund (FEB&GIF) - Educational Stipend/Fee Reimbursement",
+          "provider": "FEB&GIF (Establishment Division)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://febgif.gov.pk"
+        },
+        {
+          "name": "Workers Welfare Fund (WWF) Education Scholarship",
+          "provider": "Workers Welfare Fund (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://wwf.gov.pk"
+        }
+      ]
+    },
+    "createdAt": "2026-10-08T11:05:17Z"
+  },
+  {
+    "id": "fbae82f400fa35ab",
+    "answers": {
+      "Math": 3,
+      "Biology": 3,
+      "Computer": 3,
+      "Communication": 3,
+      "Leadership": 3,
+      "Marks": 45,
+      "Background": "Arts",
+      "City": "",
+      "Interests": "I want to study arts and design in college"
+    },
+    "result": {
+      "career": "Social Sciences & Humanities",
+      "confidence": 0.368,
+      "low_confidence": false,
+      "matched_field": "Social Sciences & Humanities",
+      "city_notice": null,
+      "reasons": [],
+      "universities": [
+        {
+          "University": "Abdul Wali Khan University Mardan",
+          "Program": "BS Political Science",
+          "City": "Mardan",
+          "Merit": null,
+          "your_marks": 45,
+          "eligibility": "Merit not specified",
+          "requirements": "Merit criteria not listed \u2014 check with the university",
+          "link": "https://www.eduvision.edu.pk/admissions/abbottabad-university-of-science-and-technology-abbottabad-admissions-bachelor-level-1440821050",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Allama Iqbal Open University",
+          "Program": "BS Education / Special Education",
+          "City": "Islamabad",
+          "Merit": null,
+          "your_marks": 45,
+          "eligibility": "Merit not specified",
+          "requirements": "Merit criteria not listed \u2014 check with the university",
+          "link": "https://www.ilmkidunya.com/colleges/ali-institute-of-education-lahore-admission.aspx",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Allama Iqbal Open University",
+          "Program": "BS Science Education / English Language Teaching",
+          "City": "Islamabad",
+          "Merit": null,
+          "your_marks": 45,
+          "eligibility": "Merit not specified",
+          "requirements": "Merit criteria not listed \u2014 check with the university",
+          "link": "https://www.studysolutions.pk/ali-institute-of-education-lhr-admission/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Aror University of Art Architecture Design & Heritage",
+          "Program": "BS (various, e.g. Education, Economics, Urdu, Mass Communication)",
+          "City": "Rohri Bypass N-5, Sukkur",
+          "Merit": 45.0,
+          "your_marks": 45,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 45.0% merit required",
+          "link": "https://moawin.pk/admission_details/1396",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Aror University of Art Architecture Design & Heritage",
+          "Program": "BS Islamic Studies",
+          "City": "Rohri Bypass N-5, Sukkur",
+          "Merit": null,
+          "your_marks": 45,
+          "eligibility": "Merit not specified",
+          "requirements": "Merit criteria not listed \u2014 check with the university",
+          "link": "https://www.aiou.edu.pk/sites/default/files/2025-07/Fee%20&%20Eligibility%20Autumn%202025.pdf",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Baba Guru Nanak University",
+          "Program": "BS Archaeology / History / Environmental Sciences",
+          "City": "Nankana Sahib",
+          "Merit": null,
+          "your_marks": 45,
+          "eligibility": "Merit not specified",
+          "requirements": "Merit criteria not listed \u2014 check with the university",
+          "link": "https://aror.edu.pk/admissions/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        }
+      ],
+      "international_scholarships": [
+        {
+          "name": "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)",
+          "provider": "HEC (foreign-funded, via diplomatic channel)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/lao/pages/default.aspx"
+        },
+        {
+          "name": "Chinese Government Scholarship (CSC) - Bilateral Program",
+          "provider": "China Scholarship Council; nominated by HEC Pakistan; Embassy of PR China",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "hec.gov.pk (CGSP eligibility page); pk.china-embassy.gov.cn"
+        },
+        {
+          "name": "Turkiye Burslari (Turkish Government Scholarship)",
+          "provider": "Turkiye Scholarships (Government of Turkiye)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "turkiyeburslari.gov.tr"
+        },
+        {
+          "name": "USEFP Global UGRAD (Global Undergraduate Exchange Program)",
+          "provider": "U.S. Department of State Bureau of Educational and Cultural Affairs; administered in Pakistan by USEFP, in US by IREX",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "usefp.org/scholarships/global-ugrad.cfm; exchanges.state.gov"
+        },
+        {
+          "name": "Fulbright (USEFP)",
+          "provider": "USEFP",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "USEFP official site"
+        },
+        {
+          "name": "Commonwealth Scholarships",
+          "provider": "Commonwealth Scholarship Commission (UK/FCDO); HEC nominates in Pakistan",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "CSC UK official page"
+        }
+      ],
+      "pakistan_scholarships": [
+        {
+          "name": "Benazir/Ehsaas Undergraduate Scholarship Program",
+          "provider": "Higher Education Commission (HEC) / BISP",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://ehsaas.hec.gov.pk"
+        },
+        {
+          "name": "HEC Need Based Scholarship Program (NBS)",
+          "provider": "Higher Education Commission (HEC)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/NBS/Pages/default.aspx"
+        },
+        {
+          "name": "Pak-USAID Merit and Needs-Based Scholarship Program",
+          "provider": "USAID + HEC",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/USAID-NeedsBased/Pages/default.aspx"
+        },
+        {
+          "name": "Pakistan Bait-ul-Mal (PBM) Individual Financial Assistance - Education",
+          "provider": "Pakistan Bait-ul-Mal (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.pbm.gov.pk/education.html"
+        },
+        {
+          "name": "Federal Employees Benevolent & Group Insurance Fund (FEB&GIF) - Educational Stipend/Fee Reimbursement",
+          "provider": "FEB&GIF (Establishment Division)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://febgif.gov.pk"
+        },
+        {
+          "name": "Workers Welfare Fund (WWF) Education Scholarship",
+          "provider": "Workers Welfare Fund (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://wwf.gov.pk"
+        }
+      ]
+    },
+    "createdAt": "2026-10-08T11:05:52Z"
+  },
+  {
+    "id": "b18ebdf714f2d6a1",
+    "answers": {
+      "Math": 4,
+      "Biology": 5,
+      "Computer": 5,
+      "Communication": 4,
+      "Leadership": 5,
+      "Marks": 85,
+      "Background": "Pre-Engineering",
+      "City": "Sukkur",
+      "Interests": "I love coding and building mobile apps"
+    },
+    "result": {
+      "career": "Computer Science & Technology",
+      "confidence": 0.197,
+      "low_confidence": true,
+      "matched_field": "Computer Science & Technology",
+      "city_notice": null,
+      "reasons": [
+        "Strong interest in Computer",
+        "High interest in Biology",
+        "Good analytical skills"
+      ],
+      "universities": [
+        {
+          "University": "Begum Nusrat Bhutto Women University",
+          "Program": "BS Computer Science / Software Engineering / Artificial Intelligence",
+          "City": "Rohri Bypass N-5, Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://jaamiah.com/university/beaconhouse-national-university-lahore/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Computer Science",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bscs",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Software Engineering",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsse",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Artificial Intelligence",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsai",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Data Science",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsds",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        }
+      ],
+      "international_scholarships": [
+        {
+          "name": "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)",
+          "provider": "HEC (foreign-funded, via diplomatic channel)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/lao/pages/default.aspx"
+        },
+        {
+          "name": "Chinese Government Scholarship (CSC) - Bilateral Program",
+          "provider": "China Scholarship Council; nominated by HEC Pakistan; Embassy of PR China",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "hec.gov.pk (CGSP eligibility page); pk.china-embassy.gov.cn"
+        },
+        {
+          "name": "Turkiye Burslari (Turkish Government Scholarship)",
+          "provider": "Turkiye Scholarships (Government of Turkiye)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "turkiyeburslari.gov.tr"
+        },
+        {
+          "name": "USEFP Global UGRAD (Global Undergraduate Exchange Program)",
+          "provider": "U.S. Department of State Bureau of Educational and Cultural Affairs; administered in Pakistan by USEFP, in US by IREX",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "usefp.org/scholarships/global-ugrad.cfm; exchanges.state.gov"
+        },
+        {
+          "name": "Fulbright (USEFP)",
+          "provider": "USEFP",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "USEFP official site"
+        },
+        {
+          "name": "Commonwealth Scholarships",
+          "provider": "Commonwealth Scholarship Commission (UK/FCDO); HEC nominates in Pakistan",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "CSC UK official page"
+        }
+      ],
+      "pakistan_scholarships": [
+        {
+          "name": "Benazir/Ehsaas Undergraduate Scholarship Program",
+          "provider": "Higher Education Commission (HEC) / BISP",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://ehsaas.hec.gov.pk"
+        },
+        {
+          "name": "HEC Need Based Scholarship Program (NBS)",
+          "provider": "Higher Education Commission (HEC)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/NBS/Pages/default.aspx"
+        },
+        {
+          "name": "Pak-USAID Merit and Needs-Based Scholarship Program",
+          "provider": "USAID + HEC",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/USAID-NeedsBased/Pages/default.aspx"
+        },
+        {
+          "name": "Pakistan Bait-ul-Mal (PBM) Individual Financial Assistance - Education",
+          "provider": "Pakistan Bait-ul-Mal (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://www.pbm.gov.pk/education.html"
+        },
+        {
+          "name": "Federal Employees Benevolent & Group Insurance Fund (FEB&GIF) - Educational Stipend/Fee Reimbursement",
+          "provider": "FEB&GIF (Establishment Division)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "link": "https://febgif.gov.pk"
+        },
+        {
+          "name": "Workers Welfare Fund (WWF) Education Scholarship",
+          "provider": "Workers Welfare Fund (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "link": "https://wwf.gov.pk"
+        }
+      ]
+    },
+    "createdAt": "2026-10-08T11:09:19Z"
+  },
+  {
+    "id": "9b92e68aef585727",
+    "answers": {
+      "Math": 4,
+      "Biology": 2,
+      "Computer": 5,
+      "Communication": 4,
+      "Leadership": 4,
+      "Marks": 85.0,
+      "Background": "Pre-Engineering",
+      "City": "Lahore",
+      "Interests": "I love programming software development and web design"
+    },
+    "result": {
+      "career": "Computer Science & Technology",
+      "confidence": 0.214,
+      "low_confidence": true,
+      "matched_field": "Computer Science & Technology",
+      "city_notice": null,
+      "reasons": [
+        "Strong interest in Computer",
+        "Good analytical skills"
+      ],
+      "universities": [
+        {
+          "University": "Forman Christian College University",
+          "Program": "BS Computer Science / Artificial Intelligence / Cyber Security",
+          "City": "Lahore",
+          "Merit": 50.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://sciknowledgehub.com/federal-urdu-university-of-arts-sciences-technology-fuuast-admission-details/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Government College University Lahore",
+          "Program": "BS Computer Science",
+          "City": "Lahore",
+          "Merit": 50.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://pmdc.org.pk/government-college-university-faisalabad-gcuf-admission-guide/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Green International University",
+          "Program": "BS Computer Science / Software Engineering",
+          "City": "Lahore",
+          "Merit": 50.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://pmdc.org.pk/grand-asian-university-sialkot-gaus-admission-guide/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Hajvery University",
+          "Program": "BS Computer Engineering",
+          "City": "Lahore (also Sheikhupura campus)",
+          "Merit": 60.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 60.0% merit required",
+          "link": "https://www.ilmkidunya.com/colleges/habib-university-karachi-admission.aspx",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Hajvery University",
+          "Program": "BS Computer Science",
+          "City": "Lahore (also Sheikhupura campus)",
+          "Merit": 65.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 65.0% merit required",
+          "link": "https://blog.maqsad.io/blog/habib-university-admission",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Imperial College of Business Studies",
+          "Program": "BS Computer Science / Artificial Intelligence / Software Engineering",
+          "City": "Lahore",
+          "Merit": 50.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.ilmkidunya.com/colleges/ilma-university-karachi-admission.aspx",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        }
+      ],
+      "international_scholarships": [
+        {
+          "name": "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)",
+          "provider": "HEC (foreign-funded, via diplomatic channel)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Azad Jammu & Kashmir, Federal / National, International",
+          "coverage": "Full/partial funding per host country",
+          "eligibility_raw": "Pakistani/AJK nationals meeting HAT/USAT test requirements",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/lao/pages/default.aspx"
+        },
+        {
+          "name": "Chinese Government Scholarship (CSC) - Bilateral Program",
+          "provider": "China Scholarship Council; nominated by HEC Pakistan; Embassy of PR China",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Azad Jammu & Kashmir, Federal / National, International",
+          "coverage": "Full tuition, accommodation or subsidy, monthly stipend, health insurance; travel borne by student. 75 seats for 2026-27 cycle (35 Bachelor's, 25 Master's, 15 PhD)",
+          "eligibility_raw": "Pakistani/AJK nationals, no dual nationality, 12 years of education (Intermediate/A-Level/FA/FSc), under 25",
+          "link": "hec.gov.pk (CGSP eligibility page); pk.china-embassy.gov.cn"
+        },
+        {
+          "name": "Turkiye Burslari (Turkish Government Scholarship)",
+          "provider": "Turkiye Scholarships (Government of Turkiye)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "Full tuition, monthly stipend (4,500 TL/month undergraduate), free state-dormitory accommodation, round-trip airfare, health insurance, one-year Turkish language course. Application window 10 Jan-20 Feb 2026",
+          "eligibility_raw": "Undergraduate applicants under 21",
+          "link": "turkiyeburslari.gov.tr"
+        },
+        {
+          "name": "USEFP Global UGRAD (Global Undergraduate Exchange Program)",
+          "provider": "U.S. Department of State Bureau of Educational and Cultural Affairs; administered in Pakistan by USEFP, in US by IREX",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "Full tuition, textbooks, airfare, living stipend, health insurance (one-semester non-degree exchange, not a full degree)",
+          "eligibility_raw": "Over 18, enrolled undergraduate in good standing with at least one year remaining; in Pakistan, currently in 3rd or 4th semester",
+          "link": "usefp.org/scholarships/global-ugrad.cfm; exchanges.state.gov"
+        },
+        {
+          "name": "Fulbright (USEFP)",
+          "provider": "USEFP",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "Funds graduate study only; clinical medicine excluded; return/service bond applies",
+          "eligibility_raw": "Postgraduate only (Master's/PhD) - NOT open to undergraduates",
+          "link": "USEFP official site"
+        },
+        {
+          "name": "Commonwealth Scholarships",
+          "provider": "Commonwealth Scholarship Commission (UK/FCDO); HEC nominates in Pakistan",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "N/A - postgraduate only",
+          "eligibility_raw": "Postgraduate only (Master's/PhD) - NOT open to undergraduates",
+          "link": "CSC UK official page"
+        }
+      ],
+      "pakistan_scholarships": [
+        {
+          "name": "Benazir/Ehsaas Undergraduate Scholarship Program",
+          "provider": "Higher Education Commission (HEC) / BISP",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "provinces": "Federal / National",
+          "coverage": "Full tuition + registration/exam/library fees + ~PKR 4,000/month stipend",
+          "eligibility_raw": "Newly enrolled undergrad students at HEC-recognized public universities; family income \u2264 PKR 45,000/month",
+          "link": "https://ehsaas.hec.gov.pk"
+        },
+        {
+          "name": "HEC Need Based Scholarship Program (NBS)",
+          "provider": "Higher Education Commission (HEC)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "provinces": "Federal / National",
+          "coverage": "Tuition fee + stipend",
+          "eligibility_raw": "Financially disadvantaged students at participating public sector universities",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/NBS/Pages/default.aspx"
+        },
+        {
+          "name": "Pak-USAID Merit and Needs-Based Scholarship Program",
+          "provider": "USAID + HEC",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "provinces": "Federal / National",
+          "coverage": "Full/partial tuition + financial support",
+          "eligibility_raw": "Talented, financially disadvantaged students at partner universities",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/USAID-NeedsBased/Pages/default.aspx"
+        },
+        {
+          "name": "Pakistan Bait-ul-Mal (PBM) Individual Financial Assistance - Education",
+          "provider": "Pakistan Bait-ul-Mal (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "provinces": "Federal / National",
+          "coverage": "Direct fee payment to institution, up to ~PKR 150,000/year",
+          "eligibility_raw": "Poor/orphaned/disabled students in GOVERNMENT institutions only (not self-finance/private)",
+          "link": "https://www.pbm.gov.pk/education.html"
+        },
+        {
+          "name": "Federal Employees Benevolent & Group Insurance Fund (FEB&GIF) - Educational Stipend/Fee Reimbursement",
+          "provider": "FEB&GIF (Establishment Division)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National",
+          "coverage": "Stipend ~PKR 20,000-40,000/yr; fee reimbursement up to ~PKR 100,000/yr for professional degrees",
+          "eligibility_raw": "Children of serving/retired/deceased federal govt employees",
+          "link": "https://febgif.gov.pk"
+        },
+        {
+          "name": "Workers Welfare Fund (WWF) Education Scholarship",
+          "provider": "Workers Welfare Fund (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "provinces": "Federal / National",
+          "coverage": "Free tuition/admission/hostel/exam fees + monthly stipend, up to postgrad",
+          "eligibility_raw": "Children of registered industrial workers (3+ yrs registration)",
+          "link": "https://wwf.gov.pk"
+        },
+        {
+          "name": "IGNITE / Prime Minister's National ICT Scholarship Program",
+          "provider": "Ignite National Technology Fund, Ministry of IT",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "provinces": "Federal / National",
+          "coverage": "Full tuition + boarding + book/food allowance + stipend for 4 years",
+          "eligibility_raw": "Students admitted to 4-yr undergrad ICT-discipline degrees",
+          "link": "https://ignite.org.pk/prime-ministers-national-ict-scholarship-program/"
+        },
+        {
+          "name": "Allama Muhammad Iqbal Scholarships for Afghan Student (Phase-III)",
+          "provider": "HEC + Ministry of Foreign Affairs",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National",
+          "coverage": "Fully funded: tuition + living + book + hostel + travel allowance",
+          "eligibility_raw": "Afghan nationals, 12 yrs schooling for UG entry (NOT for Pakistani citizens)",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/amisp/Pages/default.aspx"
+        }
+      ]
+    },
+    "createdAt": "2026-10-08T11:11:42Z"
+  },
+  {
+    "id": "fe4b9934165933e8",
+    "answers": {
+      "Math": 4,
+      "Biology": 2,
+      "Computer": 5,
+      "Communication": 4,
+      "Leadership": 4,
+      "Marks": 85.0,
+      "Background": "Pre-Engineering",
+      "City": "Lahore",
+      "Interests": "I love programming software development and web design"
+    },
+    "result": {
+      "career": "Computer Science & Technology",
+      "confidence": 0.214,
+      "low_confidence": true,
+      "matched_field": "Computer Science & Technology",
+      "city_notice": null,
+      "reasons": [
+        "Strong interest in Computer",
+        "Good analytical skills"
+      ],
+      "universities": [
+        {
+          "University": "Forman Christian College University",
+          "Program": "BS Computer Science / Artificial Intelligence / Cyber Security",
+          "City": "Lahore",
+          "Merit": 50.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://sciknowledgehub.com/federal-urdu-university-of-arts-sciences-technology-fuuast-admission-details/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Government College University Lahore",
+          "Program": "BS Computer Science",
+          "City": "Lahore",
+          "Merit": 50.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://pmdc.org.pk/government-college-university-faisalabad-gcuf-admission-guide/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Green International University",
+          "Program": "BS Computer Science / Software Engineering",
+          "City": "Lahore",
+          "Merit": 50.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://pmdc.org.pk/grand-asian-university-sialkot-gaus-admission-guide/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Hajvery University",
+          "Program": "BS Computer Engineering",
+          "City": "Lahore (also Sheikhupura campus)",
+          "Merit": 60.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 60.0% merit required",
+          "link": "https://www.ilmkidunya.com/colleges/habib-university-karachi-admission.aspx",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Hajvery University",
+          "Program": "BS Computer Science",
+          "City": "Lahore (also Sheikhupura campus)",
+          "Merit": 65.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 65.0% merit required",
+          "link": "https://blog.maqsad.io/blog/habib-university-admission",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Imperial College of Business Studies",
+          "Program": "BS Computer Science / Artificial Intelligence / Software Engineering",
+          "City": "Lahore",
+          "Merit": 50.0,
+          "your_marks": 85.0,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.ilmkidunya.com/colleges/ilma-university-karachi-admission.aspx",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        }
+      ],
+      "international_scholarships": [
+        {
+          "name": "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)",
+          "provider": "HEC (foreign-funded, via diplomatic channel)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Azad Jammu & Kashmir, Federal / National, International",
+          "coverage": "Full/partial funding per host country",
+          "eligibility_raw": "Pakistani/AJK nationals meeting HAT/USAT test requirements",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/lao/pages/default.aspx"
+        },
+        {
+          "name": "Chinese Government Scholarship (CSC) - Bilateral Program",
+          "provider": "China Scholarship Council; nominated by HEC Pakistan; Embassy of PR China",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Azad Jammu & Kashmir, Federal / National, International",
+          "coverage": "Full tuition, accommodation or subsidy, monthly stipend, health insurance; travel borne by student. 75 seats for 2026-27 cycle (35 Bachelor's, 25 Master's, 15 PhD)",
+          "eligibility_raw": "Pakistani/AJK nationals, no dual nationality, 12 years of education (Intermediate/A-Level/FA/FSc), under 25",
+          "link": "hec.gov.pk (CGSP eligibility page); pk.china-embassy.gov.cn"
+        },
+        {
+          "name": "Turkiye Burslari (Turkish Government Scholarship)",
+          "provider": "Turkiye Scholarships (Government of Turkiye)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "Full tuition, monthly stipend (4,500 TL/month undergraduate), free state-dormitory accommodation, round-trip airfare, health insurance, one-year Turkish language course. Application window 10 Jan-20 Feb 2026",
+          "eligibility_raw": "Undergraduate applicants under 21",
+          "link": "turkiyeburslari.gov.tr"
+        },
+        {
+          "name": "USEFP Global UGRAD (Global Undergraduate Exchange Program)",
+          "provider": "U.S. Department of State Bureau of Educational and Cultural Affairs; administered in Pakistan by USEFP, in US by IREX",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "Full tuition, textbooks, airfare, living stipend, health insurance (one-semester non-degree exchange, not a full degree)",
+          "eligibility_raw": "Over 18, enrolled undergraduate in good standing with at least one year remaining; in Pakistan, currently in 3rd or 4th semester",
+          "link": "usefp.org/scholarships/global-ugrad.cfm; exchanges.state.gov"
+        },
+        {
+          "name": "Fulbright (USEFP)",
+          "provider": "USEFP",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "Funds graduate study only; clinical medicine excluded; return/service bond applies",
+          "eligibility_raw": "Postgraduate only (Master's/PhD) - NOT open to undergraduates",
+          "link": "USEFP official site"
+        },
+        {
+          "name": "Commonwealth Scholarships",
+          "provider": "Commonwealth Scholarship Commission (UK/FCDO); HEC nominates in Pakistan",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "N/A - postgraduate only",
+          "eligibility_raw": "Postgraduate only (Master's/PhD) - NOT open to undergraduates",
+          "link": "CSC UK official page"
+        }
+      ],
+      "pakistan_scholarships": [
+        {
+          "name": "Benazir/Ehsaas Undergraduate Scholarship Program",
+          "provider": "Higher Education Commission (HEC) / BISP",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "provinces": "Federal / National",
+          "coverage": "Full tuition + registration/exam/library fees + ~PKR 4,000/month stipend",
+          "eligibility_raw": "Newly enrolled undergrad students at HEC-recognized public universities; family income \u2264 PKR 45,000/month",
+          "link": "https://ehsaas.hec.gov.pk"
+        },
+        {
+          "name": "HEC Need Based Scholarship Program (NBS)",
+          "provider": "Higher Education Commission (HEC)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "provinces": "Federal / National",
+          "coverage": "Tuition fee + stipend",
+          "eligibility_raw": "Financially disadvantaged students at participating public sector universities",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/NBS/Pages/default.aspx"
+        },
+        {
+          "name": "Pak-USAID Merit and Needs-Based Scholarship Program",
+          "provider": "USAID + HEC",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "provinces": "Federal / National",
+          "coverage": "Full/partial tuition + financial support",
+          "eligibility_raw": "Talented, financially disadvantaged students at partner universities",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/USAID-NeedsBased/Pages/default.aspx"
+        },
+        {
+          "name": "Pakistan Bait-ul-Mal (PBM) Individual Financial Assistance - Education",
+          "provider": "Pakistan Bait-ul-Mal (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "provinces": "Federal / National",
+          "coverage": "Direct fee payment to institution, up to ~PKR 150,000/year",
+          "eligibility_raw": "Poor/orphaned/disabled students in GOVERNMENT institutions only (not self-finance/private)",
+          "link": "https://www.pbm.gov.pk/education.html"
+        },
+        {
+          "name": "Federal Employees Benevolent & Group Insurance Fund (FEB&GIF) - Educational Stipend/Fee Reimbursement",
+          "provider": "FEB&GIF (Establishment Division)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National",
+          "coverage": "Stipend ~PKR 20,000-40,000/yr; fee reimbursement up to ~PKR 100,000/yr for professional degrees",
+          "eligibility_raw": "Children of serving/retired/deceased federal govt employees",
+          "link": "https://febgif.gov.pk"
+        },
+        {
+          "name": "Workers Welfare Fund (WWF) Education Scholarship",
+          "provider": "Workers Welfare Fund (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "provinces": "Federal / National",
+          "coverage": "Free tuition/admission/hostel/exam fees + monthly stipend, up to postgrad",
+          "eligibility_raw": "Children of registered industrial workers (3+ yrs registration)",
+          "link": "https://wwf.gov.pk"
+        },
+        {
+          "name": "IGNITE / Prime Minister's National ICT Scholarship Program",
+          "provider": "Ignite National Technology Fund, Ministry of IT",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "provinces": "Federal / National",
+          "coverage": "Full tuition + boarding + book/food allowance + stipend for 4 years",
+          "eligibility_raw": "Students admitted to 4-yr undergrad ICT-discipline degrees",
+          "link": "https://ignite.org.pk/prime-ministers-national-ict-scholarship-program/"
+        },
+        {
+          "name": "Allama Muhammad Iqbal Scholarships for Afghan Student (Phase-III)",
+          "provider": "HEC + Ministry of Foreign Affairs",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National",
+          "coverage": "Fully funded: tuition + living + book + hostel + travel allowance",
+          "eligibility_raw": "Afghan nationals, 12 yrs schooling for UG entry (NOT for Pakistani citizens)",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/amisp/Pages/default.aspx"
+        }
+      ]
+    },
+    "createdAt": "2026-10-08T11:12:12Z"
+  },
+  {
+    "id": "ee6ead71ee52a194",
+    "answers": {
+      "Math": 4,
+      "Biology": 5,
+      "Computer": 5,
+      "Communication": 4,
+      "Leadership": 5,
+      "Marks": 85,
+      "Background": "Pre-Engineering",
+      "City": "Sukkur",
+      "Interests": "I love coding and building mobile apps"
+    },
+    "result": {
+      "career": "Computer Science & Technology",
+      "confidence": 0.197,
+      "low_confidence": true,
+      "matched_field": "Computer Science & Technology",
+      "city_notice": null,
+      "reasons": [
+        "Strong interest in Computer",
+        "High interest in Biology",
+        "Good analytical skills"
+      ],
+      "universities": [
+        {
+          "University": "Begum Nusrat Bhutto Women University",
+          "Program": "BS Computer Science / Software Engineering / Artificial Intelligence",
+          "City": "Rohri Bypass N-5, Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://jaamiah.com/university/beaconhouse-national-university-lahore/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Computer Science",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bscs",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Software Engineering",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsse",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Artificial Intelligence",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsai",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Data Science",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsds",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        }
+      ],
+      "international_scholarships": [
+        {
+          "name": "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)",
+          "provider": "HEC (foreign-funded, via diplomatic channel)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Azad Jammu & Kashmir, Federal / National, International",
+          "coverage": "Full/partial funding per host country",
+          "eligibility_raw": "Pakistani/AJK nationals meeting HAT/USAT test requirements",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/lao/pages/default.aspx"
+        },
+        {
+          "name": "Chinese Government Scholarship (CSC) - Bilateral Program",
+          "provider": "China Scholarship Council; nominated by HEC Pakistan; Embassy of PR China",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Azad Jammu & Kashmir, Federal / National, International",
+          "coverage": "Full tuition, accommodation or subsidy, monthly stipend, health insurance; travel borne by student. 75 seats for 2026-27 cycle (35 Bachelor's, 25 Master's, 15 PhD)",
+          "eligibility_raw": "Pakistani/AJK nationals, no dual nationality, 12 years of education (Intermediate/A-Level/FA/FSc), under 25",
+          "link": "hec.gov.pk (CGSP eligibility page); pk.china-embassy.gov.cn"
+        },
+        {
+          "name": "Turkiye Burslari (Turkish Government Scholarship)",
+          "provider": "Turkiye Scholarships (Government of Turkiye)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "Full tuition, monthly stipend (4,500 TL/month undergraduate), free state-dormitory accommodation, round-trip airfare, health insurance, one-year Turkish language course. Application window 10 Jan-20 Feb 2026",
+          "eligibility_raw": "Undergraduate applicants under 21",
+          "link": "turkiyeburslari.gov.tr"
+        },
+        {
+          "name": "USEFP Global UGRAD (Global Undergraduate Exchange Program)",
+          "provider": "U.S. Department of State Bureau of Educational and Cultural Affairs; administered in Pakistan by USEFP, in US by IREX",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "Full tuition, textbooks, airfare, living stipend, health insurance (one-semester non-degree exchange, not a full degree)",
+          "eligibility_raw": "Over 18, enrolled undergraduate in good standing with at least one year remaining; in Pakistan, currently in 3rd or 4th semester",
+          "link": "usefp.org/scholarships/global-ugrad.cfm; exchanges.state.gov"
+        },
+        {
+          "name": "Fulbright (USEFP)",
+          "provider": "USEFP",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "Funds graduate study only; clinical medicine excluded; return/service bond applies",
+          "eligibility_raw": "Postgraduate only (Master's/PhD) - NOT open to undergraduates",
+          "link": "USEFP official site"
+        },
+        {
+          "name": "Commonwealth Scholarships",
+          "provider": "Commonwealth Scholarship Commission (UK/FCDO); HEC nominates in Pakistan",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "N/A - postgraduate only",
+          "eligibility_raw": "Postgraduate only (Master's/PhD) - NOT open to undergraduates",
+          "link": "CSC UK official page"
+        }
+      ],
+      "pakistan_scholarships": [
+        {
+          "name": "Benazir/Ehsaas Undergraduate Scholarship Program",
+          "provider": "Higher Education Commission (HEC) / BISP",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "provinces": "Federal / National",
+          "coverage": "Full tuition + registration/exam/library fees + ~PKR 4,000/month stipend",
+          "eligibility_raw": "Newly enrolled undergrad students at HEC-recognized public universities; family income \u2264 PKR 45,000/month",
+          "link": "https://ehsaas.hec.gov.pk"
+        },
+        {
+          "name": "HEC Need Based Scholarship Program (NBS)",
+          "provider": "Higher Education Commission (HEC)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "provinces": "Federal / National",
+          "coverage": "Tuition fee + stipend",
+          "eligibility_raw": "Financially disadvantaged students at participating public sector universities",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/NBS/Pages/default.aspx"
+        },
+        {
+          "name": "Pak-USAID Merit and Needs-Based Scholarship Program",
+          "provider": "USAID + HEC",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "provinces": "Federal / National",
+          "coverage": "Full/partial tuition + financial support",
+          "eligibility_raw": "Talented, financially disadvantaged students at partner universities",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/USAID-NeedsBased/Pages/default.aspx"
+        },
+        {
+          "name": "Pakistan Bait-ul-Mal (PBM) Individual Financial Assistance - Education",
+          "provider": "Pakistan Bait-ul-Mal (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "provinces": "Federal / National",
+          "coverage": "Direct fee payment to institution, up to ~PKR 150,000/year",
+          "eligibility_raw": "Poor/orphaned/disabled students in GOVERNMENT institutions only (not self-finance/private)",
+          "link": "https://www.pbm.gov.pk/education.html"
+        },
+        {
+          "name": "Federal Employees Benevolent & Group Insurance Fund (FEB&GIF) - Educational Stipend/Fee Reimbursement",
+          "provider": "FEB&GIF (Establishment Division)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National",
+          "coverage": "Stipend ~PKR 20,000-40,000/yr; fee reimbursement up to ~PKR 100,000/yr for professional degrees",
+          "eligibility_raw": "Children of serving/retired/deceased federal govt employees",
+          "link": "https://febgif.gov.pk"
+        },
+        {
+          "name": "Workers Welfare Fund (WWF) Education Scholarship",
+          "provider": "Workers Welfare Fund (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "provinces": "Federal / National",
+          "coverage": "Free tuition/admission/hostel/exam fees + monthly stipend, up to postgrad",
+          "eligibility_raw": "Children of registered industrial workers (3+ yrs registration)",
+          "link": "https://wwf.gov.pk"
+        },
+        {
+          "name": "IGNITE / Prime Minister's National ICT Scholarship Program",
+          "provider": "Ignite National Technology Fund, Ministry of IT",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "provinces": "Federal / National",
+          "coverage": "Full tuition + boarding + book/food allowance + stipend for 4 years",
+          "eligibility_raw": "Students admitted to 4-yr undergrad ICT-discipline degrees",
+          "link": "https://ignite.org.pk/prime-ministers-national-ict-scholarship-program/"
+        },
+        {
+          "name": "Allama Muhammad Iqbal Scholarships for Afghan Student (Phase-III)",
+          "provider": "HEC + Ministry of Foreign Affairs",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National",
+          "coverage": "Fully funded: tuition + living + book + hostel + travel allowance",
+          "eligibility_raw": "Afghan nationals, 12 yrs schooling for UG entry (NOT for Pakistani citizens)",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/amisp/Pages/default.aspx"
+        }
+      ]
+    },
+    "createdAt": "2026-10-08T11:15:44Z"
+  },
+  {
+    "id": "cbc4b8fa8a71f78a",
+    "answers": {
+      "Math": 4,
+      "Biology": 5,
+      "Computer": 5,
+      "Communication": 4,
+      "Leadership": 5,
+      "Marks": 85,
+      "Background": "Pre-Engineering",
+      "City": "Sukkur",
+      "Interests": "I love coding and building mobile apps"
+    },
+    "result": {
+      "career": "Computer Science & Technology",
+      "confidence": 0.197,
+      "low_confidence": true,
+      "matched_field": "Computer Science & Technology",
+      "city_notice": null,
+      "reasons": [
+        "Strong interest in Computer",
+        "High interest in Biology",
+        "Good analytical skills"
+      ],
+      "universities": [
+        {
+          "University": "Begum Nusrat Bhutto Women University",
+          "Program": "BS Computer Science / Software Engineering / Artificial Intelligence",
+          "City": "Rohri Bypass N-5, Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://jaamiah.com/university/beaconhouse-national-university-lahore/",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Computer Science",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bscs",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Software Engineering",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsse",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Artificial Intelligence",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsai",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        },
+        {
+          "University": "Sukkur IBA University",
+          "Program": "BS Data Science",
+          "City": "Sukkur",
+          "Merit": 50.0,
+          "your_marks": 85,
+          "eligibility": "Eligible",
+          "requirements": "Minimum 50.0% merit required",
+          "link": "https://www.iba-suk.edu.pk/academic-programs/undergraduate/bsds",
+          "guidance": [
+            "Apply before deadline",
+            "Prepare required documents",
+            "Check entry test schedule"
+          ]
+        }
+      ],
+      "international_scholarships": [
+        {
+          "name": "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)",
+          "provider": "HEC (foreign-funded, via diplomatic channel)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Azad Jammu & Kashmir, Federal / National, International",
+          "coverage": "Full/partial funding per host country",
+          "eligibility_raw": "Pakistani/AJK nationals meeting HAT/USAT test requirements",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/lao/pages/default.aspx"
+        },
+        {
+          "name": "Chinese Government Scholarship (CSC) - Bilateral Program",
+          "provider": "China Scholarship Council; nominated by HEC Pakistan; Embassy of PR China",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Azad Jammu & Kashmir, Federal / National, International",
+          "coverage": "Full tuition, accommodation or subsidy, monthly stipend, health insurance; travel borne by student. 75 seats for 2026-27 cycle (35 Bachelor's, 25 Master's, 15 PhD)",
+          "eligibility_raw": "Pakistani/AJK nationals, no dual nationality, 12 years of education (Intermediate/A-Level/FA/FSc), under 25",
+          "link": "hec.gov.pk (CGSP eligibility page); pk.china-embassy.gov.cn"
+        },
+        {
+          "name": "Turkiye Burslari (Turkish Government Scholarship)",
+          "provider": "Turkiye Scholarships (Government of Turkiye)",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "Full tuition, monthly stipend (4,500 TL/month undergraduate), free state-dormitory accommodation, round-trip airfare, health insurance, one-year Turkish language course. Application window 10 Jan-20 Feb 2026",
+          "eligibility_raw": "Undergraduate applicants under 21",
+          "link": "turkiyeburslari.gov.tr"
+        },
+        {
+          "name": "USEFP Global UGRAD (Global Undergraduate Exchange Program)",
+          "provider": "U.S. Department of State Bureau of Educational and Cultural Affairs; administered in Pakistan by USEFP, in US by IREX",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "Full tuition, textbooks, airfare, living stipend, health insurance (one-semester non-degree exchange, not a full degree)",
+          "eligibility_raw": "Over 18, enrolled undergraduate in good standing with at least one year remaining; in Pakistan, currently in 3rd or 4th semester",
+          "link": "usefp.org/scholarships/global-ugrad.cfm; exchanges.state.gov"
+        },
+        {
+          "name": "Fulbright (USEFP)",
+          "provider": "USEFP",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "Funds graduate study only; clinical medicine excluded; return/service bond applies",
+          "eligibility_raw": "Postgraduate only (Master's/PhD) - NOT open to undergraduates",
+          "link": "USEFP official site"
+        },
+        {
+          "name": "Commonwealth Scholarships",
+          "provider": "Commonwealth Scholarship Commission (UK/FCDO); HEC nominates in Pakistan",
+          "field": "International",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National, International",
+          "coverage": "N/A - postgraduate only",
+          "eligibility_raw": "Postgraduate only (Master's/PhD) - NOT open to undergraduates",
+          "link": "CSC UK official page"
+        }
+      ],
+      "pakistan_scholarships": [
+        {
+          "name": "Benazir/Ehsaas Undergraduate Scholarship Program",
+          "provider": "Higher Education Commission (HEC) / BISP",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "provinces": "Federal / National",
+          "coverage": "Full tuition + registration/exam/library fees + ~PKR 4,000/month stipend",
+          "eligibility_raw": "Newly enrolled undergrad students at HEC-recognized public universities; family income \u2264 PKR 45,000/month",
+          "link": "https://ehsaas.hec.gov.pk"
+        },
+        {
+          "name": "HEC Need Based Scholarship Program (NBS)",
+          "provider": "Higher Education Commission (HEC)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "provinces": "Federal / National",
+          "coverage": "Tuition fee + stipend",
+          "eligibility_raw": "Financially disadvantaged students at participating public sector universities",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/NBS/Pages/default.aspx"
+        },
+        {
+          "name": "Pak-USAID Merit and Needs-Based Scholarship Program",
+          "provider": "USAID + HEC",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "provinces": "Federal / National",
+          "coverage": "Full/partial tuition + financial support",
+          "eligibility_raw": "Talented, financially disadvantaged students at partner universities",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/USAID-NeedsBased/Pages/default.aspx"
+        },
+        {
+          "name": "Pakistan Bait-ul-Mal (PBM) Individual Financial Assistance - Education",
+          "provider": "Pakistan Bait-ul-Mal (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "provinces": "Federal / National",
+          "coverage": "Direct fee payment to institution, up to ~PKR 150,000/year",
+          "eligibility_raw": "Poor/orphaned/disabled students in GOVERNMENT institutions only (not self-finance/private)",
+          "link": "https://www.pbm.gov.pk/education.html"
+        },
+        {
+          "name": "Federal Employees Benevolent & Group Insurance Fund (FEB&GIF) - Educational Stipend/Fee Reimbursement",
+          "provider": "FEB&GIF (Establishment Division)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National",
+          "coverage": "Stipend ~PKR 20,000-40,000/yr; fee reimbursement up to ~PKR 100,000/yr for professional degrees",
+          "eligibility_raw": "Children of serving/retired/deceased federal govt employees",
+          "link": "https://febgif.gov.pk"
+        },
+        {
+          "name": "Workers Welfare Fund (WWF) Education Scholarship",
+          "provider": "Workers Welfare Fund (federal)",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need-based",
+          "provinces": "Federal / National",
+          "coverage": "Free tuition/admission/hostel/exam fees + monthly stipend, up to postgrad",
+          "eligibility_raw": "Children of registered industrial workers (3+ yrs registration)",
+          "link": "https://wwf.gov.pk"
+        },
+        {
+          "name": "IGNITE / Prime Minister's National ICT Scholarship Program",
+          "provider": "Ignite National Technology Fund, Ministry of IT",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Need + Merit",
+          "provinces": "Federal / National",
+          "coverage": "Full tuition + boarding + book/food allowance + stipend for 4 years",
+          "eligibility_raw": "Students admitted to 4-yr undergrad ICT-discipline degrees",
+          "link": "https://ignite.org.pk/prime-ministers-national-ict-scholarship-program/"
+        },
+        {
+          "name": "Allama Muhammad Iqbal Scholarships for Afghan Student (Phase-III)",
+          "provider": "HEC + Ministry of Foreign Affairs",
+          "field": "Government",
+          "min_percentage": null,
+          "eligibility": "Merit not specified",
+          "basis": "Merit-based",
+          "provinces": "Federal / National",
+          "coverage": "Fully funded: tuition + living + book + hostel + travel allowance",
+          "eligibility_raw": "Afghan nationals, 12 yrs schooling for UG entry (NOT for Pakistani citizens)",
+          "link": "https://www.hec.gov.pk/english/scholarshipsgrants/amisp/Pages/default.aspx"
+        }
+      ]
+    },
+    "createdAt": "2026-10-08T11:18:27Z"
   }
 ]
