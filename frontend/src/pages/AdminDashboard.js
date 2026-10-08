@@ -1393,7 +1393,40 @@ function AdminDashboard() {
   // The "Chatbot" nav item covers two underlying resources — the conversation log and the auto-reply rules.
   const activeResource = tab === 'chatbot' ? (chatbotView === 'log' ? 'chatbot-interactions' : 'chatbot-responses') : tab;
 
-  const api = async (path, options = {}) => { const response = await fetch(`${API_URL}${path}`, { ...options, headers: { Authorization: `Bearer ${token}`, ...(options.headers || {}) } }); const result = await response.json(); if (response.status === 401) { sessionStorage.removeItem(ADMIN_TOKEN_KEY); navigate('/admin/login', { replace: true }); } if (!response.ok) throw new Error(result.message || 'Request failed.'); return result; };
+  const api = async (path, options = {}) => {
+    const response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers: { Authorization: `Bearer ${token}`, ...(options.headers || {}) },
+    });
+    if (response.status === 401) {
+      sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+      navigate('/admin/login', { replace: true });
+      throw new Error('Admin session expired. Please log in again.');
+    }
+    const contentType = response.headers.get('content-type') || '';
+    let result = {};
+    if (contentType.includes('application/json')) {
+      result = await response.json();
+    } else {
+      const text = await response.text();
+      if (!response.ok) {
+        if (response.status === 502 || response.status === 503 || response.status === 504) {
+          throw new Error('Backend server is waking up or deploying. Please wait 30 seconds and try again.');
+        }
+        if (response.status === 404) {
+          throw new Error('Endpoint not found. The backend server on Render may still be building or updating.');
+        }
+        throw new Error(`Server returned HTTP ${response.status}. Please check your Render backend status.`);
+      }
+      try {
+        result = JSON.parse(text);
+      } catch {
+        result = {};
+      }
+    }
+    if (!response.ok) throw new Error(result.message || 'Request failed.');
+    return result;
+  };
   const load = async (resource) => { if (resource === 'users') { const result = await api('/api/admin/stats'); setUsers((result.users || []).sort((a, b) => timestampValue(b) - timestampValue(a))); } else { const result = await api(`/api/admin/${resource}`); setRecords((result.records || []).sort((a, b) => timestampValue(b) - timestampValue(a))); } };
   const loadDashboard = async () => {
     const [stats, scholarships, universities, eligibility] = await Promise.all([
