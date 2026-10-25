@@ -144,7 +144,7 @@ function Profile() {
             intermediateGroup: savedProfile.intermediate_group || 'Pre-Engineering',
             entryTest: savedProfile.entry_test || 'None',
             entryTestScore: savedProfile.entry_test_score || '',
-            academicLevel: savedProfile.academic_level || 'Intermediate',
+            academicLevel: ['Matric', 'Intermediate'].includes(savedProfile.academic_level) ? savedProfile.academic_level : 'Intermediate',
             preferredField: savedProfile.preferred_field || 'Technology',
             interests: savedProfile.interests || '',
             notes: savedProfile.notes || '',
@@ -478,9 +478,8 @@ function Profile() {
                   <label className="profile-field" htmlFor="profile-academicLevel">
                     <span>Academic level</span>
                     <select id="profile-academicLevel" name="academicLevel" value={profile.academicLevel} onChange={handleChange}>
+                      <option>Matric</option>
                       <option>Intermediate</option>
-                      <option>Undergraduate</option>
-                      <option>Graduate</option>
                     </select>
                   </label>
                   <label className="profile-field" htmlFor="profile-intermediateGroup">

@@ -82,7 +82,6 @@ function AppFooter() {
   return (
     <footer className="app-footer">
       <span>© 2026 CareerGuide</span>
-      <Link to="/admin/login" className="app-footer__admin-link">Admin</Link>
     </footer>
   );
 }

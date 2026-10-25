@@ -439,7 +439,6 @@ function ModernLanding() {
               <h4>Account</h4>
               <button type="button" onClick={() => navigate('/login')}>Sign In</button>
               <button type="button" onClick={() => navigate('/register')}>Register</button>
-              <button type="button" onClick={() => navigate('/admin/login')}>Admin Portal</button>
             </div>
           </div>
         </div>
