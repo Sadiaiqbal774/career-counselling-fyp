@@ -1922,12 +1922,12 @@ function AdminDashboard() {
               <table className="admin-table admin-users-table">
                 <colgroup>
                   <col style={{ width: '16%' }} />
-                  <col style={{ width: '22%' }} />
-                  <col style={{ width: '8%' }} />
-                  <col style={{ width: '12%' }} />
-                  <col style={{ width: '12%' }} />
-                  <col style={{ width: '9%' }} />
                   <col style={{ width: '21%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '11%' }} />
+                  <col style={{ width: '11%' }} />
+                  <col style={{ width: '9%' }} />
+                  <col style={{ width: '24%' }} />
                 </colgroup>
                 <thead>
                   <tr>
@@ -1937,7 +1937,7 @@ function AdminDashboard() {
                     <th style={{ textAlign: 'center' }}>Verified</th>
                     <th style={{ textAlign: 'center' }}>Last login</th>
                     <th style={{ textAlign: 'center' }}>Access</th>
-                    <th style={{ textAlign: 'center' }}>Actions</th>
+                    <th className="admin-col-actions" style={{ textAlign: 'center' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1958,11 +1958,11 @@ function AdminDashboard() {
                       </td>
                       <td style={{ textAlign: 'center' }}>{formatDateTime(user.lastSignInAt)}</td>
                       <td style={{ textAlign: 'center' }}><StatusPill tone={user.blocked ? 'warn' : 'good'}>{user.blocked ? 'Blocked' : 'Active'}</StatusPill></td>
-                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      <td className="admin-col-actions" style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                         <div className="admin-user-actions-wrap">
-                          <button className="admin-action admin-action--toggle" type="button" onClick={() => toggleUserBlock(user)}>{user.blocked ? 'Unblock' : 'Block'}</button>
-                          <button className="admin-action admin-action--edit" type="button" onClick={() => setEditingUser({ ...user })}>Edit</button>
-                          <button className="admin-action admin-action--danger" type="button" onClick={() => deleteUser(user)}>Delete</button>
+                          <button className="admin-action admin-action--user admin-action--toggle" type="button" onClick={() => toggleUserBlock(user)}>{user.blocked ? 'Unblock' : 'Block'}</button>
+                          <button className="admin-action admin-action--user admin-action--edit" type="button" onClick={() => setEditingUser({ ...user })}>Edit</button>
+                          <button className="admin-action admin-action--user admin-action--danger" type="button" onClick={() => deleteUser(user)}>Delete</button>
                         </div>
                       </td>
                     </tr>

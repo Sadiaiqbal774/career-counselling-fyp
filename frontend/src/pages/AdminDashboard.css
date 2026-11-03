@@ -2492,10 +2492,41 @@ html.dark-mode .admin-app {
   vertical-align: middle;
 }
 
+.admin-users-table th.admin-col-actions,
+.admin-users-table td.admin-col-actions,
+.admin-users-table th:last-child,
 .admin-users-table td:last-child {
-  white-space: nowrap;
-  text-align: center;
-  padding: 12px 8px;
+  white-space: nowrap !important;
+  text-align: center !important;
+  padding: 12px 6px !important;
+}
+
+.admin-user-actions-wrap {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  margin: 0 auto !important;
+}
+
+.admin-users-table .admin-action--user {
+  width: 72px !important;
+  min-width: 72px !important;
+  max-width: 72px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 0 !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  border-radius: var(--radius-sm, 6px) !important;
+  margin: 0 !important;
+  text-align: center !important;
+  line-height: 1 !important;
 }
 
 .admin-users-table .admin-action {
@@ -2507,17 +2538,6 @@ html.dark-mode .admin-app {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-.admin-users-table .admin-action--toggle {
-  min-width: 72px;
-}
-
-.admin-user-actions-wrap {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
 }
 
 .admin-view-more-btn {
