@@ -1350,10 +1350,10 @@ function MonitoringTable({ tab, records, users = [] }) {
       if (!chatbotSearch.trim()) return true;
       const terms = chatbotSearch.trim().toLowerCase().split(/\s+/).filter(Boolean);
       const message = String(record.message || '').toLowerCase();
-      const response = String(record.response || '').toLowerCase();
       const user = getUserDisplayName(record, users).toLowerCase();
       const userEmail = String(record.userEmail || record.user?.email || '').toLowerCase();
-      const combined = `${message} ${response} ${user} ${userEmail}`;
+      // Match on visitor message or user name/email so searching 'quiz' does NOT pull bot replies mentioning quiz
+      const combined = `${message} ${user} ${userEmail}`;
       return terms.every((t) => combined.includes(t));
     });
     const visibleRecords = filteredRecords.slice(0, visibleChatbotCount);
@@ -1369,7 +1369,7 @@ function MonitoringTable({ tab, records, users = [] }) {
               className="admin-search"
               type="text"
               inputMode="search"
-              placeholder="Search queries or bot replies..."
+              placeholder="Search visitor queries or student name..."
               aria-label="Search chatbot conversations"
               value={chatbotSearch}
               onChange={(e) => { setChatbotSearch(e.target.value); setVisibleChatbotCount(10); }}
@@ -1917,13 +1917,13 @@ function AdminDashboard() {
             <div className="admin-table-wrap">
               <table className="admin-table admin-users-table">
                 <colgroup>
-                  <col style={{ width: '18%' }} />
-                  <col style={{ width: '22%' }} />
-                  <col style={{ width: '10%' }} />
-                  <col style={{ width: '11%' }} />
-                  <col style={{ width: '14%' }} />
-                  <col style={{ width: '10%' }} />
                   <col style={{ width: '15%' }} />
+                  <col style={{ width: '20%' }} />
+                  <col style={{ width: '9%' }} />
+                  <col style={{ width: '11%' }} />
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '9%' }} />
+                  <col style={{ width: '24%' }} />
                 </colgroup>
                 <thead><tr><th>Name</th><th>Email</th><th>Provider</th><th>Verified</th><th>Last login</th><th>Access</th><th style={{ textAlign: 'right' }}>Actions</th></tr></thead>
                 <tbody>

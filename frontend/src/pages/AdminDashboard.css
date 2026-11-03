@@ -2488,9 +2488,31 @@ html.dark-mode .admin-app {
 
 .admin-users-table th,
 .admin-users-table td {
-  padding: 12px 14px;
+  padding: 12px 10px;
   vertical-align: middle;
   word-break: break-word;
+}
+
+.admin-users-table td:last-child {
+  white-space: nowrap;
+  text-align: right;
+  padding-right: 8px;
+}
+
+.admin-users-table .admin-action {
+  min-width: 64px;
+  height: 30px;
+  padding: 4px 10px;
+  font-size: 0.81rem;
+  margin-right: 5px;
+}
+
+.admin-users-table .admin-action:last-child {
+  margin-right: 0;
+}
+
+.admin-users-table .admin-action--toggle {
+  min-width: 76px;
 }
 
 /* Equal size card rules */
