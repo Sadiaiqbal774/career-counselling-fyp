@@ -779,7 +779,10 @@ function UniversityRecommender() {
       Marks: avgMarks,
       Background: formData.Background,
       City: formData.City,
-      Interests: formData.Interests
+      Interests: formData.Interests,
+      userId: currentUser?.id || null,
+      userName: currentUser?.name || currentUser?.full_name || currentUser?.displayName || (currentUser?.email ? currentUser.email.split('@')[0] : 'Visitor'),
+      userEmail: currentUser?.email || null,
     };
 
     try {

@@ -204,10 +204,21 @@ function ChatbotWidget() {
     ]);
     setDraft('');
 
+    const rawName = currentUser?.name || currentUser?.full_name || currentUser?.displayName || '';
+    const isHashLike = (s) => s && typeof s === 'string' && s.trim().length >= 12 && /^[0-9a-fA-F]+$/.test(s.trim());
+    const senderName = (rawName && !isHashLike(rawName))
+      ? rawName
+      : (currentUser?.email ? currentUser.email.split('@')[0].replace(/[._]/g, ' ').split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 'Visitor');
     fetch(`${API_URL}/api/chatbot/interactions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: currentUser?.id || null, message: text, response: reply }),
+      body: JSON.stringify({
+        userId: currentUser?.id || null,
+        userName: senderName,
+        userEmail: currentUser?.email || null,
+        message: text,
+        response: reply
+      }),
     }).catch(() => {});
   };
 

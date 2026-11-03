@@ -114,7 +114,60 @@ function getResourceSingular(resource) {
 }
 
 function displayName(record) {
-  return record.University || record.name || record.field || record.keyword || record.type || record.id;
+  const candidates = [record.University, record.name, record.field, record.keyword, record.type];
+  for (const c of candidates) {
+    if (c && !isHash(c)) return c;
+  }
+  // Last resort: use id only if it's not hash-like
+  if (record.id && !isHash(record.id)) return record.id;
+  return record.userName || record.email || 'Record';
+}
+
+function isHash(str) {
+  if (!str || typeof str !== 'string') return false;
+  const s = str.trim();
+  if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(s)) return true;
+  if (s.length >= 12 && /^[0-9a-fA-F]+$/.test(s)) return true;
+  return false;
+}
+
+function getUserDisplayName(record, users = []) {
+  if (!record) return 'Visitor';
+
+  // 1. Direct candidate name — check multiple fields
+  const candidateName = record.userName || record.user?.name || record.user?.full_name || record.name;
+  if (candidateName && candidateName !== 'Anonymous (University Recommender)' && !isHash(candidateName)) {
+    return candidateName;
+  }
+
+  // 2. Direct email
+  const candidateEmail = record.userEmail || record.user?.email || record.email;
+
+  // 3. Look up by userId in users list
+  const uid = record.userId || record.user_id;
+  if (uid && Array.isArray(users) && users.length > 0) {
+    const uidStr = String(uid);
+    const matched = users.find((u) => String(u.id) === uidStr || String(u.userId) === uidStr || String(u.email) === (candidateEmail || ''));
+    if (matched) {
+      if (matched.name && !isHash(matched.name)) return matched.name;
+      if (matched.full_name && !isHash(matched.full_name)) return matched.full_name;
+      if (matched.email) {
+        const local = matched.email.split('@')[0].replace(/[._]/g, ' ');
+        return local.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      }
+    }
+  }
+
+  // 4. If we have an email, derive readable name
+  if (candidateEmail && candidateEmail.includes('@')) {
+    const local = candidateEmail.split('@')[0].replace(/[._]/g, ' ');
+    return local.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
+  // 5. Fallback without ever showing a hash
+  if (record.source === 'university_recommender') return 'Student (Recommender)';
+  if (record.source === 'quiz') return 'Student (Quiz)';
+  return 'Student';
 }
 
 function scholarshipSummary(record) {
@@ -228,10 +281,10 @@ function exportToCsv(filename, headers, rows) {
   URL.revokeObjectURL(url);
 }
 
-function exportAssessmentsCsv(records) {
+function exportAssessmentsCsv(records, users = []) {
   const headers = ['User', 'Source', 'Top Category / Field', 'Score / Result', 'Date Taken'];
   const rows = records.map((record) => {
-    const user = record.userName || record.user?.name || record.user?.full_name || record.user?.email || record.user_id || 'Unknown user';
+    const user = getUserDisplayName(record, users);
     const source = record.source === 'university_recommender' ? 'University Recommender' : 'Career Quiz';
     const topField = record.highest_category || record.result?.career || record.result?.matchedField || record.matched_field || '-';
     const score = assessmentResult(record);
@@ -241,7 +294,7 @@ function exportAssessmentsCsv(records) {
   exportToCsv(`assessments_report_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
 }
 
-function exportActivityCsv(records) {
+function exportActivityCsv(records, users = []) {
   const headers = ['Event Type', 'Timestamp', 'User / Actor', 'Details'];
   const rows = records.map((record) => {
     const eventType = friendlyEventLabel(record.type || record.eventType || 'system_event');
@@ -249,7 +302,12 @@ function exportActivityCsv(records) {
     let user = '-';
     let detailsStr = '';
     if (record.details && typeof record.details === 'object') {
-      user = record.details.email || record.details.userId || '-';
+      const resolved = record.details.userName || record.details.name || (record.details.userId ? getUserDisplayName({ userId: record.details.userId }, users) : null);
+      if (record.details.email) {
+        user = resolved && resolved !== 'Student' && resolved !== 'Visitor' ? `${resolved} (${record.details.email})` : record.details.email;
+      } else if (resolved) {
+        user = resolved;
+      }
       detailsStr = Object.entries(record.details)
         .map(([k, v]) => `${k}: ${v}`)
         .join('; ');
@@ -493,7 +551,7 @@ function eventCategoryMeta(type) {
   return { key: 'other', label: 'System Event', tone: 'login' };
 }
 
-function SystemReportsView({ records, showHistory = true }) {
+function SystemReportsView({ records, users = [], showHistory = true }) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [visibleHistoryCount, setVisibleHistoryCount] = useState(10);
   const [hoveredDay, setHoveredDay] = useState(null);
@@ -533,10 +591,11 @@ function SystemReportsView({ records, showHistory = true }) {
     if (!details) return '-';
     if (typeof details !== 'object') return String(details);
     const badges = [];
-    if (details.email) badges.push(<span key="email" className="admin-event-details-tag">User: {details.email}</span>);
+    const resolvedUser = details.userName || details.name || (details.userId ? getUserDisplayName({ userId: details.userId }, users) : null);
+    if (details.email) badges.push(<span key="email" className="admin-event-details-tag">User: {resolvedUser && resolvedUser !== 'Student' && resolvedUser !== 'Visitor' ? `${resolvedUser} (${details.email})` : details.email}</span>);
+    else if (resolvedUser) badges.push(<span key="user" className="admin-event-details-tag">User: {resolvedUser}</span>);
     if (details.career) badges.push(<span key="career" className="admin-event-details-tag">Career: {details.career}</span>);
     if (details.matchedField) badges.push(<span key="field" className="admin-event-details-tag">Field: {details.matchedField}</span>);
-    if (details.userId && !details.email) badges.push(<span key="uid" className="admin-event-details-tag">User ID: {details.userId.slice(0, 8)}...</span>);
     if (badges.length === 0) {
       return Object.entries(details).map(([k, v]) => (
         <span key={k} className="admin-event-details-tag">{k}: {String(v)}</span>
@@ -839,7 +898,7 @@ function SystemReportsView({ records, showHistory = true }) {
               <button
                 type="button"
                 className="admin-export-btn"
-                onClick={() => exportActivityCsv(filteredRecords)}
+                onClick={() => exportActivityCsv(filteredRecords, users)}
                 title="Download filtered activity report as CSV"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1225,7 +1284,7 @@ function ExpandableCell({ value, empty = '-', previewLength = 130 }) {
   return <div className={expanded ? 'admin-expandable admin-expandable--open' : 'admin-expandable'}><span>{text}</span><button type="button" onClick={() => setExpanded((open) => !open)}>{expanded ? 'Show less' : '... more'}</button></div>;
 }
 
-function MonitoringTable({ tab, records }) {
+function MonitoringTable({ tab, records, users = [] }) {
   const [visibleChatbotCount, setVisibleChatbotCount] = useState(10);
   const [visibleAssessmentsCount, setVisibleAssessmentsCount] = useState(10);
   const [chatbotSearch, setChatbotSearch] = useState('');
@@ -1247,7 +1306,7 @@ function MonitoringTable({ tab, records }) {
             <tbody>
               {visibleRecords.map((record) => (
                 <tr key={record.id}>
-                  <td>{record.userName || record.user?.name || record.user?.full_name || record.user?.email || record.user_id || 'Unknown user'}</td>
+                  <td>{getUserDisplayName(record, users)}</td>
                   <td>{record.source === 'university_recommender' ? 'University Recommender' : 'Career Quiz'}</td>
                   <td><ExpandableCell value={assessmentResult(record)} /></td>
                   <td>{formatDateTime(dateValue(record))}</td>
@@ -1278,8 +1337,9 @@ function MonitoringTable({ tab, records }) {
       const q = chatbotSearch.toLowerCase();
       const message = (record.message || '').toLowerCase();
       const response = (record.response || '').toLowerCase();
-      const user = (record.userName || record.user?.name || record.userId || '').toLowerCase();
-      return message.includes(q) || response.includes(q) || user.includes(q);
+      const user = getUserDisplayName(record, users).toLowerCase();
+      const userEmail = (record.userEmail || record.user?.email || '').toLowerCase();
+      return message.includes(q) || response.includes(q) || user.includes(q) || userEmail.includes(q);
     });
     const visibleRecords = filteredRecords.slice(0, visibleChatbotCount);
     return (
@@ -1341,7 +1401,7 @@ function MonitoringTable({ tab, records }) {
             <tbody>
               {visibleRecords.map((record) => (
                 <tr key={record.id}>
-                  <td>{record.userName || record.user?.name || record.userId || 'Anonymous'}</td>
+                  <td>{getUserDisplayName(record, users)}</td>
                   <td className="admin-table__message"><ExpandableCell value={record.message} previewLength={80} /></td>
                   <td className="admin-table__message">{record.response ? <ExpandableCell value={record.response} previewLength={80} /> : <StatusPill tone="muted">No reply matched</StatusPill>}</td>
                   <td>{formatDateTime(dateValue(record))}</td>
@@ -1427,7 +1487,20 @@ function AdminDashboard() {
     if (!response.ok) throw new Error(result.message || 'Request failed.');
     return result;
   };
-  const load = async (resource) => { if (resource === 'users') { const result = await api('/api/admin/stats'); setUsers((result.users || []).sort((a, b) => timestampValue(b) - timestampValue(a))); } else { const result = await api(`/api/admin/${resource}`); setRecords((result.records || []).sort((a, b) => timestampValue(b) - timestampValue(a))); } };
+  const load = async (resource) => {
+    if (resource === 'users') {
+      const result = await api('/api/admin/stats');
+      setUsers((result.users || []).sort((a, b) => timestampValue(b) - timestampValue(a)));
+    } else {
+      if (users.length === 0) {
+        api('/api/admin/stats').then((res) => {
+          if (res.users) setUsers((res.users || []).sort((a, b) => timestampValue(b) - timestampValue(a)));
+        }).catch(() => {});
+      }
+      const result = await api(`/api/admin/${resource}`);
+      setRecords((result.records || []).sort((a, b) => timestampValue(b) - timestampValue(a)));
+    }
+  };
   const loadDashboard = async () => {
     const [stats, scholarships, universities, eligibility] = await Promise.all([
       api('/api/admin/stats'),
@@ -1435,8 +1508,10 @@ function AdminDashboard() {
       api('/api/admin/universities'),
       api('/api/admin/eligibility'),
     ]);
+    const sortedUsers = (stats.users || []).sort((a, b) => timestampValue(b) - timestampValue(a));
+    setUsers(sortedUsers);
     setDashboardData({
-      users: (stats.users || []).sort((a, b) => timestampValue(b) - timestampValue(a)),
+      users: sortedUsers,
       scholarships: scholarships.records || [],
       universities: universities.records || [],
       eligibility: eligibility.records || [],
@@ -1932,7 +2007,7 @@ function AdminDashboard() {
 
         {tab !== 'dashboard' && tab !== 'users' && readOnlyResources.includes(activeResource) && (
           activeResource === 'activity' ? (
-            <SystemReportsView records={records} />
+            <SystemReportsView records={records} users={users} />
           ) : (
             <div className="admin-card">
               <div className="admin-section-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1944,7 +2019,7 @@ function AdminDashboard() {
                   <button
                     type="button"
                     className="admin-export-btn"
-                    onClick={() => exportAssessmentsCsv(records)}
+                    onClick={() => exportAssessmentsCsv(records, users)}
                     title="Download assessments as CSV"
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1960,7 +2035,7 @@ function AdminDashboard() {
                 <p className="admin-hint">Every message a visitor sent the assistant, shown together with the automated reply it received — this is how conversations are actually monitored.</p>
               )}
               <MonitoringSummary tab={activeResource} records={records} />
-              <MonitoringTable tab={activeResource} records={records} />
+              <MonitoringTable tab={activeResource} records={records} users={users} />
             </div>
           )
         )}

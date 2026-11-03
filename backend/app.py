@@ -312,6 +312,85 @@ def log_activity(activity_type, details=None):
     save_json_records("activity", records[-1000:])
 
 
+def is_hash_like(val):
+    if not val or not isinstance(val, str):
+        return False
+    s = val.strip()
+    if re.fullmatch(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", s):
+        return True
+    if len(s) >= 12 and re.fullmatch(r"[0-9a-fA-F]+", s):
+        return True
+    return False
+
+
+def get_all_known_users_map():
+    users_map = {}
+
+    # 1. Historical users from system activity
+    try:
+        activity = load_json_records("activity") or []
+        for entry in activity:
+            details = entry.get("details")
+            if isinstance(details, dict):
+                uid = details.get("userId")
+                email = details.get("email")
+                if uid and email:
+                    local = email.split("@")[0].replace(".", " ")
+                    name = " ".join(part.capitalize() for part in local.split())
+                    users_map[str(uid)] = {
+                        "id": str(uid),
+                        "name": name,
+                        "email": email,
+                    }
+    except Exception:
+        pass
+
+    # 2. Supabase users if configured
+    if SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
+        try:
+            for su in list_supabase_users():
+                sanitized = sanitize_supabase_user(su)
+                uid = str(sanitized.get("id"))
+                users_map[uid] = {
+                    "id": uid,
+                    "name": sanitized.get("name") or sanitized.get("email"),
+                    "email": sanitized.get("email"),
+                }
+        except Exception:
+            pass
+
+    # 3. Local users from users.json (highest priority for local mode)
+    for u in load_users():
+        uid = str(u.get("id"))
+        name = u.get("name") or (u.get("email", "").split("@")[0] if u.get("email") else "Student")
+        users_map[uid] = {
+            "id": uid,
+            "name": name,
+            "email": u.get("email", ""),
+        }
+
+    return users_map
+
+
+def resolve_user_display_name(uid, fallback=None, explicit_name=None, email=None):
+    if explicit_name and explicit_name != "Anonymous (University Recommender)" and not is_hash_like(explicit_name):
+        return explicit_name
+
+    user_map = get_all_known_users_map()
+    uid_str = str(uid) if uid is not None else ""
+    if uid_str and uid_str in user_map:
+        info = user_map[uid_str]
+        if info.get("name") and not is_hash_like(info.get("name")):
+            return info.get("name")
+        if info.get("email"):
+            return info.get("email").split("@")[0].replace(".", " ").title()
+
+    if email and "@" in str(email):
+        return str(email).split("@")[0].replace(".", " ").title()
+
+    return fallback or "Student"
+
+
 def load_supabase_quiz_scores():
     if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
         raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for admin assessment access.")
@@ -335,24 +414,51 @@ def load_supabase_quiz_scores():
             profiles = {str(row["id"]): row for row in json.loads(response.read().decode("utf-8"))}
     except Exception:
         profiles = {}
+
+    user_map = get_all_known_users_map()
     for record in records:
+        uid = str(record.get("user_id") or "")
         record["id"] = record.get("user_id")
         record["source"] = "quiz"
-        profile = profiles.get(str(record.get("user_id")))
+        profile = profiles.get(uid)
+        if not profile and uid in user_map:
+            profile = user_map[uid]
         if profile:
             record["user"] = profile
+            record["userName"] = profile.get("full_name") or profile.get("name") or profile.get("email")
+            record["userEmail"] = profile.get("email")
+        else:
+            record["userName"] = resolve_user_display_name(uid, fallback="Student")
     return records
 
 
 def load_local_assessment_records():
     records = load_json_records("assessments") or []
+    user_map = get_all_known_users_map()
     output = []
     for record in records:
         result = record.get("result") or {}
+        uid = str(record.get("userId") or record.get("user_id") or "")
+        raw_name = record.get("userName") or record.get("name")
+        raw_email = record.get("userEmail") or record.get("email")
+
+        user_info = user_map.get(uid)
+        resolved_name = resolve_user_display_name(
+            uid,
+            fallback="Student",
+            explicit_name=raw_name,
+            email=raw_email
+        )
+
+        email = raw_email or (user_info.get("email") if user_info else None)
+
         output.append({
             "id": record.get("id"),
             "source": "university_recommender",
-            "userName": "Anonymous (University Recommender)",
+            "userId": uid or None,
+            "userName": resolved_name,
+            "userEmail": email,
+            "user": user_info or ({"name": resolved_name, "email": email} if email else None),
             "result": {"career": result.get("career"), "matchedField": result.get("matched_field")} if result else None,
             "createdAt": record.get("createdAt"),
         })
@@ -989,6 +1095,42 @@ def admin_resource(resource):
     if records is None:
         return jsonify({"message": "Unknown admin resource."}), 404
     if request.method == "GET":
+        if resource == "chatbot-interactions":
+            records = load_json_records("chatbot-interactions") or []
+            user_map = get_all_known_users_map()
+            enriched_records = []
+            for r in records:
+                item = dict(r)
+                uid = str(item.get("userId") or "")
+                raw_name = item.get("userName")
+                raw_email = item.get("userEmail")
+                user_info = user_map.get(uid)
+                resolved_name = resolve_user_display_name(
+                    uid,
+                    fallback="Visitor" if not uid or uid.lower() in ("none", "null", "") else "Student",
+                    explicit_name=raw_name,
+                    email=raw_email
+                )
+                item["userName"] = resolved_name
+                if user_info and not item.get("userEmail"):
+                    item["userEmail"] = user_info.get("email")
+                if user_info:
+                    item["user"] = user_info
+                enriched_records.append(item)
+            records = enriched_records
+        elif resource == "activity":
+            records = load_json_records("activity") or []
+            user_map = get_all_known_users_map()
+            for r in records:
+                details = r.get("details")
+                if isinstance(details, dict):
+                    uid = str(details.get("userId") or "")
+                    if uid in user_map:
+                        uinfo = user_map[uid]
+                        if not details.get("userName"):
+                            details["userName"] = uinfo.get("name")
+                        if not details.get("email"):
+                            details["email"] = uinfo.get("email")
         if resource in ("chatbot-interactions", "assessments", "activity"):
             def extract_sort_key(record):
                 val = record.get("createdAt") or record.get("created_at") or record.get("date") or record.get("timestamp") or ""
@@ -1146,9 +1288,23 @@ def chatbot_responses():
 @app.route("/api/chatbot/interactions", methods=["POST"])
 def chatbot_interaction():
     payload = request.get_json(silent=True) or {}
+    user_id = payload.get("userId")
+    user_name = payload.get("userName")
+    user_email = payload.get("userEmail")
+
+    if user_id and (not user_name or is_hash_like(user_name)):
+        user_name = resolve_user_display_name(
+            user_id,
+            fallback="Visitor" if not user_id else "Student",
+            explicit_name=user_name,
+            email=user_email
+        )
+
     interaction = {
         "id": secrets.token_hex(8),
-        "userId": payload.get("userId"),
+        "userId": user_id,
+        "userName": user_name or ("Visitor" if not user_id else "Student"),
+        "userEmail": user_email,
         "message": str(payload.get("message", "")),
         "response": str(payload.get("response", "")),
         "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -1156,7 +1312,11 @@ def chatbot_interaction():
     records = load_json_records("chatbot-interactions") or []
     records.append(interaction)
     save_json_records("chatbot-interactions", records[-1000:])
-    log_activity("chatbot_interaction", {"userId": interaction["userId"]})
+    log_activity("chatbot_interaction", {
+        "userId": interaction["userId"],
+        "userName": interaction["userName"],
+        "email": user_email
+    })
     return jsonify({"interaction": interaction}), 201
 
 
@@ -1387,10 +1547,31 @@ def predict():
             "international_scholarships": international_scholarships,
             "pakistan_scholarships": pakistan_scholarships,
         }
-        log_activity("assessment_completed", {"career": career, "matchedField": matched_field})
+        user_id = data.get("userId")
+        user_name = data.get("userName")
+        user_email = data.get("userEmail")
+
+        if user_id and (not user_name or is_hash_like(user_name)):
+            user_name = resolve_user_display_name(
+                user_id,
+                fallback="Student",
+                explicit_name=user_name,
+                email=user_email
+            )
+
+        log_activity("assessment_completed", {
+            "career": career,
+            "matchedField": matched_field,
+            "userId": user_id,
+            "userName": user_name or "Student",
+            "email": user_email
+        })
         assessment_records = load_json_records("assessments") or []
         assessment_records.append({
             "id": secrets.token_hex(8),
+            "userId": user_id,
+            "userName": user_name or "Student",
+            "userEmail": user_email,
             "answers": data,
             "result": result,
             "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
