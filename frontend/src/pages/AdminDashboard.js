@@ -2519,24 +2519,23 @@ function AdminDashboard() {
                 <div className="admin-load-more" style={{ marginTop: '24px', display: 'flex', gap: '12px', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
                   {visibleRecords.length > pagedRecords.length && (
                     <button
-                      className="admin-view-more-btn"
+                      className="admin-small-button"
                       type="button"
                       onClick={() => setVisibleCount((count) => count + getVisibleCountStep(activeResource))}
                     >
-                      <span>View More {activeResource === 'universities' ? 'Universities' : activeResource === 'scholarships' ? 'Scholarships' : 'Records'}</span>
-                      <span style={{ fontSize: '0.82rem', opacity: 0.88 }}>({visibleRecords.length - pagedRecords.length} remaining)</span>
+                      Show more ({visibleRecords.length - pagedRecords.length} remaining)
                     </button>
                   )}
                   {pagedRecords.length > getInitialVisibleCount(activeResource) && (
                     <button
-                      className="admin-view-more-btn admin-view-more-btn--outline"
+                      className="admin-small-button"
                       type="button"
                       onClick={() => {
                         setVisibleCount(getInitialVisibleCount(activeResource));
                         window.scrollTo({ top: 200, behavior: 'smooth' });
                       }}
                     >
-                      <span>Show Less</span>
+                      Show less
                     </button>
                   )}
                 </div>
