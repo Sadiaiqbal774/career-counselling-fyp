@@ -645,14 +645,19 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
         </div>
       </div>
 
-      {/* 3 Domain Category Cards */}
+      {/* 4 Domain Category Cards — FR-15-01: Monitor System Usage, FR-15-02: Generate Reports */}
       <div className="admin-reports-category-cards">
+        {/* Card 1: Student Assessments */}
         <div className="admin-report-cat-card">
           <div className="admin-report-cat-header">
-            <span className="admin-report-cat-icon">🎓</span>
+            <span className="admin-report-cat-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8863a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+              </svg>
+            </span>
             <div>
               <h3>Student Assessments</h3>
-              <p>Career evaluations and test submissions</p>
+              <p>Career evaluations and quiz submissions</p>
             </div>
           </div>
           <div className="admin-report-cat-metric">
@@ -662,22 +667,21 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
             </span>
           </div>
           <div className="admin-bar-track" style={{ height: '8px', marginTop: '10px' }}>
-            <div
-              className="admin-bar-fill"
-              style={{
-                width: `${summary.total ? (summary.categories.assessments / summary.total) * 100 : 0}%`,
-                background: 'linear-gradient(90deg, #b8863a 0%, #f39c12 100%)',
-              }}
-            />
+            <div className="admin-bar-fill" style={{ width: `${summary.total ? (summary.categories.assessments / summary.total) * 100 : 0}%`, background: 'linear-gradient(90deg, #b8863a 0%, #f39c12 100%)' }} />
           </div>
         </div>
 
+        {/* Card 2: AI Chatbot Interactions */}
         <div className="admin-report-cat-card">
           <div className="admin-report-cat-header">
-            <span className="admin-report-cat-icon">💬</span>
+            <span className="admin-report-cat-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </span>
             <div>
               <h3>AI Career Assistant</h3>
-              <p>Automated admissions &amp; scholarship replies</p>
+              <p>Chatbot queries &amp; student interactions</p>
             </div>
           </div>
           <div className="admin-report-cat-metric">
@@ -687,22 +691,21 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
             </span>
           </div>
           <div className="admin-bar-track" style={{ height: '8px', marginTop: '10px' }}>
-            <div
-              className="admin-bar-fill"
-              style={{
-                width: `${summary.total ? (summary.categories.chatbot / summary.total) * 100 : 0}%`,
-                background: 'linear-gradient(90deg, #2563eb 0%, #60a5fa 100%)',
-              }}
-            />
+            <div className="admin-bar-fill" style={{ width: `${summary.total ? (summary.categories.chatbot / summary.total) * 100 : 0}%`, background: 'linear-gradient(90deg, #2563eb 0%, #60a5fa 100%)' }} />
           </div>
         </div>
 
+        {/* Card 3: Administrative Audits */}
         <div className="admin-report-cat-card">
           <div className="admin-report-cat-header">
-            <span className="admin-report-cat-icon">🛡️</span>
+            <span className="admin-report-cat-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </span>
             <div>
               <h3>Administrative Audits</h3>
-              <p>Account status toggles, edits &amp; deletions</p>
+              <p>Account edits, blocks &amp; data deletions</p>
             </div>
           </div>
           <div className="admin-report-cat-metric">
@@ -712,13 +715,31 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
             </span>
           </div>
           <div className="admin-bar-track" style={{ height: '8px', marginTop: '10px' }}>
-            <div
-              className="admin-bar-fill"
-              style={{
-                width: `${summary.total ? (summary.categories.admin / summary.total) * 100 : 0}%`,
-                background: 'linear-gradient(90deg, #059669 0%, #10b981 100%)',
-              }}
-            />
+            <div className="admin-bar-fill" style={{ width: `${summary.total ? (summary.categories.admin / summary.total) * 100 : 0}%`, background: 'linear-gradient(90deg, #059669 0%, #10b981 100%)' }} />
+          </div>
+        </div>
+
+        {/* Card 4: User Registrations & Logins */}
+        <div className="admin-report-cat-card">
+          <div className="admin-report-cat-header">
+            <span className="admin-report-cat-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </span>
+            <div>
+              <h3>User Activity</h3>
+              <p>Registrations &amp; platform logins</p>
+            </div>
+          </div>
+          <div className="admin-report-cat-metric">
+            <strong>{Math.max(0, summary.total - summary.categories.assessments - summary.categories.chatbot - summary.categories.admin)}</strong>
+            <span className="admin-report-cat-pct">
+              {summary.total ? `${(((Math.max(0, summary.total - summary.categories.assessments - summary.categories.chatbot - summary.categories.admin)) / summary.total) * 100).toFixed(0)}%` : '0%'} of activity
+            </span>
+          </div>
+          <div className="admin-bar-track" style={{ height: '8px', marginTop: '10px' }}>
+            <div className="admin-bar-fill" style={{ width: `${summary.total ? ((Math.max(0, summary.total - summary.categories.assessments - summary.categories.chatbot - summary.categories.admin) / summary.total) * 100) : 0}%`, background: 'linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)' }} />
           </div>
         </div>
       </div>
