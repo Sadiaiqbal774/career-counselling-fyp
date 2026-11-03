@@ -1462,12 +1462,16 @@ function AdminDashboard() {
   const [userSearch, setUserSearch] = useState(''); const [userFilter, setUserFilter] = useState('all');
   const [expandedPrograms, setExpandedPrograms] = useState({});
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const RECORDS_PAGE_SIZE = 50;
-  const [visibleCount, setVisibleCount] = useState(RECORDS_PAGE_SIZE);
-  const token = sessionStorage.getItem(ADMIN_TOKEN_KEY);
+  const CARDS_INITIAL_COUNT = 6;
+  const CARDS_STEP_COUNT = 6;
+  const LIST_PAGE_SIZE = 20;
+  const getInitialVisibleCount = (resource) => (resource === 'universities' || resource === 'scholarships' ? CARDS_INITIAL_COUNT : LIST_PAGE_SIZE);
+  const getVisibleCountStep = (resource) => (resource === 'universities' || resource === 'scholarships' ? CARDS_STEP_COUNT : LIST_PAGE_SIZE);
 
   // The "Chatbot" nav item covers two underlying resources — the conversation log and the auto-reply rules.
   const activeResource = tab === 'chatbot' ? (chatbotView === 'log' ? 'chatbot-interactions' : 'chatbot-responses') : tab;
+  const [visibleCount, setVisibleCount] = useState(() => getInitialVisibleCount(activeResource));
+  const token = sessionStorage.getItem(ADMIN_TOKEN_KEY);
 
   const api = async (path, options = {}) => {
     const response = await fetch(`${API_URL}${path}`, {
@@ -1536,7 +1540,7 @@ function AdminDashboard() {
   useEffect(() => { loadDashboard().catch((loadError) => setError(loadError.message)); }, []);
   // Large record sets (200+ universities/scholarships) rendered in full make the page tall
   // enough to break browser rendering, so lists are paged; reset to page one on list/search change.
-  useEffect(() => { setVisibleCount(RECORDS_PAGE_SIZE); }, [activeResource, universitySearch, scholarshipSearch, universityCityFilter]);
+  useEffect(() => { setVisibleCount(getInitialVisibleCount(activeResource)); }, [activeResource, universitySearch, scholarshipSearch, universityCityFilter]);
 
   // Auto-dismiss transient notice banners after 3.5 seconds
   useEffect(() => {
@@ -1917,37 +1921,49 @@ function AdminDashboard() {
             <div className="admin-table-wrap">
               <table className="admin-table admin-users-table">
                 <colgroup>
-                  <col style={{ width: '15%' }} />
-                  <col style={{ width: '20%' }} />
-                  <col style={{ width: '9%' }} />
-                  <col style={{ width: '11%' }} />
+                  <col style={{ width: '16%' }} />
+                  <col style={{ width: '22%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '12%' }} />
                   <col style={{ width: '12%' }} />
                   <col style={{ width: '9%' }} />
-                  <col style={{ width: '24%' }} />
+                  <col style={{ width: '21%' }} />
                 </colgroup>
-                <thead><tr><th>Name</th><th>Email</th><th>Provider</th><th>Verified</th><th>Last login</th><th>Access</th><th style={{ textAlign: 'right' }}>Actions</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left' }}>Name</th>
+                    <th style={{ textAlign: 'left' }}>Email</th>
+                    <th style={{ textAlign: 'center' }}>Provider</th>
+                    <th style={{ textAlign: 'center' }}>Verified</th>
+                    <th style={{ textAlign: 'center' }}>Last login</th>
+                    <th style={{ textAlign: 'center' }}>Access</th>
+                    <th style={{ textAlign: 'center' }}>Actions</th>
+                  </tr>
+                </thead>
                 <tbody>
                   {filteredUsers.map((user) => (
                     <tr key={user.id}>
-                      <td><strong style={{ color: 'var(--ink)' }}>{user.name}</strong></td>
-                      <td>{user.email}</td>
-                      <td>{user.authProvider}</td>
-                      <td>
+                      <td style={{ textAlign: 'left' }}><strong style={{ color: 'var(--ink)' }}>{user.name}</strong></td>
+                      <td style={{ textAlign: 'left' }}>{user.email}</td>
+                      <td style={{ textAlign: 'center' }}>{user.authProvider}</td>
+                      <td style={{ textAlign: 'center' }}>
                         <button 
                           className={`admin-action admin-action--toggle ${user.emailConfirmed ? 'admin-action--good' : ''}`}
-                          style={{ minWidth: '90px' }}
+                          style={{ minWidth: '86px' }}
                           type="button" 
                           onClick={() => toggleUserVerified(user)}
                         >
                           {user.emailConfirmed ? 'Verified' : 'Unverified'}
                         </button>
                       </td>
-                      <td>{formatDateTime(user.lastSignInAt)}</td>
-                      <td><StatusPill tone={user.blocked ? 'warn' : 'good'}>{user.blocked ? 'Blocked' : 'Active'}</StatusPill></td>
-                      <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                        <button className="admin-action admin-action--toggle" type="button" onClick={() => toggleUserBlock(user)}>{user.blocked ? 'Unblock' : 'Block'}</button>
-                        <button className="admin-action admin-action--edit" type="button" onClick={() => setEditingUser({ ...user })}>Edit</button>
-                        <button className="admin-action admin-action--danger" type="button" onClick={() => deleteUser(user)}>Delete</button>
+                      <td style={{ textAlign: 'center' }}>{formatDateTime(user.lastSignInAt)}</td>
+                      <td style={{ textAlign: 'center' }}><StatusPill tone={user.blocked ? 'warn' : 'good'}>{user.blocked ? 'Blocked' : 'Active'}</StatusPill></td>
+                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        <div className="admin-user-actions-wrap">
+                          <button className="admin-action admin-action--toggle" type="button" onClick={() => toggleUserBlock(user)}>{user.blocked ? 'Unblock' : 'Block'}</button>
+                          <button className="admin-action admin-action--edit" type="button" onClick={() => setEditingUser({ ...user })}>Edit</button>
+                          <button className="admin-action admin-action--danger" type="button" onClick={() => deleteUser(user)}>Delete</button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -2224,7 +2240,7 @@ function AdminDashboard() {
                       id="admin-uni-city-select"
                       className="admin-select"
                       value={universityCityFilter}
-                      onChange={(e) => { setUniversityCityFilter(e.target.value); setVisibleCount(RECORDS_PAGE_SIZE); }}
+                      onChange={(e) => { setUniversityCityFilter(e.target.value); setVisibleCount(getInitialVisibleCount(activeResource)); }}
                       style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.86rem', background: '#ffffff', color: '#1e293b', cursor: 'pointer' }}
                     >
                       <option value="all">All Cities ({records.length})</option>
@@ -2478,11 +2494,30 @@ function AdminDashboard() {
                   </div>
                 ))
               )}
-              {visibleRecords.length > pagedRecords.length && (
-                <div className="admin-load-more">
-                  <button className="admin-small-button" type="button" onClick={() => setVisibleCount((count) => count + RECORDS_PAGE_SIZE)}>
-                    Load more ({visibleRecords.length - pagedRecords.length} remaining)
-                  </button>
+              {(visibleRecords.length > pagedRecords.length || pagedRecords.length > getInitialVisibleCount(activeResource)) && (
+                <div className="admin-load-more" style={{ marginTop: '24px', display: 'flex', gap: '12px', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
+                  {visibleRecords.length > pagedRecords.length && (
+                    <button
+                      className="admin-view-more-btn"
+                      type="button"
+                      onClick={() => setVisibleCount((count) => count + getVisibleCountStep(activeResource))}
+                    >
+                      <span>View More {activeResource === 'universities' ? 'Universities' : activeResource === 'scholarships' ? 'Scholarships' : 'Records'}</span>
+                      <span style={{ fontSize: '0.82rem', opacity: 0.88 }}>({visibleRecords.length - pagedRecords.length} remaining)</span>
+                    </button>
+                  )}
+                  {pagedRecords.length > getInitialVisibleCount(activeResource) && (
+                    <button
+                      className="admin-view-more-btn admin-view-more-btn--outline"
+                      type="button"
+                      onClick={() => {
+                        setVisibleCount(getInitialVisibleCount(activeResource));
+                        window.scrollTo({ top: 200, behavior: 'smooth' });
+                      }}
+                    >
+                      <span>Show Less</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>}

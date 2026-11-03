@@ -2490,29 +2490,83 @@ html.dark-mode .admin-app {
 .admin-users-table td {
   padding: 12px 10px;
   vertical-align: middle;
-  word-break: break-word;
 }
 
 .admin-users-table td:last-child {
   white-space: nowrap;
-  text-align: right;
-  padding-right: 8px;
+  text-align: center;
+  padding: 12px 8px;
 }
 
 .admin-users-table .admin-action {
-  min-width: 64px;
+  min-width: 60px;
   height: 30px;
   padding: 4px 10px;
   font-size: 0.81rem;
-  margin-right: 5px;
-}
-
-.admin-users-table .admin-action:last-child {
-  margin-right: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .admin-users-table .admin-action--toggle {
-  min-width: 76px;
+  min-width: 72px;
+}
+
+.admin-user-actions-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.admin-view-more-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: #0284c7;
+  color: #ffffff;
+  border: 1.5px solid #0284c7;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.2);
+  transition: all 0.2s ease;
+}
+
+.admin-view-more-btn:hover {
+  background: #0369a1;
+  border-color: #0369a1;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+  transform: translateY(-1px);
+}
+
+.admin-view-more-btn--outline {
+  background: #ffffff;
+  color: #475569;
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.admin-view-more-btn--outline:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+html.dark-mode .admin-view-more-btn--outline {
+  background: #1e293b;
+  color: #cbd5e1;
+  border-color: #475569;
+}
+
+html.dark-mode .admin-view-more-btn--outline:hover {
+  background: #334155;
+  color: #ffffff;
 }
 
 /* Equal size card rules */
