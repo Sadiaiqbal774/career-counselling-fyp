@@ -690,20 +690,26 @@ html.dark-mode .admin-app {
 .admin-export-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  background: var(--surface);
-  color: var(--bronze-strong);
-  border: 1.5px solid var(--bronze);
+  background: var(--surface, #ffffff);
+  color: var(--bronze-strong, #8c6020);
+  border: 1.5px solid var(--bronze, #b8863a);
   border-radius: 8px;
-  padding: 6px 14px;
-  font-size: 0.85rem;
+  padding: 0 16px;
+  height: 36px;
+  box-sizing: border-box;
+  font-size: 0.84rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.18s ease;
+  line-height: 1;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 .admin-export-btn:hover {
-  background: var(--bronze);
+  background: var(--bronze, #b8863a);
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(184, 134, 58, 0.25);
 }
@@ -2421,4 +2427,127 @@ html.dark-mode .admin-app {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Dashboard Action Buttons */
+.admin-dash-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface, #ffffff);
+  color: var(--bronze-strong, #8c6020);
+  border: 1.5px solid var(--bronze, #b8863a);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+  line-height: 1.2;
+}
+
+.admin-dash-action-btn:hover {
+  background: var(--bronze, #b8863a);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(184, 134, 58, 0.25);
+}
+
+/* Primary Add Button */
+.admin-add-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--bronze-strong, #8c6020);
+  color: #ffffff;
+  border: 1.5px solid var(--bronze-strong, #8c6020);
+  border-radius: 8px;
+  padding: 0 16px;
+  height: 36px;
+  box-sizing: border-box;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.admin-add-primary-btn:hover {
+  background: var(--bronze-deep, #674718);
+  border-color: var(--bronze-deep, #674718);
+  box-shadow: 0 2px 8px rgba(140, 96, 32, 0.3);
+}
+
+/* Users Table Fixed Column Spacing */
+.admin-users-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.admin-users-table th,
+.admin-users-table td {
+  padding: 12px 14px;
+  vertical-align: middle;
+  word-break: break-word;
+}
+
+/* Equal size card rules */
+.admin-grid-card {
+  min-height: 400px;
+}
+
+.admin-grid-card__header {
+  min-height: 85px;
+}
+
+.admin-grid-card__title {
+  min-height: 2.7em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.admin-grid-card__body {
+  min-height: 150px;
+}
+
+.admin-grid-card__programs-wrap {
+  min-height: 120px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.admin-grid-card__programs-pills {
+  align-items: flex-start;
+}
+
+.admin-grid-card__footer {
+  margin-top: auto;
+}
+
+button.admin-program-chip--more {
+  background: #f1f5f9;
+  color: #1e293b;
+  font-weight: 700;
+  border: 1px solid #cbd5e1;
+  cursor: pointer;
+  padding: 3px 10px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  font-size: 0.74rem;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  user-select: none;
+}
+
+button.admin-program-chip--more:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #0f172a;
+  transform: translateY(-1px);
 }

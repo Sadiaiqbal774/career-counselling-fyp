@@ -221,13 +221,20 @@ function scholarshipMatches(record, query) {
   const provider = String(record.provider || '').toLowerCase();
   const provinces = String(record.provinces || '').toLowerCase();
   const basis = String(record.basis || '').toLowerCase();
+  const basisLabel = scholarshipBasisLabel(record.basis).toLowerCase();
   const providerType = String(record.provider_type || '').toLowerCase();
   const eligibility = String(record.eligibility_raw || '').toLowerCase();
   const coverage = String(record.coverage || '').toLowerCase();
   const minMerit = String(record.min_merit_pct || '').toLowerCase();
   const incomeCap = String(record.income_cap_pkr || '').toLowerCase();
+  const sourceUrl = String(record.source_url || '').toLowerCase();
 
-  const combined = `${name} ${provider} ${provinces} ${basis} ${providerType} ${eligibility} ${coverage} ${minMerit} ${incomeCap}`;
+  let extraTerms = '';
+  if (provinces.includes('national') || provinces.includes('federal')) extraTerms += ' pakistan all pakistan nationwide federal';
+  if (basis.includes('need') || basis.includes('merit')) extraTerms += ' need-based merit-based need based merit based';
+  if (provider.includes('higher education commission')) extraTerms += ' hec';
+
+  const combined = `${name} ${provider} ${provinces} ${basis} ${basisLabel} ${providerType} ${eligibility} ${coverage} ${minMerit} ${incomeCap} ${sourceUrl} ${extraTerms}`;
   return terms.every((term) => combined.includes(term));
 }
 
@@ -865,15 +872,15 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
       {/* Activity Event History Table with Category Filter and Pagination */}
       {showHistory && (
         <div className="admin-card" style={{ marginTop: '14px' }}>
-          <div className="admin-section-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+          <div className="admin-section-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '16px' }}>
             <div>
               <h2>Activity Event History</h2>
               <span className="admin-count">
                 Showing {visibleHistoryRecords.length} of {filteredRecords.length} {activeFilter === 'all' ? 'total' : activeFilter} events
               </span>
             </div>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <div className="admin-filter-pills" role="tablist">
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div className="admin-filter-pills" role="tablist" style={{ margin: 0 }}>
                 <button
                   type="button"
                   className={`admin-filter-pill ${activeFilter === 'all' ? 'admin-filter-pill--active' : ''}`}
@@ -1038,8 +1045,8 @@ function AdminOverview({ data, onNavigate }) {
               <h2>User Base Breakdown</h2>
               <span className="admin-count">Account status distribution</span>
             </div>
-            <button type="button" className="admin-text-button" onClick={() => onNavigate('users')}>
-              Manage Users
+            <button type="button" className="admin-dash-action-btn" onClick={() => onNavigate('users')}>
+              Manage Users &rarr;
             </button>
           </div>
           <div className="admin-health-grid" style={{ marginTop: '14px' }}>
@@ -1072,8 +1079,8 @@ function AdminOverview({ data, onNavigate }) {
               <h2>Catalog &amp; Content Summary</h2>
               <span className="admin-count">Database content overview</span>
             </div>
-            <button type="button" className="admin-text-button" onClick={() => onNavigate('universities')}>
-              View Universities
+            <button type="button" className="admin-dash-action-btn" onClick={() => onNavigate('universities')}>
+              View Universities &rarr;
             </button>
           </div>
           <div className="admin-health-grid" style={{ marginTop: '14px' }}>
@@ -1108,8 +1115,8 @@ function AdminOverview({ data, onNavigate }) {
             <h2>Recent User Accounts</h2>
             <span className="admin-count">{totalUsers} registered students</span>
           </div>
-          <button type="button" className="admin-text-button" onClick={() => onNavigate('users')}>
-            View all users &rarr;
+          <button type="button" className="admin-dash-action-btn" onClick={() => onNavigate('users')}>
+            View All Users &rarr;
           </button>
         </div>
         {userPreview.length > 0 ? (
@@ -1221,7 +1228,7 @@ function formValues(tab, record) {
   if (tab === 'universities') return { name: record?.University || record?.name || '', city: record?.City || record?.city || '', province: record?.Province || record?.province || '', sector: record?.Sector || record?.sector || '', website: record?.Website || record?.website || record?.website_url || record?.url || '' };
   if (tab === 'scholarships') return { name: record?.name || '', provider: record?.provider || '', provinces: record?.provinces || '', basis: record?.basis || 'Merit', providerType: record?.provider_type || '', eligibility: record?.eligibility_raw || '', incomeCap: record?.income_cap_pkr || '', minMerit: record?.min_merit_pct || '', coverage: record?.coverage || '', sourceUrl: record?.source_url || '' };
   if (tab === 'chatbot-responses') return { keyword: record?.keyword || '', response: record?.response || '', link: record?.link || '', linkLabel: record?.linkLabel || '' };
-  return { field: record?.field || '', description: record?.description || '', minimumMarks: record?.minimumMarks || '' };
+  return { field: record?.field || '', description: record?.description || '', minimumMarks: (record?.minimumMarks !== undefined && record?.minimumMarks !== null && record?.minimumMarks !== '') ? record.minimumMarks : '' };
 }
 
 function EntityForm({ tab, record, onSave, onCancel }) {
@@ -1240,7 +1247,6 @@ function EntityForm({ tab, record, onSave, onCancel }) {
     onSave(data);
   };
   return <form className="admin-edit-form" onSubmit={submit}>
-    <h2>{record ? `Edit ${getResourceSingular(tab)}` : `Add ${getResourceSingular(tab)}`}</h2>
     {tab === 'universities' && <>
       <label>Name<input value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="e.g. National University of Sciences and Technology" required /></label>
       <label>City<input value={form.city} onChange={(event) => update('city', event.target.value)} placeholder="e.g. Islamabad" /></label>
@@ -1342,12 +1348,13 @@ function MonitoringTable({ tab, records, users = [] }) {
     const filteredRecords = records.filter((record) => {
       if (chatbotFilter === 'unanswered' && String(record.response || '').trim()) return false;
       if (!chatbotSearch.trim()) return true;
-      const q = chatbotSearch.toLowerCase();
-      const message = (record.message || '').toLowerCase();
-      const response = (record.response || '').toLowerCase();
+      const terms = chatbotSearch.trim().toLowerCase().split(/\s+/).filter(Boolean);
+      const message = String(record.message || '').toLowerCase();
+      const response = String(record.response || '').toLowerCase();
       const user = getUserDisplayName(record, users).toLowerCase();
-      const userEmail = (record.userEmail || record.user?.email || '').toLowerCase();
-      return message.includes(q) || response.includes(q) || user.includes(q) || userEmail.includes(q);
+      const userEmail = String(record.userEmail || record.user?.email || '').toLowerCase();
+      const combined = `${message} ${response} ${user} ${userEmail}`;
+      return terms.every((t) => combined.includes(t));
     });
     const visibleRecords = filteredRecords.slice(0, visibleChatbotCount);
     return (
@@ -1453,6 +1460,7 @@ function AdminDashboard() {
   const [editingUser, setEditingUser] = useState(null); const [editingRecord, setEditingRecord] = useState(null); const [editingProgram, setEditingProgram] = useState(null);
   const [universitySearch, setUniversitySearch] = useState(''); const [universityCityFilter, setUniversityCityFilter] = useState('all'); const [scholarshipSearch, setScholarshipSearch] = useState(''); const [error, setError] = useState(''); const [notice, setNotice] = useState(''); const [formResetKey, setFormResetKey] = useState(0);
   const [userSearch, setUserSearch] = useState(''); const [userFilter, setUserFilter] = useState('all');
+  const [expandedPrograms, setExpandedPrograms] = useState({});
   const [deleteTarget, setDeleteTarget] = useState(null);
   const RECORDS_PAGE_SIZE = 50;
   const [visibleCount, setVisibleCount] = useState(RECORDS_PAGE_SIZE);
@@ -1907,12 +1915,21 @@ function AdminDashboard() {
               </div>
             )}
             <div className="admin-table-wrap">
-              <table className="admin-table">
-                <thead><tr><th>Name</th><th>Email</th><th>Provider</th><th>Verified</th><th>Last login</th><th>Access</th><th>Actions</th></tr></thead>
+              <table className="admin-table admin-users-table">
+                <colgroup>
+                  <col style={{ width: '18%' }} />
+                  <col style={{ width: '22%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '11%' }} />
+                  <col style={{ width: '14%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '15%' }} />
+                </colgroup>
+                <thead><tr><th>Name</th><th>Email</th><th>Provider</th><th>Verified</th><th>Last login</th><th>Access</th><th style={{ textAlign: 'right' }}>Actions</th></tr></thead>
                 <tbody>
                   {filteredUsers.map((user) => (
                     <tr key={user.id}>
-                      <td>{user.name}</td>
+                      <td><strong style={{ color: 'var(--ink)' }}>{user.name}</strong></td>
                       <td>{user.email}</td>
                       <td>{user.authProvider}</td>
                       <td>
@@ -1927,7 +1944,7 @@ function AdminDashboard() {
                       </td>
                       <td>{formatDateTime(user.lastSignInAt)}</td>
                       <td><StatusPill tone={user.blocked ? 'warn' : 'good'}>{user.blocked ? 'Blocked' : 'Active'}</StatusPill></td>
-                      <td>
+                      <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                         <button className="admin-action admin-action--toggle" type="button" onClick={() => toggleUserBlock(user)}>{user.blocked ? 'Unblock' : 'Block'}</button>
                         <button className="admin-action admin-action--edit" type="button" onClick={() => setEditingUser({ ...user })}>Edit</button>
                         <button className="admin-action admin-action--danger" type="button" onClick={() => deleteUser(user)}>Delete</button>
@@ -2160,7 +2177,13 @@ function AdminDashboard() {
                     </button>
                   )}
                   {(activeResource !== 'universities' && activeResource !== 'scholarships') && (
-                    <button className="admin-small-button" type="button" onClick={() => { setEditingRecord(null); setResourceView('add'); }}>Add</button>
+                    <button
+                      className="admin-add-primary-btn"
+                      type="button"
+                      onClick={() => { setEditingRecord(null); setResourceView('add'); }}
+                    >
+                      + Add {activeResource === 'eligibility' ? 'Eligibility' : getResourceSingular(activeResource)}
+                    </button>
                   )}
                 </div>
               </div>
@@ -2291,13 +2314,19 @@ function AdminDashboard() {
                               <span>🎓 {record.programs.length} Degree Program{record.programs.length !== 1 ? 's' : ''}</span>
                             </div>
                             <div className="admin-grid-card__programs-pills">
-                              {record.programs.slice(0, 4).map((p) => (
+                              {(expandedPrograms[record.id] ? record.programs : record.programs.slice(0, 4)).map((p) => (
                                 <span key={p.id} className="admin-program-chip">{p.degree_name}</span>
                               ))}
                               {record.programs.length > 4 && (
-                                <span className="admin-program-chip admin-program-chip--more">
-                                  +{record.programs.length - 4} more
-                                </span>
+                                <button
+                                  type="button"
+                                  className="admin-program-chip admin-program-chip--more"
+                                  onClick={() => setExpandedPrograms((prev) => ({ ...prev, [record.id]: !prev[record.id] }))}
+                                  title={expandedPrograms[record.id] ? 'Show fewer programs' : 'Show all programs'}
+                                  aria-expanded={!!expandedPrograms[record.id]}
+                                >
+                                  {expandedPrograms[record.id] ? '▲ Show less' : `+${record.programs.length - 4} more`}
+                                </button>
                               )}
                             </div>
                           </div>
@@ -2425,13 +2454,24 @@ function AdminDashboard() {
                 </div>
               ) : (
                 pagedRecords.map((record) => (
-                  <div className="admin-record" key={record.id}>
-                    <div className="admin-record__content">
-                      <p className="admin-record__title">{displayName(record)}</p>
-                      {activeResource === 'eligibility' && record.description && <p className="admin-record__meta" style={{ marginTop: '4px' }}>{record.description}</p>}
-                      {activeResource === 'chatbot-responses' && record.response && <p className="admin-record__meta" style={{ marginTop: '4px', whiteSpace: 'pre-wrap' }}>{record.response}</p>}
+                  <div className="admin-record" key={record.id} style={{ alignItems: 'center', padding: '16px 12px' }}>
+                    <div className="admin-record__content" style={{ flex: '1 1 auto' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                        <p className="admin-record__title" style={{ margin: 0, fontWeight: 700 }}>{displayName(record)}</p>
+                        {activeResource === 'eligibility' && (
+                          <span className="admin-card-chip admin-card-chip--location" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>
+                            🎯 Minimum: {record.minimumMarks}% Marks
+                          </span>
+                        )}
+                      </div>
+                      {activeResource === 'eligibility' && record.description && (
+                        <p className="admin-record__meta" style={{ marginTop: '6px', color: 'var(--ink-muted)' }}>{record.description}</p>
+                      )}
+                      {activeResource === 'chatbot-responses' && record.response && (
+                        <p className="admin-record__meta" style={{ marginTop: '6px', whiteSpace: 'pre-wrap' }}>{record.response}</p>
+                      )}
                     </div>
-                    <div className="admin-record__actions">
+                    <div className="admin-record__actions" style={{ display: 'flex', gap: '8px' }}>
                       <button className="admin-action admin-action--edit" type="button" onClick={() => { setEditingRecord(record); setResourceView('add'); }}>Edit</button>
                       <button className="admin-action admin-action--danger" type="button" onClick={() => deleteRecord(record)}>Delete</button>
                     </div>
@@ -2447,7 +2487,20 @@ function AdminDashboard() {
               )}
             </div>}
             {resourceView === 'add' && <div className="admin-form-screen">
-              <div className="admin-section-heading"><div><h2>{editingRecord ? `Edit ${getResourceSingular(activeResource)}` : `Add ${getResourceSingular(activeResource)}`}</h2><span className="admin-count">Complete the fields, then save when ready.</span></div><button type="button" className="admin-text-button" onClick={() => { setResourceView('list'); setEditingRecord(null); setNotice(''); setError(''); }}>&larr; Back to {resourceLabels[activeResource] || 'records'}</button></div>
+              <div className="admin-section-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '18px' }}>
+                <div>
+                  <h2>{editingRecord ? `Edit ${getResourceSingular(activeResource)}` : `Add ${getResourceSingular(activeResource)}`}</h2>
+                  <span className="admin-count">Complete the fields, then save when ready.</span>
+                </div>
+                <button
+                  type="button"
+                  className="admin-export-btn"
+                  onClick={() => { setResourceView('list'); setEditingRecord(null); setNotice(''); setError(''); }}
+                  title={`Return to ${resourceLabels[activeResource] || 'records'}`}
+                >
+                  &larr; Back to {activeResource === 'eligibility' ? 'Eligibility' : (resourceLabels[activeResource] || 'Records')}
+                </button>
+              </div>
               <EntityForm key={`${activeResource}-${formResetKey}`} tab={activeResource} record={editingRecord} onSave={saveRecord} onCancel={() => setEditingRecord(null)} />
               {activeResource === 'universities' && editingRecord && (
                 <div className="admin-programs-panel">
