@@ -185,23 +185,31 @@ function scholarshipBasisLabel(basis) {
   return basis || 'Unspecified';
 }
 
-function universityMatches(record, query) {
+function universityMatches(record, query, cityFilter = 'all') {
+  const city = String(record.City || record.city || '').toLowerCase();
+
+  // Dropdown city filter
+  if (cityFilter && cityFilter !== 'all') {
+    if (!city.includes(cityFilter.toLowerCase())) return false;
+  }
+
   const searchText = (query || '').trim().toLowerCase();
   if (!searchText) return true;
   const terms = searchText.split(/\s+/).filter(Boolean);
 
   const name = String(record.University || record.name || '').toLowerCase();
-  const city = String(record.City || record.city || '').toLowerCase();
   const province = String(record.Province || record.province || '').toLowerCase();
   const sector = String(record.Sector || record.sector || '').toLowerCase();
-  const website = String(record.Website || record.website || record.website_url || record.url || '').toLowerCase();
   const programs = (record.programs || [])
-    .map((p) => `${p.degree_name || ''} ${p.merit_formula || ''}`)
+    .map((p) => `${p.degree_name || ''}`)
     .join(' ')
     .toLowerCase();
 
-  const combined = `${name} ${city} ${province} ${sector} ${website} ${programs}`;
-  return terms.every((term) => combined.includes(term));
+  // Check each term: if a term matches a city name, only universities in that city match
+  return terms.every((term) => {
+    if (city.includes(term)) return true;
+    return name.includes(term) || province.includes(term) || sector.includes(term) || programs.includes(term);
+  });
 }
 
 function scholarshipMatches(record, query) {
@@ -1443,7 +1451,7 @@ function AdminDashboard() {
   const [users, setUsers] = useState([]); const [records, setRecords] = useState([]);
   const [dashboardData, setDashboardData] = useState({ users: [], activity: [], assessments: [], chatbot: [], scholarships: [], universities: [] });
   const [editingUser, setEditingUser] = useState(null); const [editingRecord, setEditingRecord] = useState(null); const [editingProgram, setEditingProgram] = useState(null);
-  const [universitySearch, setUniversitySearch] = useState(''); const [scholarshipSearch, setScholarshipSearch] = useState(''); const [error, setError] = useState(''); const [notice, setNotice] = useState(''); const [formResetKey, setFormResetKey] = useState(0);
+  const [universitySearch, setUniversitySearch] = useState(''); const [universityCityFilter, setUniversityCityFilter] = useState('all'); const [scholarshipSearch, setScholarshipSearch] = useState(''); const [error, setError] = useState(''); const [notice, setNotice] = useState(''); const [formResetKey, setFormResetKey] = useState(0);
   const [userSearch, setUserSearch] = useState(''); const [userFilter, setUserFilter] = useState('all');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const RECORDS_PAGE_SIZE = 50;
@@ -1520,7 +1528,7 @@ function AdminDashboard() {
   useEffect(() => { loadDashboard().catch((loadError) => setError(loadError.message)); }, []);
   // Large record sets (200+ universities/scholarships) rendered in full make the page tall
   // enough to break browser rendering, so lists are paged; reset to page one on list/search change.
-  useEffect(() => { setVisibleCount(RECORDS_PAGE_SIZE); }, [activeResource, universitySearch, scholarshipSearch]);
+  useEffect(() => { setVisibleCount(RECORDS_PAGE_SIZE); }, [activeResource, universitySearch, scholarshipSearch, universityCityFilter]);
 
   // Auto-dismiss transient notice banners after 3.5 seconds
   useEffect(() => {
@@ -1535,6 +1543,7 @@ function AdminDashboard() {
     setTab(nextTab);
     setResourceView('list');
     setEditingRecord(null); setEditingProgram(null); setError(''); setNotice('');
+    setUniversityCityFilter('all'); setUniversitySearch(''); setScholarshipSearch('');
     if (nextTab === 'dashboard') {
       loadDashboard().catch((loadError) => setError(loadError.message));
       return;
@@ -1676,8 +1685,21 @@ function AdminDashboard() {
   const blockedCount = users.filter((u) => u.blocked).length;
   const unverifiedCount = users.filter((u) => !u.emailConfirmed).length;
 
-  const visibleRecords = activeResource === 'universities' ? records.filter((record) => universityMatches(record, universitySearch)) : activeResource === 'scholarships' ? records.filter((record) => scholarshipMatches(record, scholarshipSearch)) : records;
+  const visibleRecords = activeResource === 'universities'
+    ? records.filter((record) => universityMatches(record, universitySearch, universityCityFilter))
+    : activeResource === 'scholarships'
+    ? records.filter((record) => scholarshipMatches(record, scholarshipSearch))
+    : records;
   const pagedRecords = visibleRecords.slice(0, visibleCount);
+
+  const universityCities = (activeResource === 'universities' ? records : []).reduce((acc, r) => {
+    const raw = (r.City || r.city || '').trim();
+    if (raw) {
+      const primary = raw.split(',')[0].split(String.fromCharCode(40))[0].trim();
+      if (primary && !acc.includes(primary)) acc.push(primary);
+    }
+    return acc;
+  }, []).sort((a, b) => a.localeCompare(b));
 
   const signOut = () => { sessionStorage.removeItem(ADMIN_TOKEN_KEY); navigate('/admin/login', { replace: true }); };
 
@@ -1793,18 +1815,6 @@ function AdminDashboard() {
                   </svg>
                   Export CSV
                 </button>
-                <button
-                  type="button"
-                  className="admin-back-btn admin-back-btn--outline"
-                  onClick={() => changeTab('dashboard')}
-                  title="Return to Admin Dashboard"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                  </svg>
-                  <span>Back to Dashboard</span>
-                </button>
               </div>
             </div>
 
@@ -1919,7 +1929,7 @@ function AdminDashboard() {
                       <td><StatusPill tone={user.blocked ? 'warn' : 'good'}>{user.blocked ? 'Blocked' : 'Active'}</StatusPill></td>
                       <td>
                         <button className="admin-action admin-action--toggle" type="button" onClick={() => toggleUserBlock(user)}>{user.blocked ? 'Unblock' : 'Block'}</button>
-                        <button className="admin-action" type="button" onClick={() => setEditingUser({ ...user })}>Edit</button>
+                        <button className="admin-action admin-action--edit" type="button" onClick={() => setEditingUser({ ...user })}>Edit</button>
                         <button className="admin-action admin-action--danger" type="button" onClick={() => deleteUser(user)}>Delete</button>
                       </td>
                     </tr>
@@ -2158,31 +2168,48 @@ function AdminDashboard() {
                 <p className="admin-hint">Keyword-triggered canned replies the assistant sends automatically. The conversation log (above) is where you monitor what visitors actually asked.</p>
               )}
               {activeResource === 'universities' && (
-                <div className="admin-search-wrapper">
-                  <svg className="admin-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  </svg>
-                  <input
-                    className="admin-search"
-                    type="text"
-                    inputMode="search"
-                    placeholder="Search universities by name, city, province, sector, or program (e.g. NUST, Lahore, CS)..."
-                    aria-label="Search universities"
-                    value={universitySearch}
-                    onChange={(event) => setUniversitySearch(event.target.value)}
-                  />
-                  {universitySearch && (
-                    <button
-                      type="button"
-                      className="admin-search-clear"
-                      onClick={() => setUniversitySearch('')}
-                      aria-label="Clear search"
-                      title="Clear search"
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', margin: '0 0 16px' }}>
+                  <div className="admin-search-wrapper" style={{ margin: 0, flex: '1 1 320px' }}>
+                    <svg className="admin-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input
+                      className="admin-search"
+                      type="text"
+                      inputMode="search"
+                      placeholder="Search universities by city or name (e.g. Lahore, NUST, Karachi)..."
+                      aria-label="Search universities"
+                      value={universitySearch}
+                      onChange={(event) => setUniversitySearch(event.target.value)}
+                    />
+                    {universitySearch && (
+                      <button
+                        type="button"
+                        className="admin-search-clear"
+                        onClick={() => setUniversitySearch('')}
+                        aria-label="Clear search"
+                        title="Clear search"
+                      >
+                        &times;
+                      </button>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <label htmlFor="admin-uni-city-select" style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--ink-muted)', whiteSpace: 'nowrap' }}>City:</label>
+                    <select
+                      id="admin-uni-city-select"
+                      className="admin-select"
+                      value={universityCityFilter}
+                      onChange={(e) => { setUniversityCityFilter(e.target.value); setVisibleCount(RECORDS_PAGE_SIZE); }}
+                      style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.86rem', background: '#ffffff', color: '#1e293b', cursor: 'pointer' }}
                     >
-                      &times;
-                    </button>
-                  )}
+                      <option value="all">All Cities ({records.length})</option>
+                      {universityCities.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               )}
               {activeResource === 'scholarships' && (
@@ -2218,7 +2245,7 @@ function AdminDashboard() {
                   <p>
                     No {activeResource} found matching "
                     <strong>
-                      {activeResource === 'universities' ? universitySearch : scholarshipSearch}
+                      {activeResource === 'universities' ? (universityCityFilter !== 'all' ? `${universityCityFilter} ${universitySearch}`.trim() : universitySearch) : scholarshipSearch}
                     </strong>
                     ".
                   </p>
@@ -2226,7 +2253,10 @@ function AdminDashboard() {
                     type="button"
                     className="admin-small-button"
                     onClick={() => {
-                      if (activeResource === 'universities') setUniversitySearch('');
+                      if (activeResource === 'universities') {
+                        setUniversitySearch('');
+                        setUniversityCityFilter('all');
+                      }
                       if (activeResource === 'scholarships') setScholarshipSearch('');
                     }}
                   >
@@ -2234,38 +2264,180 @@ function AdminDashboard() {
                   </button>
                 </div>
               )}
-              {pagedRecords.map((record) => (
-                <div className="admin-record" key={record.id}>
-                  <div className="admin-record__content">
-                    <p className={activeResource === 'scholarships' ? 'admin-record__title admin-record__title--truncate' : 'admin-record__title'} title={activeResource === 'scholarships' ? displayName(record) : undefined}>{displayName(record)}</p>
-                    {activeResource === 'scholarships' ? (
-                      <>
-                        <p className="admin-record__subtitle" style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                          <span>{record.provider || 'Provider not specified'}</span>
-                          {record.basis && <StatusPill tone={basisTone(record.basis)}>{scholarshipBasisLabel(record.basis)}</StatusPill>}
-                        </p>
-                        <p className="admin-record__meta">{scholarshipSummary(record)}</p>
-                      </>
-                    ) : (
-                      <>
-                        {([record.City || record.city, record.Province || record.province].filter(Boolean).join(', ') && !displayName(record).toLowerCase().includes((record.City || record.city || '').toLowerCase())) || (record.Sector || record.sector) ? (
-                          <p className="admin-record__subtitle">
-                            {[record.City || record.city, record.Province || record.province].filter(Boolean).join(', ')}
-                            {(record.Sector || record.sector) && <StatusPill tone={sectorTone(record.Sector || record.sector)}>{record.Sector || record.sector}</StatusPill>}
-                          </p>
-                        ) : null}
-                        {activeResource === 'universities' && record.programs?.length > 0 && <ul className="admin-record__programs">{record.programs.map((program) => <li key={program.id}>{program.degree_name}</li>)}</ul>}
-                        {activeResource === 'eligibility' && record.description && <p className="admin-record__meta" style={{ marginTop: '4px' }}>{record.description}</p>}
-                        {activeResource === 'chatbot-responses' && record.response && <p className="admin-record__meta" style={{ marginTop: '4px', whiteSpace: 'pre-wrap' }}>{record.response}</p>}
-                      </>
-                    )}
-                  </div>
-                  <div className="admin-record__actions">
-                    <button className="admin-action" type="button" onClick={() => { setEditingRecord(record); setResourceView('add'); }}>Edit</button>
-                    <button className="admin-action admin-action--danger" type="button" onClick={() => deleteRecord(record)}>Delete</button>
-                  </div>
+              {activeResource === 'universities' ? (
+                <div className="admin-cards-grid">
+                  {pagedRecords.map((record) => (
+                    <div className="admin-grid-card admin-university-card" key={record.id}>
+                      <div className="admin-grid-card__header">
+                        <div className="admin-grid-card__badge-row">
+                          <span className="admin-card-chip admin-card-chip--location">
+                            📍 {record.City || record.city || 'City N/A'}{record.Province || record.province ? `, ${record.Province || record.province}` : ''}
+                          </span>
+                          {(record.Sector || record.sector) && (
+                            <StatusPill tone={sectorTone(record.Sector || record.sector)}>
+                              {record.Sector || record.sector}
+                            </StatusPill>
+                          )}
+                        </div>
+                        <h3 className="admin-grid-card__title" title={displayName(record)}>
+                          {displayName(record)}
+                        </h3>
+                      </div>
+
+                      <div className="admin-grid-card__body">
+                        {record.programs && record.programs.length > 0 ? (
+                          <div className="admin-grid-card__programs-wrap">
+                            <div className="admin-grid-card__programs-header">
+                              <span>🎓 {record.programs.length} Degree Program{record.programs.length !== 1 ? 's' : ''}</span>
+                            </div>
+                            <div className="admin-grid-card__programs-pills">
+                              {record.programs.slice(0, 4).map((p) => (
+                                <span key={p.id} className="admin-program-chip">{p.degree_name}</span>
+                              ))}
+                              {record.programs.length > 4 && (
+                                <span className="admin-program-chip admin-program-chip--more">
+                                  +{record.programs.length - 4} more
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="admin-grid-card__empty-programs">No degree programs recorded</p>
+                        )}
+                      </div>
+
+                      <div className="admin-grid-card__footer">
+                        {(record.Website || record.website || record.website_url) ? (
+                          <a
+                            href={normalizeUrl(record.Website || record.website || record.website_url)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="admin-card-link"
+                          >
+                            Website ↗
+                          </a>
+                        ) : <span />}
+                        <div className="admin-grid-card__actions">
+                          <button
+                            className="admin-action admin-action--edit"
+                            type="button"
+                            onClick={() => { setEditingRecord(record); setResourceView('add'); }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="admin-action admin-action--danger"
+                            type="button"
+                            onClick={() => deleteRecord(record)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : activeResource === 'scholarships' ? (
+                <div className="admin-cards-grid">
+                  {pagedRecords.map((record) => (
+                    <div className="admin-grid-card admin-scholarship-card" key={record.id}>
+                      <div className="admin-grid-card__header">
+                        <div className="admin-grid-card__badge-row">
+                          <span className="admin-card-chip admin-card-chip--provider">
+                            {record.provider_type || 'Scholarship'}
+                          </span>
+                          {record.basis && (
+                            <StatusPill tone={basisTone(record.basis)}>
+                              {scholarshipBasisLabel(record.basis)}
+                            </StatusPill>
+                          )}
+                        </div>
+                        <h3 className="admin-grid-card__title" title={displayName(record)}>
+                          {displayName(record)}
+                        </h3>
+                        <p className="admin-grid-card__provider">
+                          🏢 {record.provider || 'Provider not specified'}
+                        </p>
+                      </div>
+
+                      <div className="admin-grid-card__body">
+                        <div className="admin-grid-card__meta-list">
+                          {record.min_merit_pct && (
+                            <div className="admin-grid-card__meta-item">
+                              <span className="admin-grid-card__meta-label">🎓 Min Merit:</span>
+                              <span className="admin-grid-card__meta-val">{record.min_merit_pct}%</span>
+                            </div>
+                          )}
+                          {record.income_cap_pkr && (
+                            <div className="admin-grid-card__meta-item">
+                              <span className="admin-grid-card__meta-label">💰 Income Cap:</span>
+                              <span className="admin-grid-card__meta-val">PKR {Number(record.income_cap_pkr).toLocaleString()}</span>
+                            </div>
+                          )}
+                          {record.provinces && (
+                            <div className="admin-grid-card__meta-item">
+                              <span className="admin-grid-card__meta-label">📍 Provinces:</span>
+                              <span className="admin-grid-card__meta-val">{record.provinces}</span>
+                            </div>
+                          )}
+                          {record.coverage && (
+                            <div className="admin-grid-card__meta-item">
+                              <span className="admin-grid-card__meta-label">🎁 Coverage:</span>
+                              <span className="admin-grid-card__meta-val">{record.coverage}</span>
+                            </div>
+                          )}
+                          {record.eligibility_raw && !record.min_merit_pct && (
+                            <p className="admin-grid-card__eligibility">📋 {record.eligibility_raw}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="admin-grid-card__footer">
+                        {record.source_url ? (
+                          <a
+                            href={normalizeUrl(record.source_url)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="admin-card-link"
+                          >
+                            Apply Link ↗
+                          </a>
+                        ) : <span />}
+                        <div className="admin-grid-card__actions">
+                          <button
+                            className="admin-action admin-action--edit"
+                            type="button"
+                            onClick={() => { setEditingRecord(record); setResourceView('add'); }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="admin-action admin-action--danger"
+                            type="button"
+                            onClick={() => deleteRecord(record)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                pagedRecords.map((record) => (
+                  <div className="admin-record" key={record.id}>
+                    <div className="admin-record__content">
+                      <p className="admin-record__title">{displayName(record)}</p>
+                      {activeResource === 'eligibility' && record.description && <p className="admin-record__meta" style={{ marginTop: '4px' }}>{record.description}</p>}
+                      {activeResource === 'chatbot-responses' && record.response && <p className="admin-record__meta" style={{ marginTop: '4px', whiteSpace: 'pre-wrap' }}>{record.response}</p>}
+                    </div>
+                    <div className="admin-record__actions">
+                      <button className="admin-action admin-action--edit" type="button" onClick={() => { setEditingRecord(record); setResourceView('add'); }}>Edit</button>
+                      <button className="admin-action admin-action--danger" type="button" onClick={() => deleteRecord(record)}>Delete</button>
+                    </div>
+                  </div>
+                ))
+              )}
               {visibleRecords.length > pagedRecords.length && (
                 <div className="admin-load-more">
                   <button className="admin-small-button" type="button" onClick={() => setVisibleCount((count) => count + RECORDS_PAGE_SIZE)}>
@@ -2285,7 +2457,7 @@ function AdminDashboard() {
                       <li key={program.id}>
                         <span>{program.degree_name}{program.eligibility_pct ? ` · Min ${program.eligibility_pct}%` : ''}</span>
                         <span>
-                          <button className="admin-action" type="button" onClick={() => setEditingProgram(program)}>Edit</button>
+                          <button className="admin-action admin-action--edit" type="button" onClick={() => setEditingProgram(program)}>Edit</button>
                           <button className="admin-action admin-action--danger" type="button" onClick={() => deleteProgram(program)}>Delete</button>
                         </span>
                       </li>
