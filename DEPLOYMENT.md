@@ -19,7 +19,9 @@ This project deploys across two free services (no credit card required for eithe
 - **Start command**: comes from `backend/Procfile` (`web: gunicorn app:app`)
 - **Environment variables** (set in Zeabur → Variables):
   - `ADMIN_EMAILS` — comma-separated Supabase administrator emails
+  - `ADMIN_USERNAME` — username used on the admin login form
   - `SUPABASE_URL`
+  - `SUPABASE_ANON_KEY`
   - `SUPABASE_SERVICE_ROLE_KEY`
   - `SUPABASE_JWT_AUDIENCE` — normally `authenticated`
   - `FRONTEND_URL` — your live Vercel URL, once you have it (locks down CORS to just your site)

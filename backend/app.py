@@ -83,7 +83,7 @@ admin_sessions = {}
 password_reset_tokens = {}
 # Single fixed administrator username and password (admin uses username, never email)
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "").strip() or "admin"
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "").strip() or "admin123"
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "").strip()
 ADMIN_SESSION_TTL = 60 * 60 * 8
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").strip()
@@ -913,23 +913,33 @@ def admin_login():
     payload = request.get_json(silent=True) or {}
     username = (payload.get("username") or payload.get("email") or "").strip()
     password = payload.get("password") or ""
+    admin_emails = sorted(admin_email_allowlist())
+    if not username or not password or not ADMIN_USERNAME or not SUPABASE_URL or not SUPABASE_ANON_KEY or len(admin_emails) != 1:
+        return jsonify({"message": "Admin username authentication is not configured."}), 503
+    if not secrets.compare_digest(username, ADMIN_USERNAME):
+        return jsonify({"message": "Invalid admin username or password."}), 401
 
-    is_valid_user = (username == "admin") or (bool(ADMIN_USERNAME) and username == ADMIN_USERNAME)
-    is_valid_pass = (password == "admin123") or (bool(ADMIN_PASSWORD) and password == ADMIN_PASSWORD)
-
-    if not (is_valid_user and is_valid_pass):
-        return jsonify({"message": "Invalid admin credentials."}), 401
-
-    token = secrets.token_urlsafe(32)
-    admin_sessions[token] = {
-        "username": "admin",
-        "expires_at": time.time() + ADMIN_SESSION_TTL,
-    }
+    request_data = urlencode({"grant_type": "password"}).encode("utf-8")
+    auth_request = Request(
+        f"{SUPABASE_URL}/auth/v1/token?grant_type=password",
+        data=json.dumps({"email": admin_emails[0], "password": password}).encode("utf-8"),
+        headers={
+            "apikey": SUPABASE_ANON_KEY,
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urlopen(auth_request, timeout=8) as response:
+            session = json.loads(response.read().decode("utf-8"))
+    except (HTTPError, URLError, TimeoutError, ValueError, OSError):
+        return jsonify({"message": "Invalid admin username or password."}), 401
 
     return jsonify({
-        "admin": {"username": "admin"},
-        "token": token,
-        "expiresIn": ADMIN_SESSION_TTL,
+        "admin": {"username": ADMIN_USERNAME},
+        "access_token": session.get("access_token"),
+        "refresh_token": session.get("refresh_token"),
+        "expires_in": session.get("expires_in"),
     }), 200
 
 

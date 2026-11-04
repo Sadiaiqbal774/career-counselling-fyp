@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import PasswordField from '../components/PasswordField';
 import supabase from '../lib/supabase';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5001';
 
 function AdminLogin() {
   const navigate = useNavigate();
@@ -19,20 +19,22 @@ function AdminLogin() {
     setError('');
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email: username, password });
-      if (error) throw error;
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
-      const response = await fetch(`${API_URL}/api/admin/me`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await fetch(`${API_URL}/api/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
       });
-      if (!response.ok) {
-        await supabase.auth.signOut();
-        throw new Error('This account is not authorized to access the administrator console.');
-      }
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.message || 'Invalid admin username or password.');
+
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: result.access_token,
+        refresh_token: result.refresh_token,
+      });
+      if (sessionError) throw sessionError;
       navigate(location.state?.from?.pathname || '/admin', { replace: true });
     } catch (loginError) {
-      setError(loginError.message);
+      setError(loginError.message || 'Unable to sign in as admin.');
     } finally {
       setLoading(false);
     }
@@ -48,32 +50,17 @@ function AdminLogin() {
             <span className="admin-login-brand-sub">Admin Console</span>
           </div>
         </div>
-        <p className="eyebrow">ADMINISTRATOR ACCESS</p>
-        <h1 className="admin-login-title">Administrator <span className="admin-nowrap">Sign in</span></h1>
-        <p className="admin-login-desc">Use the verified Supabase administrator account to manage users, data, and system reports.</p>
+        <p className="eyebrow">ADMIN ACCESS</p>
+        <h1 className="admin-login-title">Admin <span className="admin-nowrap">Sign in</span></h1>
+        <p className="admin-login-desc">Use the configured admin username and verified Supabase administrator password.</p>
         <form className="admin-form" onSubmit={handleSubmit}>
           <div className="admin-field">
-            <label htmlFor="admin-username">Administrator email</label>
-            <input
-              id="admin-username"
-              type="text"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-              required
-              autoComplete="username"
-              placeholder="admin@example.com"
-            />
+            <label htmlFor="admin-username">Admin username</label>
+            <input id="admin-username" type="text" value={username} onChange={(event) => setUsername(event.target.value)} required autoComplete="username" placeholder="Enter admin username" />
           </div>
           <div className="admin-field">
             <label htmlFor="admin-password">Password</label>
-            <PasswordField
-              id="admin-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-              autoComplete="current-password"
-              placeholder="Enter admin password"
-            />
+            <PasswordField id="admin-password" value={password} onChange={(event) => setPassword(event.target.value)} required autoComplete="current-password" placeholder="Enter admin password" />
           </div>
           {error && <p className="admin-error" role="alert">{error}</p>}
           <button className="primary-button admin-submit-btn" type="submit" disabled={loading}>

@@ -15,7 +15,7 @@ function AdminProtectedRoute() {
         if (active) setAuthorized(false);
         return;
       }
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000'}/api/admin/me`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:5001'}/api/admin/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (active) setAuthorized(response.ok);

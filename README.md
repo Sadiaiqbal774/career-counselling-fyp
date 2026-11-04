@@ -12,7 +12,7 @@ python app.py
 
 ## Admin access
 
-Configure Supabase Auth and set `ADMIN_EMAILS` to a comma-separated allowlist of administrator email addresses. Flask verifies Supabase access-token signatures through the Supabase JWKS endpoint and does not accept browser-supplied admin claims.
+Configure Supabase Auth, set `ADMIN_USERNAME` to the username shown on the admin form, and set `ADMIN_EMAILS` to exactly one authorized administrator email. The backend maps the username to that Supabase account and verifies the password through Supabase Auth. Keep `SUPABASE_ANON_KEY` server-side.
 
 PowerShell example:
 
