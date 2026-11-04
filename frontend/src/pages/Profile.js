@@ -48,7 +48,7 @@ function Profile() {
 
   useEffect(() => {
     loadBookmarks();
-  }, [currentUser]);
+  }, [currentUser?.id]);
 
   const handleRemoveBookmark = (type, item) => {
     toggleItemBookmark(currentUser?.id, type, item);
@@ -159,7 +159,7 @@ function Profile() {
     }
     loadProfileData();
     return () => { cancelled = true; };
-  }, [currentUser]);
+  }, [currentUser?.id, currentUser?.email]);
 
   const completion = useMemo(() => {
     return getProfileCompletion(profile);

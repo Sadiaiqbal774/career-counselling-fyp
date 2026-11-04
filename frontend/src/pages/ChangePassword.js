@@ -7,6 +7,7 @@ import PasswordField from '../components/PasswordField';
 function ChangePassword() {
   const navigate = useNavigate();
   const { currentUser, initialized, isAuthenticated, changePassword } = useAuth();
+  const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -14,6 +15,7 @@ function ChangePassword() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const email = useMemo(() => currentUser?.email || '', [currentUser]);
+  const usesPassword = currentUser?.provider === 'email' || currentUser?.authProvider === 'email';
 
   if (initialized && !isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -36,7 +38,7 @@ function ChangePassword() {
 
     setIsSubmitting(true);
     try {
-      await changePassword({ oldPassword: '', newPassword: password, isOAuth: true });
+      await changePassword({ oldPassword, newPassword: password });
       setMessage('Password updated successfully.');
       setTimeout(() => navigate('/dashboard', { replace: true }), 900);
     } catch (err) {
@@ -69,6 +71,12 @@ function ChangePassword() {
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
+            {usesPassword ? (
+              <label className="auth-field">
+                <span>Current password</span>
+                <PasswordField value={oldPassword} onChange={(ev) => setOldPassword(ev.target.value)} required />
+              </label>
+            ) : null}
             <label className="auth-field">
               <span>New password</span>
               <PasswordField value={password} onChange={(ev) => setPassword(ev.target.value)} required />

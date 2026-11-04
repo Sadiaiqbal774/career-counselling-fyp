@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PasswordField from '../components/PasswordField';
+import supabase from '../lib/supabase';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
-const ADMIN_TOKEN_KEY = 'career-guide-admin-token';
 
 function AdminLogin() {
   const navigate = useNavigate();
@@ -19,15 +19,17 @@ function AdminLogin() {
     setError('');
 
     try {
-      const response = await fetch(`${API_URL}/api/admin/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+      const { error } = await supabase.auth.signInWithPassword({ email: username, password });
+      if (error) throw error;
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      const response = await fetch(`${API_URL}/api/admin/me`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'Admin sign-in failed.');
-
-      sessionStorage.setItem(ADMIN_TOKEN_KEY, result.token);
+      if (!response.ok) {
+        await supabase.auth.signOut();
+        throw new Error('This account is not authorized to access the administrator console.');
+      }
       navigate(location.state?.from?.pathname || '/admin', { replace: true });
     } catch (loginError) {
       setError(loginError.message);
@@ -48,10 +50,10 @@ function AdminLogin() {
         </div>
         <p className="eyebrow">ADMINISTRATOR ACCESS</p>
         <h1 className="admin-login-title">Administrator <span className="admin-nowrap">Sign in</span></h1>
-        <p className="admin-login-desc">Use the dedicated administrator account to manage users, data, and system reports.</p>
+        <p className="admin-login-desc">Use the verified Supabase administrator account to manage users, data, and system reports.</p>
         <form className="admin-form" onSubmit={handleSubmit}>
           <div className="admin-field">
-            <label htmlFor="admin-username">Username</label>
+            <label htmlFor="admin-username">Administrator email</label>
             <input
               id="admin-username"
               type="text"
@@ -59,7 +61,7 @@ function AdminLogin() {
               onChange={(event) => setUsername(event.target.value)}
               required
               autoComplete="username"
-              placeholder="e.g. admin"
+              placeholder="admin@example.com"
             />
           </div>
           <div className="admin-field">

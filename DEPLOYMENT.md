@@ -18,10 +18,10 @@ This project deploys across two free services (no credit card required for eithe
 - **Root Directory**: `backend`
 - **Start command**: comes from `backend/Procfile` (`web: gunicorn app:app`)
 - **Environment variables** (set in Zeabur → Variables):
-  - `ADMIN_USERNAME`
-  - `ADMIN_PASSWORD`
+  - `ADMIN_EMAILS` — comma-separated Supabase administrator emails
   - `SUPABASE_URL`
   - `SUPABASE_SERVICE_ROLE_KEY`
+  - `SUPABASE_JWT_AUDIENCE` — normally `authenticated`
   - `FRONTEND_URL` — your live Vercel URL, once you have it (locks down CORS to just your site)
 
 ### Database / Auth
@@ -54,8 +54,8 @@ Access: http://localhost:3000
 - **Frontend**: 
 - **Backend API**: 
 - **Admin Login**: `[Frontend URL]/admin/login`
-  - Username: set via `ADMIN_USERNAME`
-  - Password: set via `ADMIN_PASSWORD` (keep this long and random — it's a plain string comparison, not hashed)
+  - Sign in with the verified Supabase administrator account.
+  - Flask checks the verified token email against `ADMIN_EMAILS`.
 
 ## Known limitations (expected on free tiers, fine for a demo)
 

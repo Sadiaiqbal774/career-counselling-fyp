@@ -2,20 +2,14 @@ import { useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Auth.css';
-import PasswordField from '../components/PasswordField';
 
 function ForgotPassword() {
-  const { getSecurityQuestion, resetPasswordWithSecurityQuestion, initialized, isAuthenticated } = useAuth();
+  const { resetPassword, initialized, isAuthenticated } = useAuth();
   const location = useLocation();
   const [email, setEmail] = useState('');
-  const [securityQuestion, setSecurityQuestion] = useState('');
-  const [securityAnswer, setSecurityAnswer] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isQuestionLoaded, setIsQuestionLoaded] = useState(false);
 
   const destination = location.state?.from?.pathname || '/dashboard';
 
@@ -30,32 +24,8 @@ function ForgotPassword() {
     setIsSubmitting(true);
 
     try {
-      if (!isQuestionLoaded) {
-        const question = await getSecurityQuestion(email);
-        setSecurityQuestion(question);
-        setIsQuestionLoaded(true);
-        setMessage('Answer your security question to continue.');
-        return;
-      }
-
-      if (newPassword !== confirmPassword) {
-        throw new Error('Passwords do not match.');
-      }
-
-      const result = await resetPasswordWithSecurityQuestion({
-        email,
-        securityAnswer,
-        password: newPassword,
-      });
-
-      if (result === true) {
-        setMessage('Password updated successfully. Redirecting to sign in...');
-        setTimeout(() => window.location.assign('/login'), 1500);
-      } else if (result && result.message) {
-        setMessage(result.message);
-      } else {
-        setMessage('If the answer was correct a reset email has been sent.');
-      }
+      await resetPassword(email);
+      setMessage('If an account exists for that email, a password reset link has been sent.');
     } catch (err) {
       setError(err.message || 'Unable to reset password.');
     } finally {
@@ -67,11 +37,6 @@ function ForgotPassword() {
     setEmail(value);
     setError('');
     setMessage('');
-    setIsQuestionLoaded(false);
-    setSecurityQuestion('');
-    setSecurityAnswer('');
-    setNewPassword('');
-    setConfirmPassword('');
   };
 
   return (
@@ -88,7 +53,7 @@ function ForgotPassword() {
 
           <h1>Forgot your password?</h1>
           <p>
-            No problem! Enter the email address associated with your account and we’ll show your security question so you can reset the password.
+            No problem! Enter the email address associated with your account and we’ll send a secure reset link.
           </p>
         </aside>
 
@@ -96,7 +61,7 @@ function ForgotPassword() {
           <div className="auth-card-header">
             <p className="eyebrow">Password recovery</p>
             <h2>Verify your identity</h2>
-            <p className="muted-text">We will ask the personal question you set during registration.</p>
+            <p className="muted-text">We will send a secure password reset link to your email.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
@@ -111,60 +76,12 @@ function ForgotPassword() {
               />
             </label>
 
-            {isQuestionLoaded ? (
-              <>
-                <div className="auth-question-box">{securityQuestion}</div>
-
-                <label className="auth-field">
-                  <span>Your answer</span>
-                  <input
-                    type="text"
-                    value={securityAnswer}
-                    onChange={(e) => setSecurityAnswer(e.target.value)}
-                    placeholder="Type your answer"
-                    required
-                  />
-                </label>
-
-                <label className="auth-field">
-                  <span>New password</span>
-                  <PasswordField
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Create a new password"
-                    required
-                  />
-                </label>
-
-                <label className="auth-field">
-                  <span>Confirm password</span>
-                  <PasswordField
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm the password"
-                    required
-                  />
-                </label>
-              </>
-            ) : null}
-
             {error ? <p className="auth-error">{error}</p> : null}
             {message ? <p className="auth-success">{message}</p> : null}
 
-              <button className="auth-primary-button" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Working...' : isQuestionLoaded ? 'Reset password' : 'Find my question'}
+            <button className="auth-primary-button" type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Sending...' : 'Send reset link'}
             </button>
-
-            {isQuestionLoaded ? (
-              <button
-                type="button"
-                className="auth-secondary-button"
-                onClick={() => setIsQuestionLoaded(false)}
-                style={{ marginTop: 12 }}
-              >
-                Use a different email
-              </button>
-            ) : null}
           </form>
 
           <p className="auth-switch-text">

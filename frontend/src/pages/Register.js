@@ -1,24 +1,25 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { securityQuestions } from '../data/securityQuestions';
 import PasswordField from '../components/PasswordField';
 import './Auth.css';
 
 function Register() {
-  const { register, initialized, isAuthenticated } = useAuth();
+  const { register, initialized, isAuthenticated, resendVerification, verifySignupCode } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [securityQuestion, setSecurityQuestion] = useState(securityQuestions[0]);
-  const [securityAnswer, setSecurityAnswer] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationStep, setVerificationStep] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  const destination = location.state?.from?.pathname || '/dashboard';
+  const destination = location.state?.from?.pathname || '/';
 
   if (initialized && isAuthenticated) {
     return <Navigate to={destination} replace />;
@@ -36,12 +37,32 @@ function Register() {
     setIsSubmitting(true);
 
     try {
-      await register({ name, email, password, securityQuestion, securityAnswer });
-      navigate(destination, { replace: true });
+      const result = await register({ name, email, password });
+      if (result?.requiresEmailVerification) {
+        setVerificationEmail(result.email);
+        setVerificationStep(true);
+        setErrorMessage('Account created. Check your email and verify your address before signing in.');
+      } else {
+        navigate(destination, { replace: true });
+      }
     } catch (error) {
       setErrorMessage(error.message || 'Unable to create the account right now.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyCode = async (event) => {
+    event.preventDefault();
+    setErrorMessage('');
+    setIsVerifying(true);
+    try {
+      const user = await verifySignupCode(verificationEmail, verificationCode);
+      navigate(user?.isAdmin ? '/admin' : '/', { replace: true });
+    } catch (error) {
+      setErrorMessage(error.message || 'That verification code is invalid or expired.');
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -72,10 +93,50 @@ function Register() {
         <section className="auth-card">
           <div className="auth-card-header">
             <p className="eyebrow">Start here</p>
-            <h2>Create account</h2>
-            <p className="muted-text">Set up your profile in a minute with a real, reachable email address. We use one recovery question so you can reset your password later.</p>
+            <h2>{verificationStep ? 'Verify your email' : 'Create account'}</h2>
+            <p className="muted-text">
+              {verificationStep
+                ? `We sent a verification email to ${verificationEmail}. Click its link to finish, or enter the one-time code below if your email contains a code.`
+                : 'Set up your profile in a minute with a real, reachable email address. We use secure email verification and recovery links.'}
+            </p>
           </div>
 
+          {verificationStep ? (
+            <form onSubmit={handleVerifyCode} className="auth-form">
+              <label className="auth-field">
+                <span>Email verification code</span>
+                <input
+                  type="text"
+                  value={verificationCode}
+                  onChange={(event) => setVerificationCode(event.target.value)}
+                  placeholder="Enter the code from your email"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  minLength="6"
+                  required
+                />
+              </label>
+
+              {errorMessage ? <p className="auth-error">{errorMessage}</p> : null}
+              <button className="auth-primary-button" type="submit" disabled={isVerifying}>
+                {isVerifying ? 'Verifying...' : 'Verify email'}
+              </button>
+              <button
+                type="button"
+                className="auth-secondary-button"
+                onClick={async () => {
+                  try {
+                    await resendVerification(verificationEmail);
+                    setErrorMessage('A new verification email has been sent.');
+                  } catch (error) {
+                    setErrorMessage(error.message || 'Unable to resend verification email.');
+                  }
+                }}
+              >
+                Resend verification email
+              </button>
+            </form>
+          ) : (
           <form onSubmit={handleSubmit} className="auth-form">
             <label className="auth-field">
               <span>Full name</span>
@@ -120,35 +181,25 @@ function Register() {
               />
             </label>
 
-            <label className="auth-field">
-              <span>Recovery question</span>
-              <select value={securityQuestion} onChange={(event) => setSecurityQuestion(event.target.value)} required>
-                {securityQuestions.map((question) => (
-                  <option key={question} value={question}>
-                    {question}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="auth-field">
-              <span>Recovery answer</span>
-              <input
-                type="text"
-                value={securityAnswer}
-                onChange={(event) => setSecurityAnswer(event.target.value)}
-                placeholder="Your answer"
-                autoComplete="off"
-                required
-              />
-            </label>
-
             {errorMessage ? <p className="auth-error">{errorMessage}</p> : null}
+            {verificationEmail ? (
+              <button type="button" className="auth-secondary-button" onClick={async () => {
+                try {
+                  await resendVerification(verificationEmail);
+                  setErrorMessage('A new verification email has been sent.');
+                } catch (error) {
+                  setErrorMessage(error.message || 'Unable to resend verification email.');
+                }
+              }}>
+                Resend verification email
+              </button>
+            ) : null}
 
             <button className="auth-primary-button" type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Creating account...' : 'Create account'}
             </button>
           </form>
+          )}
 
           <p className="auth-switch-text">
             Already have an account? <Link to="/login">Sign in</Link>

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import supabase from '../lib/supabase';
 import './AdminDashboard.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
-const ADMIN_TOKEN_KEY = 'career-guide-admin-token';
 
 const tabs = [
   ['dashboard', 'Dashboard'],
@@ -1492,15 +1492,19 @@ function AdminDashboard() {
   // The "Chatbot" nav item covers two underlying resources — the conversation log and the auto-reply rules.
   const activeResource = tab === 'chatbot' ? (chatbotView === 'log' ? 'chatbot-interactions' : 'chatbot-responses') : tab;
   const [visibleCount, setVisibleCount] = useState(() => getInitialVisibleCount(activeResource));
-  const token = sessionStorage.getItem(ADMIN_TOKEN_KEY);
-
   const api = async (path, options = {}) => {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) {
+      navigate('/admin/login', { replace: true });
+      throw new Error('Administrator session expired. Please sign in again.');
+    }
     const response = await fetch(`${API_URL}${path}`, {
       ...options,
       headers: { Authorization: `Bearer ${token}`, ...(options.headers || {}) },
     });
     if (response.status === 401) {
-      sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+      await supabase.auth.signOut();
       navigate('/admin/login', { replace: true });
       throw new Error('Admin session expired. Please log in again.');
     }
@@ -1734,7 +1738,7 @@ function AdminDashboard() {
     return acc;
   }, []).sort((a, b) => a.localeCompare(b));
 
-  const signOut = () => { sessionStorage.removeItem(ADMIN_TOKEN_KEY); navigate('/admin/login', { replace: true }); };
+  const signOut = async () => { await supabase.auth.signOut(); navigate('/admin/login', { replace: true }); };
 
   return (
     <div className={sidebarCollapsed ? 'admin-app admin-app--sidebar-collapsed' : 'admin-app'}>

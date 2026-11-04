@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Navigate, useSearchParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import supabase from '../lib/supabase';
 import './Auth.css';
 import PasswordField from '../components/PasswordField';
 
 function ResetPassword() {
-  const { initialized, isAuthenticated } = useAuth();
+  const { initialized, updatePassword } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [password, setPassword] = useState('');
@@ -14,15 +14,46 @@ function ResetPassword() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recoveryReady, setRecoveryReady] = useState(false);
+  const [recoveryChecked, setRecoveryChecked] = useState(false);
 
-  const token = searchParams.get('token');
   const code = searchParams.get('code');
 
-  if (initialized && isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  useEffect(() => {
+    const loadRecoverySession = async () => {
+      const recoveryHash = typeof window !== 'undefined'
+        ? window.location.hash.includes('type=recovery')
+        : false;
 
-  if (!token && !code) {
+      if (!code && !recoveryHash) {
+        setRecoveryChecked(true);
+        return;
+      }
+
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          setRecoveryReady(false);
+          setRecoveryChecked(true);
+          return;
+        }
+      }
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        setRecoveryReady(false);
+        setRecoveryChecked(true);
+        return;
+      }
+      setRecoveryReady(Boolean(data.session));
+      setRecoveryChecked(true);
+    };
+    loadRecoverySession().catch(() => {
+      setRecoveryReady(false);
+      setRecoveryChecked(true);
+    });
+  }, [code]);
+
+  if (initialized && recoveryChecked && !recoveryReady) {
     return (
       <main className="auth-screen">
         <section className="auth-shell">
@@ -55,18 +86,15 @@ function ResetPassword() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password)) {
+      setError('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) {
-        throw error;
-      }
+      await updatePassword(password);
 
       setMessage('Password reset successfully! Redirecting to login...');
       setTimeout(() => navigate('/login'), 2000);
@@ -108,7 +136,7 @@ function ResetPassword() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter new password"
                 required
-                minLength="6"
+                minLength="8"
               />
             </label>
 
@@ -119,7 +147,7 @@ function ResetPassword() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"
                 required
-                minLength="6"
+                minLength="8"
               />
             </label>
 

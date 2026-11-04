@@ -25,7 +25,7 @@ function matchResponse(responses, message) {
 }
 
 function ChatbotWidget() {
-  const { currentUser } = useAuth();
+  const { currentUser, getAccessToken } = useAuth();
   const [open, setOpen] = useState(false);
   const [responses, setResponses] = useState([]);
   const listRef = useRef(null);
@@ -70,7 +70,7 @@ function ChatbotWidget() {
     return null;
   }
 
-  const send = (event) => {
+  const send = async (event) => {
     event.preventDefault();
     const text = draft.trim();
     if (!text) return;
@@ -204,18 +204,14 @@ function ChatbotWidget() {
     ]);
     setDraft('');
 
-    const rawName = currentUser?.name || currentUser?.full_name || currentUser?.displayName || '';
-    const isHashLike = (s) => s && typeof s === 'string' && s.trim().length >= 12 && /^[0-9a-fA-F]+$/.test(s.trim());
-    const senderName = (rawName && !isHashLike(rawName))
-      ? rawName
-      : (currentUser?.email ? currentUser.email.split('@')[0].replace(/[._]/g, ' ').split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 'Visitor');
+    const token = await getAccessToken();
     fetch(`${API_URL}/api/chatbot/interactions`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({
-        userId: currentUser?.id || null,
-        userName: senderName,
-        userEmail: currentUser?.email || null,
         message: text,
         response: reply
       }),

@@ -604,7 +604,7 @@ function getInterestDefaults(statement) {
 
 // ─── Main App ─────────────────────────────────────────────────────
 function UniversityRecommender() {
-  const { currentUser } = useAuth();
+  const { currentUser, getAccessToken } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     Math: "", Biology: "", Computer: "",
@@ -780,15 +780,16 @@ function UniversityRecommender() {
       Background: formData.Background,
       City: formData.City,
       Interests: formData.Interests,
-      userId: currentUser?.id || null,
-      userName: currentUser?.name || currentUser?.full_name || currentUser?.displayName || (currentUser?.email ? currentUser.email.split('@')[0] : 'Visitor'),
-      userEmail: currentUser?.email || null,
     };
 
     try {
+      const token = await getAccessToken();
       const response = await fetch(`${API_URL}/predict`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(finalData)
       });
       const data = await response.json();

@@ -13,17 +13,11 @@ import csv
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
+from supabase_auth import SupabaseAuthError, is_admin, require_verified_email, verify_access_token
 
 app = Flask(__name__)
 
-# Allow requests from localhost, configured FRONTEND_URL, and Vercel deployments
-_allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
-_frontend_url = os.environ.get("FRONTEND_URL", "").strip().rstrip("/")
-if _frontend_url:
-    _allowed_origins.append(_frontend_url)
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=False)
-
-# Get backend directory path
+# Load deployment configuration before constructing CORS and authentication settings.
 backend_dir = Path(__file__).resolve().parent
 
 
@@ -38,7 +32,16 @@ def load_local_env():
         key, value = line.split("=", 1)
         os.environ[key.strip()] = value.strip().strip('"').strip("'")
 
+
 load_local_env()
+
+# Allow requests from localhost and the explicitly configured frontend only.
+_allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+_frontend_url = os.environ.get("FRONTEND_URL", "").strip().rstrip("/")
+if _frontend_url:
+    _allowed_origins.append(_frontend_url)
+CORS(app, resources={r"/*": {"origins": _allowed_origins}}, supports_credentials=False)
+
 users_file = backend_dir / "users.json"
 admin_json_resources = {
     "assessments": backend_dir / "assessment_results.json",
@@ -81,10 +84,6 @@ admin_csv_resources = {
 active_sessions = {}
 admin_sessions = {}
 password_reset_tokens = {}
-# Single fixed administrator username and password (admin uses username, never email)
-ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "").strip() or "admin"
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "").strip() or "admin123"
-ADMIN_SESSION_TTL = 60 * 60 * 8
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").strip()
 
@@ -152,41 +151,51 @@ def get_bearer_token():
 
 def get_authenticated_user():
     token = get_bearer_token()
-
-    if not token:
+    try:
+        claims = verify_access_token(token)
+        require_verified_email(claims, token)
+    except SupabaseAuthError:
         return None, None
-
-    user_id = active_sessions.get(token)
-
-    if not user_id:
-        return None, None
-
-    users = load_users()
-
-    user = next(
-        (entry for entry in users if entry["id"] == user_id),
-        None
-    )
-
-    return user, token
+    return claims, token
 
 
 def get_authenticated_admin():
-    token = get_bearer_token()
-    session = admin_sessions.get(token)
-
-    if not session or session["expires_at"] <= time.time():
-        if token:
-            admin_sessions.pop(token, None)
+    claims, token = get_authenticated_user()
+    if not claims:
         return None
+    email = claims.get("email")
+    if not is_admin(claims, email):
+        return None
+    return {"claims": claims, "token": token, "username": email}
 
-    return session
+
+def get_optional_authenticated_identity():
+    token = get_bearer_token()
+    if not token:
+        return None, None
+
+    claims, _ = get_authenticated_user()
+    if not claims:
+        return None, (jsonify({"message": "Unauthorized."}), 401)
+
+    email = str(claims.get("email") or "").strip().lower() or None
+    return {
+        "id": claims["sub"],
+        "email": email,
+        "name": email.split("@", 1)[0] if email else "Student",
+    }, None
 
 
 def require_admin():
     if not get_authenticated_admin():
         return jsonify({"message": "Admin authentication required."}), 401
     return None
+
+
+def legacy_auth_disabled():
+    return jsonify({
+        "message": "Legacy authentication is disabled. Use Supabase Auth."
+    }), 410
 
 
 def get_admin_csv(resource):
@@ -606,6 +615,9 @@ def home():
 
 @app.route("/api/auth/register", methods=["POST"])
 def register():
+    return legacy_auth_disabled()
+
+    # Retained below during the migration window for data-format reference only.
     payload = request.get_json(silent=True) or {}
 
     name = (payload.get("name") or "").strip()
@@ -672,6 +684,8 @@ def register():
 
 @app.route("/api/auth/login", methods=["POST"])
 def login():
+    return legacy_auth_disabled()
+
     payload = request.get_json(silent=True) or {}
 
     email = (payload.get("email") or "").strip().lower()
@@ -718,6 +732,8 @@ def login():
 
 @app.route("/api/auth/google-auth", methods=["POST"])
 def google_auth():
+    return legacy_auth_disabled()
+
     payload = request.get_json(silent=True) or {}
 
     name = (
@@ -777,6 +793,8 @@ def google_auth():
 
 @app.route("/api/auth/security-question", methods=["POST"])
 def security_question():
+    return legacy_auth_disabled()
+
     payload = request.get_json(silent=True) or {}
 
     email = (
@@ -804,6 +822,8 @@ def security_question():
 
 @app.route("/api/auth/reset-password-with-question", methods=["POST"])
 def reset_password_with_question():
+    return legacy_auth_disabled()
+
     payload = request.get_json(silent=True) or {}
 
     email = (
@@ -849,6 +869,8 @@ def reset_password_with_question():
 
 @app.route("/api/auth/set-password", methods=["POST"])
 def set_password():
+    return legacy_auth_disabled()
+
     payload = request.get_json(silent=True) or {}
     email = (payload.get("email") or "").strip().lower()
     old_password = payload.get("oldPassword") or ""
@@ -882,25 +904,18 @@ def set_password():
 
 @app.route("/api/auth/delete-account", methods=["DELETE"])
 def delete_account():
-    user, token = get_authenticated_user()
-
-    if not user:
+    claims, token = get_authenticated_user()
+    if not claims:
         return jsonify({
             "message":
             "Unauthorized."
         }), 401
 
-    users = load_users()
-
-    remaining_users = [
-        entry for entry in users
-        if entry["id"] != user["id"]
-    ]
-
-    save_users(remaining_users)
-
-    if token in active_sessions:
-        del active_sessions[token]
+    user_id = claims["sub"]
+    try:
+        supabase_admin_request("DELETE", f"/auth/v1/admin/users/{user_id}")
+    except RuntimeError as error:
+        return jsonify({"message": str(error)}), 502
 
     return jsonify({
         "message":
@@ -910,27 +925,7 @@ def delete_account():
 
 @app.route("/api/admin/login", methods=["POST"])
 def admin_login():
-    payload = request.get_json(silent=True) or {}
-    username = (payload.get("username") or payload.get("email") or "").strip()
-    password = payload.get("password") or ""
-
-    is_valid_user = (username == "admin") or (bool(ADMIN_USERNAME) and username == ADMIN_USERNAME)
-    is_valid_pass = (password == "admin123") or (bool(ADMIN_PASSWORD) and password == ADMIN_PASSWORD)
-
-    if not (is_valid_user and is_valid_pass):
-        return jsonify({"message": "Invalid admin credentials."}), 401
-
-    token = secrets.token_urlsafe(32)
-    admin_sessions[token] = {
-        "username": "admin",
-        "expires_at": time.time() + ADMIN_SESSION_TTL,
-    }
-
-    return jsonify({
-        "admin": {"username": "admin"},
-        "token": token,
-        "expiresIn": ADMIN_SESSION_TTL,
-    }), 200
+    return legacy_auth_disabled()
 
 
 @app.route("/api/admin/me", methods=["GET"])
@@ -950,17 +945,14 @@ def admin_stats():
 
     try:
         users = [sanitize_supabase_user(entry) for entry in list_supabase_users()]
-    except (RuntimeError, Exception):
-        users = [sanitize_user(entry) for entry in reversed(load_users())]
+    except RuntimeError as error:
+        return jsonify({"message": str(error)}), 502
 
     # Admin accounts are never part of the student / registered user store
-    admin_un = (ADMIN_USERNAME or "admin").strip().lower()
+    admin_emails = set(os.environ.get("ADMIN_EMAILS", "").lower().split(","))
     users = [
         user for user in users
-        if user.get("name", "").strip().lower() != admin_un
-        and user.get("email", "").strip().lower() != admin_un
-        and not user.get("email", "").strip().lower().startswith(f"{admin_un}@")
-        and not user.get("name", "").strip().lower().startswith(f"{admin_un} ")
+        if user.get("email", "").strip().lower() not in admin_emails
     ]
 
     return jsonify({
@@ -983,23 +975,8 @@ def admin_update_user(user_id):
     if not name or not email:
         return jsonify({"message": "Name and email are required."}), 400
 
-    # 1. First check if user exists in local users.json store
-    users = load_users()
-    local_user = next((entry for entry in users if str(entry.get("id")) == str(user_id)), None)
-    if local_user:
-        local_user["name"] = name
-        local_user["email"] = email
-        if "blocked" in payload:
-            local_user["blocked"] = bool(payload["blocked"])
-        if "emailConfirmed" in payload:
-            local_user["emailConfirmed"] = bool(payload["emailConfirmed"])
-        save_users(users)
-        log_activity("admin_user_updated", {"userId": user_id, "email": email})
-        return jsonify({"user": sanitize_user(local_user)}), 200
-
-    # 2. Otherwise update via Supabase if configured
     if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-        return jsonify({"message": "User not found."}), 404
+        return jsonify({"message": "Supabase user management is not configured."}), 503
 
     try:
         current = supabase_admin_request("GET", f"/auth/v1/admin/users/{user_id}")
@@ -1034,17 +1011,8 @@ def admin_delete_user(user_id):
     if auth_error:
         return auth_error
 
-    # 1. First check if user exists in local users.json store
-    users = load_users()
-    remaining_users = [entry for entry in users if str(entry.get("id")) != str(user_id)]
-    if len(remaining_users) < len(users):
-        save_users(remaining_users)
-        log_activity("admin_user_deleted", {"userId": user_id})
-        return jsonify({"message": "User deleted successfully."}), 200
-
-    # 2. Otherwise delete via Supabase if configured
     if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-        return jsonify({"message": "User not found."}), 404
+        return jsonify({"message": "Supabase user management is not configured."}), 503
 
     try:
         supabase_admin_request("DELETE", f"/auth/v1/admin/users/{user_id}")
@@ -1288,22 +1256,18 @@ def chatbot_responses():
 @app.route("/api/chatbot/interactions", methods=["POST"])
 def chatbot_interaction():
     payload = request.get_json(silent=True) or {}
-    user_id = payload.get("userId")
-    user_name = payload.get("userName")
-    user_email = payload.get("userEmail")
+    identity, auth_error = get_optional_authenticated_identity()
+    if auth_error:
+        return auth_error
 
-    if user_id and (not user_name or is_hash_like(user_name)):
-        user_name = resolve_user_display_name(
-            user_id,
-            fallback="Visitor" if not user_id else "Student",
-            explicit_name=user_name,
-            email=user_email
-        )
+    user_id = identity["id"] if identity else None
+    user_name = identity["name"] if identity else "Visitor"
+    user_email = identity["email"] if identity else None
 
     interaction = {
         "id": secrets.token_hex(8),
         "userId": user_id,
-        "userName": user_name or ("Visitor" if not user_id else "Student"),
+        "userName": user_name,
         "userEmail": user_email,
         "message": str(payload.get("message", "")),
         "response": str(payload.get("response", "")),
@@ -1356,6 +1320,9 @@ def eligibility_overrides():
 def predict():
     try:
         data = request.json
+        identity, auth_error = get_optional_authenticated_identity()
+        if auth_error:
+            return auth_error
 
         city = data.get("City", None)
 
@@ -1547,32 +1514,29 @@ def predict():
             "international_scholarships": international_scholarships,
             "pakistan_scholarships": pakistan_scholarships,
         }
-        user_id = data.get("userId")
-        user_name = data.get("userName")
-        user_email = data.get("userEmail")
-
-        if user_id and (not user_name or is_hash_like(user_name)):
-            user_name = resolve_user_display_name(
-                user_id,
-                fallback="Student",
-                explicit_name=user_name,
-                email=user_email
-            )
+        user_id = identity["id"] if identity else None
+        user_name = identity["name"] if identity else "Visitor"
+        user_email = identity["email"] if identity else None
 
         log_activity("assessment_completed", {
             "career": career,
             "matchedField": matched_field,
             "userId": user_id,
-            "userName": user_name or "Student",
+            "userName": user_name,
             "email": user_email
         })
         assessment_records = load_json_records("assessments") or []
+        stored_answers = {
+            key: value
+            for key, value in data.items()
+            if key not in {"userId", "userName", "userEmail"}
+        }
         assessment_records.append({
             "id": secrets.token_hex(8),
             "userId": user_id,
             "userName": user_name or "Student",
             "userEmail": user_email,
-            "answers": data,
+            "answers": stored_answers,
             "result": result,
             "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         })
