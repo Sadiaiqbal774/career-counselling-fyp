@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PasswordField from '../components/PasswordField';
+import { securityQuestions } from '../data/securityQuestions';
 import './Auth.css';
 
 function Register() {
@@ -12,6 +13,8 @@ function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [recoveryQuestion, setRecoveryQuestion] = useState('');
+  const [recoveryAnswer, setRecoveryAnswer] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
@@ -37,7 +40,7 @@ function Register() {
     setIsSubmitting(true);
 
     try {
-      const result = await register({ name, email, password });
+      const result = await register({ name, email, password, recoveryQuestion, recoveryAnswer });
       if (result?.requiresEmailVerification) {
         setVerificationEmail(result.email);
         setVerificationStep(true);
@@ -177,6 +180,26 @@ function Register() {
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
                 placeholder="Repeat your password"
+                required
+              />
+            </label>
+
+            <label className="auth-field">
+              <span>Recovery question</span>
+              <select value={recoveryQuestion} onChange={(event) => setRecoveryQuestion(event.target.value)} required>
+                <option value="">Choose a recovery question</option>
+                {securityQuestions.map((question) => <option key={question} value={question}>{question}</option>)}
+              </select>
+            </label>
+
+            <label className="auth-field">
+              <span>Recovery answer</span>
+              <input
+                type="text"
+                value={recoveryAnswer}
+                onChange={(event) => setRecoveryAnswer(event.target.value)}
+                placeholder="Your answer"
+                autoComplete="off"
                 required
               />
             </label>

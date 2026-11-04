@@ -513,6 +513,11 @@ function ScholarshipCard({ scholarship, index, yourMerit, isSaved, onToggleBookm
         </div>
       )}
 
+      {scholarship.why && (
+        <p style={{ fontSize: "12.5px", color: "var(--accent-dk)", margin: "6px 0" }}>
+          <strong>Why it suits you ({scholarship.match_score}% fit):</strong> {scholarship.why}
+        </p>
+      )}
       {scholarship.coverage ? (
         <div style={{ fontSize: "12.5px", color: "var(--text)", background: "rgba(193, 123, 63, 0.08)", padding: "8px 12px", borderRadius: "8px", margin: "8px 0" }}>
           <strong style={{ color: "var(--accent-dk)" }}>💰 Award &amp; Coverage:</strong>{" "}
@@ -604,7 +609,7 @@ function getInterestDefaults(statement) {
 
 // ─── Main App ─────────────────────────────────────────────────────
 function UniversityRecommender() {
-  const { currentUser, getAccessToken } = useAuth();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     Math: "", Biology: "", Computer: "",
@@ -618,7 +623,6 @@ function UniversityRecommender() {
   const [loading, setLoading] = useState(false);
   const [useCustomText, setUseCustomText] = useState(false);
   const [profileLoaded, setProfileLoaded] = useState(false);
-  const [autoSubmitted, setAutoSubmitted] = useState(false);
   const [resultCityFilter, setResultCityFilter] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [bookmarkTick, setBookmarkTick] = useState(0);
@@ -674,32 +678,32 @@ function UniversityRecommender() {
       // Determine smart scores from model quiz OR general quiz scores OR interest defaults
       const calcMath = modelAnswers.Math 
         ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Math) / 20)))) 
-        : (savedScores.Technology ? '4' : (interestDefaults.Math || '3'));
+        : (savedScores.Technology ? '4' : (interestDefaults.Math || ''));
 
       const calcBiology = modelAnswers.Biology 
         ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Biology) / 20)))) 
-        : (savedScores.Medical ? '5' : (interestDefaults.Biology || '2'));
+        : (savedScores.Medical ? '5' : (interestDefaults.Biology || ''));
 
       const calcComputer = modelAnswers.Computer 
         ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Computer) / 20)))) 
-        : (savedScores.Technology ? '5' : (interestDefaults.Computer || '4'));
+        : (savedScores.Technology ? '5' : (interestDefaults.Computer || ''));
 
       const calcCommunication = modelAnswers.Communication 
         ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Communication) / 20)))) 
-        : (savedScores.Arts || savedScores.SocialSciences || savedScores.Business ? '4' : (interestDefaults.Communication || '3'));
+        : (savedScores.Arts || savedScores.SocialSciences || savedScores.Business ? '4' : (interestDefaults.Communication || ''));
 
       const calcLeadership = modelAnswers.Leadership 
         ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Leadership) / 20)))) 
-        : (savedScores.Business ? '5' : (interestDefaults.Leadership || '3'));
+        : (savedScores.Business ? '5' : (interestDefaults.Leadership || ''));
 
       const calcMatric = savedProfile.marks !== null && savedProfile.marks !== undefined && String(savedProfile.marks).trim() !== ''
         ? String(savedProfile.marks)
-        : (modelAnswers.Marks ? String(modelAnswers.Marks) : '85');
+        : (modelAnswers.Marks ? String(modelAnswers.Marks) : '');
 
-      const calcInter = savedProfile.intermediate_marks || savedProfile.intermediateMarks || '80';
-      const calcBackground = savedProfile.intermediate_group || savedProfile.intermediateGroup || modelAnswers.Background || 'Pre-Engineering';
-      const calcCity = (savedProfile.city && ["Lahore", "Islamabad"].includes(savedProfile.city)) ? savedProfile.city : (savedProfile.city || 'Islamabad');
-      const calcInterests = savedProfile.interests || "I enjoy technology, solving logical problems, and building modern software applications.";
+      const calcInter = savedProfile.intermediate_marks || savedProfile.intermediateMarks || '';
+      const calcBackground = savedProfile.intermediate_group || savedProfile.intermediateGroup || modelAnswers.Background || '';
+      const calcCity = (savedProfile.city && ["Lahore", "Islamabad"].includes(savedProfile.city)) ? savedProfile.city : (savedProfile.city || '');
+      const calcInterests = savedProfile.interests || "";
 
       setFormData({
         Math: calcMath,
@@ -780,16 +784,16 @@ function UniversityRecommender() {
       Background: formData.Background,
       City: formData.City,
       Interests: formData.Interests,
+      quizScores: readUserQuizData(currentUser?.id)?.scores || {},
+      userId: currentUser?.id || null,
+      userName: currentUser?.name || currentUser?.full_name || currentUser?.displayName || (currentUser?.email ? currentUser.email.split('@')[0] : 'Visitor'),
+      userEmail: currentUser?.email || null,
     };
 
     try {
-      const token = await getAccessToken();
       const response = await fetch(`${API_URL}/predict`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(finalData)
       });
       const data = await response.json();
@@ -807,18 +811,6 @@ function UniversityRecommender() {
 
     setLoading(false);
   };
-
-  useEffect(() => {
-    const hasSavedInputs = profileLoaded
-      && !autoSubmitted
-      && Object.values(formData).every((value) => String(value || '').trim())
-      && !loading;
-    if (hasSavedInputs) {
-      setAutoSubmitted(true);
-      void handleSubmit({ preventDefault: () => {} });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoSubmitted, formData, loading, profileLoaded]);
 
   const handleClearForm = () => {
     setFormData({
@@ -1100,7 +1092,15 @@ function UniversityRecommender() {
                 Recommended Career
               </p>
               <h3> {result.career}</h3>
-              {result.reasons && (
+              {result.explanation && result.explanation.length > 0 && (
+                <div style={{ marginTop: "10px" }}>
+                  <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--accent-dk)", marginBottom: "2px" }}>Why this career?</p>
+                  <ul className="reasons-list">
+                    {result.explanation.map((r, i) => <li key={i}>{r}</li>)}
+                  </ul>
+                </div>
+              )}
+              {result.reasons && result.reasons.length > 0 && (
                 <ul className="reasons-list">
                   {result.reasons.map((r, i) => <li key={i}>{r}</li>)}
                 </ul>
@@ -1299,6 +1299,11 @@ function UniversityRecommender() {
                           </strong>{" "}
                           {uni.requirements}
                         </p>
+                        {uni.why && (
+                          <p style={{ fontSize: "12.5px", color: "var(--accent-dk)", margin: "4px 0" }}>
+                            <strong>Why this university ({uni.match_score}% fit):</strong> {uni.why}
+                          </p>
+                        )}
 
                         <div className="uni-links">
                           <a

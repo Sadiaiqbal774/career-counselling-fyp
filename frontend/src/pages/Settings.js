@@ -43,8 +43,14 @@ function Settings() {
 
   const removeAccount = async () => {
     if (!window.confirm('Delete your account permanently? This cannot be undone.')) return;
-    const password = window.prompt('Enter your current password to confirm account deletion.');
-    if (!password) return;
+    if (!currentUser?.hasPassword) {
+      toast.error('This account has no password. Use Forgot password to create one, then sign in and delete it.');
+      return;
+    }
+    const password = currentUser?.hasPassword
+      ? window.prompt('Enter your current password to confirm account deletion.')
+      : null;
+    if (currentUser?.hasPassword && !password) return;
     try {
       await deleteAccount(password);
       navigate('/login', { replace: true });

@@ -27,6 +27,10 @@ This project deploys across two free services (no credit card required for eithe
 ### Database / Auth
 - **Platform**: Supabase (already configured)
 - Free-tier projects pause after 7 days of inactivity — visit the Supabase dashboard to resume before a demo if it's been quiet a while.
+- Run `frontend/server/sql/profile-management.sql` in the Supabase SQL editor. This creates the
+  `recovery_questions` table used by the backend for salted recovery-answer hashes and one-time
+  recovery sessions. The backend service-role key is required for these operations and is never
+  exposed to the frontend.
 
 ### Not deployed
 - `frontend/server/` (the Express/Postgres setup) is not used anywhere by the React app — nothing in `frontend/src` calls it. It doesn't need to be deployed.

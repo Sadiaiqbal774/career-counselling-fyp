@@ -35,6 +35,29 @@ CREATE TABLE IF NOT EXISTS public.recommendations (
   saved_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS public.recovery_questions (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  question TEXT NOT NULL,
+  answer_salt TEXT NOT NULL,
+  answer_hash TEXT NOT NULL,
+  failed_attempts INTEGER NOT NULL DEFAULT 0,
+  locked_until TIMESTAMPTZ,
+  reset_token_hash TEXT,
+  reset_token_expires_at TIMESTAMPTZ,
+  reset_token_used BOOLEAN NOT NULL DEFAULT FALSE,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.recovery_questions ADD COLUMN IF NOT EXISTS failed_attempts INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE public.recovery_questions ADD COLUMN IF NOT EXISTS locked_until TIMESTAMPTZ;
+ALTER TABLE public.recovery_questions ADD COLUMN IF NOT EXISTS reset_token_hash TEXT;
+ALTER TABLE public.recovery_questions ADD COLUMN IF NOT EXISTS reset_token_expires_at TIMESTAMPTZ;
+ALTER TABLE public.recovery_questions ADD COLUMN IF NOT EXISTS reset_token_used BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE public.recovery_questions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+
+ALTER TABLE public.recovery_questions ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.recommendations ENABLE ROW LEVEL SECURITY;
 

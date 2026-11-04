@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import supabase, { ensureSupabaseConfigured, getSupabaseConfigError } from '../lib/supabase';
 
 const AuthContext = createContext(null);
-const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5001';
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -81,7 +81,7 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  const register = useCallback(async ({ name, email, password }) => {
+  const register = useCallback(async ({ name, email, password, recoveryQuestion, recoveryAnswer }) => {
     ensureSupabaseConfigured();
     const normalizedEmail = email.trim().toLowerCase();
     if (!isValidEmail(normalizedEmail)) throw new Error('Please use a valid email address.');
@@ -104,6 +104,20 @@ export function AuthProvider({ children }) {
     }
 
     if (!data.session) {
+      if (data.user?.id && recoveryQuestion && recoveryAnswer) {
+        const setupResponse = await fetch(`${API_URL}/api/auth/recovery-question/setup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: data.user.id,
+            email: normalizedEmail,
+            question: recoveryQuestion,
+            answer: recoveryAnswer,
+          }),
+        });
+        const setupResult = await setupResponse.json().catch(() => ({}));
+        if (!setupResponse.ok) throw new Error(setupResult.message || 'Unable to save recovery details.');
+      }
       return { requiresEmailVerification: true, email: normalizedEmail };
     }
 
@@ -179,6 +193,38 @@ export function AuthProvider({ children }) {
       redirectTo: getResetRedirect(),
     });
     if (error) throw error;
+  }, []);
+
+  const getRecoveryQuestion = useCallback(async (email) => {
+    const response = await fetch(`${API_URL}/api/auth/recovery-question`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim().toLowerCase() }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.message || 'Recovery details are unavailable.');
+    return result.question;
+  }, []);
+
+  const verifyRecoveryAnswer = useCallback(async (email, answer) => {
+    const response = await fetch(`${API_URL}/api/auth/recovery-question/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim().toLowerCase(), answer }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.message || 'Incorrect recovery answer.');
+    return result.recoveryToken;
+  }, []);
+
+  const completeRecoveryQuestion = useCallback(async (recoveryToken, newPassword) => {
+    const response = await fetch(`${API_URL}/api/auth/recovery-question/complete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recoveryToken, newPassword }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.message || 'Unable to reset password.');
   }, []);
 
   const updatePassword = useCallback(async (password) => {
@@ -259,12 +305,9 @@ export function AuthProvider({ children }) {
     changePassword,
     deleteAccount,
     getAccessToken,
-    getSecurityQuestion: async () => {
-      throw new Error('Security-question recovery has been replaced by Supabase email recovery.');
-    },
-    resetPasswordWithSecurityQuestion: async () => {
-      throw new Error('Security-question recovery has been replaced by Supabase email recovery.');
-    },
+    getRecoveryQuestion,
+    verifyRecoveryAnswer,
+    completeRecoveryQuestion,
     verifyPassword: async (password) => {
       if (!currentUser?.email) return false;
       const { error } = await supabase.auth.signInWithPassword({ email: currentUser.email, password });
@@ -284,6 +327,9 @@ export function AuthProvider({ children }) {
     changePassword,
     deleteAccount,
     getAccessToken,
+    getRecoveryQuestion,
+    verifyRecoveryAnswer,
+    completeRecoveryQuestion,
   ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

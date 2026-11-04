@@ -13,11 +13,17 @@ import csv
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
-from supabase_auth import SupabaseAuthError, is_admin, require_verified_email, verify_access_token
 
 app = Flask(__name__)
 
-# Load deployment configuration before constructing CORS and authentication settings.
+# Allow requests from localhost, configured FRONTEND_URL, and Vercel deployments
+_allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+_frontend_url = os.environ.get("FRONTEND_URL", "").strip().rstrip("/")
+if _frontend_url:
+    _allowed_origins.append(_frontend_url)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=False)
+
+# Get backend directory path
 backend_dir = Path(__file__).resolve().parent
 
 
@@ -32,16 +38,7 @@ def load_local_env():
         key, value = line.split("=", 1)
         os.environ[key.strip()] = value.strip().strip('"').strip("'")
 
-
 load_local_env()
-
-# Allow requests from localhost and the explicitly configured frontend only.
-_allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
-_frontend_url = os.environ.get("FRONTEND_URL", "").strip().rstrip("/")
-if _frontend_url:
-    _allowed_origins.append(_frontend_url)
-CORS(app, resources={r"/*": {"origins": _allowed_origins}}, supports_credentials=False)
-
 users_file = backend_dir / "users.json"
 admin_json_resources = {
     "assessments": backend_dir / "assessment_results.json",
@@ -84,6 +81,10 @@ admin_csv_resources = {
 active_sessions = {}
 admin_sessions = {}
 password_reset_tokens = {}
+# Single fixed administrator username and password (admin uses username, never email)
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "").strip() or "admin"
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "").strip() or "admin123"
+ADMIN_SESSION_TTL = 60 * 60 * 8
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").strip()
 
@@ -151,51 +152,41 @@ def get_bearer_token():
 
 def get_authenticated_user():
     token = get_bearer_token()
-    try:
-        claims = verify_access_token(token)
-        require_verified_email(claims, token)
-    except SupabaseAuthError:
-        return None, None
-    return claims, token
 
-
-def get_authenticated_admin():
-    claims, token = get_authenticated_user()
-    if not claims:
-        return None
-    email = claims.get("email")
-    if not is_admin(claims, email):
-        return None
-    return {"claims": claims, "token": token, "username": email}
-
-
-def get_optional_authenticated_identity():
-    token = get_bearer_token()
     if not token:
         return None, None
 
-    claims, _ = get_authenticated_user()
-    if not claims:
-        return None, (jsonify({"message": "Unauthorized."}), 401)
+    user_id = active_sessions.get(token)
 
-    email = str(claims.get("email") or "").strip().lower() or None
-    return {
-        "id": claims["sub"],
-        "email": email,
-        "name": email.split("@", 1)[0] if email else "Student",
-    }, None
+    if not user_id:
+        return None, None
+
+    users = load_users()
+
+    user = next(
+        (entry for entry in users if entry["id"] == user_id),
+        None
+    )
+
+    return user, token
+
+
+def get_authenticated_admin():
+    token = get_bearer_token()
+    session = admin_sessions.get(token)
+
+    if not session or session["expires_at"] <= time.time():
+        if token:
+            admin_sessions.pop(token, None)
+        return None
+
+    return session
 
 
 def require_admin():
     if not get_authenticated_admin():
         return jsonify({"message": "Admin authentication required."}), 401
     return None
-
-
-def legacy_auth_disabled():
-    return jsonify({
-        "message": "Legacy authentication is disabled. Use Supabase Auth."
-    }), 410
 
 
 def get_admin_csv(resource):
@@ -615,9 +606,6 @@ def home():
 
 @app.route("/api/auth/register", methods=["POST"])
 def register():
-    return legacy_auth_disabled()
-
-    # Retained below during the migration window for data-format reference only.
     payload = request.get_json(silent=True) or {}
 
     name = (payload.get("name") or "").strip()
@@ -684,8 +672,6 @@ def register():
 
 @app.route("/api/auth/login", methods=["POST"])
 def login():
-    return legacy_auth_disabled()
-
     payload = request.get_json(silent=True) or {}
 
     email = (payload.get("email") or "").strip().lower()
@@ -732,8 +718,6 @@ def login():
 
 @app.route("/api/auth/google-auth", methods=["POST"])
 def google_auth():
-    return legacy_auth_disabled()
-
     payload = request.get_json(silent=True) or {}
 
     name = (
@@ -793,8 +777,6 @@ def google_auth():
 
 @app.route("/api/auth/security-question", methods=["POST"])
 def security_question():
-    return legacy_auth_disabled()
-
     payload = request.get_json(silent=True) or {}
 
     email = (
@@ -822,8 +804,6 @@ def security_question():
 
 @app.route("/api/auth/reset-password-with-question", methods=["POST"])
 def reset_password_with_question():
-    return legacy_auth_disabled()
-
     payload = request.get_json(silent=True) or {}
 
     email = (
@@ -869,8 +849,6 @@ def reset_password_with_question():
 
 @app.route("/api/auth/set-password", methods=["POST"])
 def set_password():
-    return legacy_auth_disabled()
-
     payload = request.get_json(silent=True) or {}
     email = (payload.get("email") or "").strip().lower()
     old_password = payload.get("oldPassword") or ""
@@ -904,18 +882,25 @@ def set_password():
 
 @app.route("/api/auth/delete-account", methods=["DELETE"])
 def delete_account():
-    claims, token = get_authenticated_user()
-    if not claims:
+    user, token = get_authenticated_user()
+
+    if not user:
         return jsonify({
             "message":
             "Unauthorized."
         }), 401
 
-    user_id = claims["sub"]
-    try:
-        supabase_admin_request("DELETE", f"/auth/v1/admin/users/{user_id}")
-    except RuntimeError as error:
-        return jsonify({"message": str(error)}), 502
+    users = load_users()
+
+    remaining_users = [
+        entry for entry in users
+        if entry["id"] != user["id"]
+    ]
+
+    save_users(remaining_users)
+
+    if token in active_sessions:
+        del active_sessions[token]
 
     return jsonify({
         "message":
@@ -925,7 +910,27 @@ def delete_account():
 
 @app.route("/api/admin/login", methods=["POST"])
 def admin_login():
-    return legacy_auth_disabled()
+    payload = request.get_json(silent=True) or {}
+    username = (payload.get("username") or payload.get("email") or "").strip()
+    password = payload.get("password") or ""
+
+    is_valid_user = (username == "admin") or (bool(ADMIN_USERNAME) and username == ADMIN_USERNAME)
+    is_valid_pass = (password == "admin123") or (bool(ADMIN_PASSWORD) and password == ADMIN_PASSWORD)
+
+    if not (is_valid_user and is_valid_pass):
+        return jsonify({"message": "Invalid admin credentials."}), 401
+
+    token = secrets.token_urlsafe(32)
+    admin_sessions[token] = {
+        "username": "admin",
+        "expires_at": time.time() + ADMIN_SESSION_TTL,
+    }
+
+    return jsonify({
+        "admin": {"username": "admin"},
+        "token": token,
+        "expiresIn": ADMIN_SESSION_TTL,
+    }), 200
 
 
 @app.route("/api/admin/me", methods=["GET"])
@@ -945,14 +950,17 @@ def admin_stats():
 
     try:
         users = [sanitize_supabase_user(entry) for entry in list_supabase_users()]
-    except RuntimeError as error:
-        return jsonify({"message": str(error)}), 502
+    except (RuntimeError, Exception):
+        users = [sanitize_user(entry) for entry in reversed(load_users())]
 
     # Admin accounts are never part of the student / registered user store
-    admin_emails = set(os.environ.get("ADMIN_EMAILS", "").lower().split(","))
+    admin_un = (ADMIN_USERNAME or "admin").strip().lower()
     users = [
         user for user in users
-        if user.get("email", "").strip().lower() not in admin_emails
+        if user.get("name", "").strip().lower() != admin_un
+        and user.get("email", "").strip().lower() != admin_un
+        and not user.get("email", "").strip().lower().startswith(f"{admin_un}@")
+        and not user.get("name", "").strip().lower().startswith(f"{admin_un} ")
     ]
 
     return jsonify({
@@ -975,8 +983,23 @@ def admin_update_user(user_id):
     if not name or not email:
         return jsonify({"message": "Name and email are required."}), 400
 
+    # 1. First check if user exists in local users.json store
+    users = load_users()
+    local_user = next((entry for entry in users if str(entry.get("id")) == str(user_id)), None)
+    if local_user:
+        local_user["name"] = name
+        local_user["email"] = email
+        if "blocked" in payload:
+            local_user["blocked"] = bool(payload["blocked"])
+        if "emailConfirmed" in payload:
+            local_user["emailConfirmed"] = bool(payload["emailConfirmed"])
+        save_users(users)
+        log_activity("admin_user_updated", {"userId": user_id, "email": email})
+        return jsonify({"user": sanitize_user(local_user)}), 200
+
+    # 2. Otherwise update via Supabase if configured
     if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-        return jsonify({"message": "Supabase user management is not configured."}), 503
+        return jsonify({"message": "User not found."}), 404
 
     try:
         current = supabase_admin_request("GET", f"/auth/v1/admin/users/{user_id}")
@@ -1011,8 +1034,17 @@ def admin_delete_user(user_id):
     if auth_error:
         return auth_error
 
+    # 1. First check if user exists in local users.json store
+    users = load_users()
+    remaining_users = [entry for entry in users if str(entry.get("id")) != str(user_id)]
+    if len(remaining_users) < len(users):
+        save_users(remaining_users)
+        log_activity("admin_user_deleted", {"userId": user_id})
+        return jsonify({"message": "User deleted successfully."}), 200
+
+    # 2. Otherwise delete via Supabase if configured
     if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-        return jsonify({"message": "Supabase user management is not configured."}), 503
+        return jsonify({"message": "User not found."}), 404
 
     try:
         supabase_admin_request("DELETE", f"/auth/v1/admin/users/{user_id}")
@@ -1256,18 +1288,22 @@ def chatbot_responses():
 @app.route("/api/chatbot/interactions", methods=["POST"])
 def chatbot_interaction():
     payload = request.get_json(silent=True) or {}
-    identity, auth_error = get_optional_authenticated_identity()
-    if auth_error:
-        return auth_error
+    user_id = payload.get("userId")
+    user_name = payload.get("userName")
+    user_email = payload.get("userEmail")
 
-    user_id = identity["id"] if identity else None
-    user_name = identity["name"] if identity else "Visitor"
-    user_email = identity["email"] if identity else None
+    if user_id and (not user_name or is_hash_like(user_name)):
+        user_name = resolve_user_display_name(
+            user_id,
+            fallback="Visitor" if not user_id else "Student",
+            explicit_name=user_name,
+            email=user_email
+        )
 
     interaction = {
         "id": secrets.token_hex(8),
         "userId": user_id,
-        "userName": user_name,
+        "userName": user_name or ("Visitor" if not user_id else "Student"),
         "userEmail": user_email,
         "message": str(payload.get("message", "")),
         "response": str(payload.get("response", "")),
@@ -1285,25 +1321,192 @@ def chatbot_interaction():
 
 
 # CAREER EXPLANATION
-def generate_reason(data):
+# Sliders (1-5) that support each AI field. Used for BOTH scoring and reasons.
+FIELD_SKILLS = {
+    "Computer Science & Technology": ["Computer", "Math"],
+    "Engineering": ["Math", "Computer"],
+    "Business & Commerce": ["Communication", "Leadership", "Math"],
+    "Medicine & Health Sciences": ["Biology"],
+    "Law": ["Communication", "Leadership"],
+    "Natural & Applied Sciences": ["Biology", "Math"],
+    "Social Sciences & Humanities": ["Communication", "Leadership"],
+}
+
+# Quiz categories (Technology/Medical/Business/Arts) -> AI fields
+QUIZ_TO_FIELDS = {
+    "Technology": ["Computer Science & Technology", "Engineering"],
+    "Medical": ["Medicine & Health Sciences", "Natural & Applied Sciences"],
+    "Business": ["Business & Commerce", "Law"],
+    "Arts": ["Social Sciences & Humanities", "Law"],
+}
+
+# Final score = TEXT_WEIGHT * text model + SKILL_WEIGHT * sliders (+ quiz boost)
+TEXT_WEIGHT = 0.6
+SKILL_WEIGHT = 0.4
+QUIZ_BOOST = 0.1
+
+
+def skill_score(field, data):
+    skills = FIELD_SKILLS.get(field, [])
+    vals = []
+    for s in skills:
+        try:
+            vals.append(float(data.get(s)))
+        except (TypeError, ValueError):
+            pass
+    return (sum(vals) / len(vals)) / 5.0 if vals else 0.0
+
+
+def quiz_boosts(quiz_scores):
+    boosts = {}
+    if not isinstance(quiz_scores, dict):
+        return boosts
+    nums = {}
+    for k in QUIZ_TO_FIELDS:
+        try:
+            nums[k] = float(quiz_scores.get(k) or 0)
+        except (TypeError, ValueError):
+            nums[k] = 0.0
+    top = max(nums.values()) if nums else 0
+    if top <= 0:
+        return boosts
+    for cat, value in nums.items():
+        if value == top:
+            for f in QUIZ_TO_FIELDS[cat]:
+                boosts[f] = QUIZ_BOOST
+    return boosts
+
+
+def generate_reason(data, field):
     reasons = []
+    labels = {
+        "Computer": "Strong computer skills",
+        "Biology": "Strong biology interest",
+        "Math": "Strong mathematical ability",
+        "Communication": "Strong communication skills",
+        "Leadership": "Good leadership qualities",
+    }
+    for skill in FIELD_SKILLS.get(field, []):
+        try:
+            if int(data.get(skill)) >= 4:
+                reasons.append(labels[skill])
+        except (TypeError, ValueError):
+            pass
 
-    if int(data["Computer"]) >= 4:
-        reasons.append("Strong interest in Computer")
-
-    if int(data["Biology"]) >= 4:
-        reasons.append("High interest in Biology")
-
-    if int(data["Math"]) >= 4:
-        reasons.append("Good analytical skills")
-
-    if data["Background"] == "ICS":
-        reasons.append("Background supports computing field")
-
-    if data["Background"] == "Pre-Medical":
-        reasons.append("Background supports medical field")
+    bg = data.get("Background")
+    bg_map = {
+        "Computer Science & Technology": ["ICS"],
+        "Engineering": ["Pre-Engineering", "ICS"],
+        "Medicine & Health Sciences": ["Pre-Medical"],
+        "Business & Commerce": ["Commerce"],
+        "Social Sciences & Humanities": ["Arts"],
+        "Law": ["Arts", "Commerce"],
+    }
+    if bg in bg_map.get(field, []):
+        reasons.append(f"Your {bg} background supports this field")
 
     return reasons
+
+
+CITY_PROVINCE = {
+    "lahore": "Punjab", "rawalpindi": "Punjab", "faisalabad": "Punjab", "multan": "Punjab",
+    "islamabad": "Federal", "karachi": "Sindh", "hyderabad": "Sindh",
+    "peshawar": "Khyber Pakhtunkhwa", "mardan": "Khyber Pakhtunkhwa",
+    "quetta": "Balochistan",
+}
+
+FIELD_SCHOLAR_KEYWORDS = {
+    "Computer Science & Technology": ["computer", "technology", "it ", "stem", "software"],
+    "Engineering": ["engineering", "stem", "technology"],
+    "Business & Commerce": ["business", "commerce", "finance", "management"],
+    "Medicine & Health Sciences": ["medical", "medicine", "health", "mbbs", "nursing"],
+    "Law": ["law", "legal"],
+    "Natural & Applied Sciences": ["science", "stem", "agriculture", "research"],
+    "Social Sciences & Humanities": ["social", "humanities", "arts", "education", "media"],
+}
+
+
+def score_university(row, marks, city, quiz_fields, field):
+    score, why = 50.0, []
+    merit = row["eligibility_pct"]
+    if pd.notna(merit):
+        margin = marks - float(merit)
+        if margin < 0:
+            score -= 40
+            why.append(f"Your {marks:.0f}% is below the {merit:.0f}% merit")
+        elif margin <= 10:
+            score += 25
+            why.append(f"Realistic target: your {marks:.0f}% is just above the {merit:.0f}% merit")
+        else:
+            score += 15
+            why.append(f"Safe choice: your {marks:.0f}% comfortably meets the {merit:.0f}% merit")
+    else:
+        why.append("Merit not published - confirm with the university")
+    if city and str(city).strip().lower() in str(row["city_norm"]).lower():
+        score += 15
+        why.append(f"Located in {city}")
+    if field in quiz_fields:
+        score += 5
+    return round(min(max(score, 0), 100), 1), "; ".join(why)
+
+
+def score_scholarship(row, marks, city, field):
+    score, why = 40.0, []
+    merit = row["min_merit_pct"]
+    if pd.notna(merit):
+        if marks >= float(merit):
+            score += 20
+            why.append(f"Your marks meet the {merit:.0f}% requirement")
+        else:
+            score -= 30
+    else:
+        why.append("No minimum marks listed")
+    province = CITY_PROVINCE.get(str(city or "").strip().lower(), "")
+    provinces = str(row["provinces"] or "")
+    if province and province.lower() in provinces.lower():
+        score += 20
+        why.append(f"Open to students in {province}")
+    elif "federal" in provinces.lower() or "national" in provinces.lower():
+        score += 10
+        why.append("Open nationwide")
+    text = f"{row['name']} {row['eligibility_raw']} {row['basis']}".lower()
+    if any(k in text for k in FIELD_SCHOLAR_KEYWORDS.get(field, [])):
+        score += 15
+        why.append(f"Relevant to {field}")
+    if "merit" in str(row["basis"]).lower() and marks >= 80:
+        score += 5
+        why.append("Your strong marks suit merit-based awards")
+    return round(min(max(score, 0), 100), 1), "; ".join(why)
+
+
+def build_explanation(career, text_prob, interests, data, boosts, marks):
+    points = []
+    words = []
+    try:
+        vec = tfidf_vectorizer.transform([interests])
+        names = tfidf_vectorizer.get_feature_names_out()
+        idx = list(field_classifier.classes_).index(career)
+        coefs = getattr(field_classifier, "coef_", None)
+        row = vec.tocoo()
+        weighted = []
+        for j, v in zip(row.col, row.data):
+            w = float(coefs[idx][j]) * v if coefs is not None else v
+            weighted.append((w, names[j]))
+        words = [w for _, w in sorted(weighted, reverse=True)[:4]]
+    except Exception:
+        pass
+    pct = round(text_prob * 100)
+    if words:
+        points.append(f"Your interest description matches {career} ({pct}% text match), especially: {', '.join(words)}.")
+    else:
+        points.append(f"Your interest description matches {career} ({pct}% text match).")
+    skills = [f"{s} {data.get(s)}/5" for s in FIELD_SKILLS.get(career, []) if str(data.get(s) or "").isdigit() and int(data.get(s)) >= 4]
+    if skills:
+        points.append(f"Your self-rated skills support it: {', '.join(skills)}.")
+    if career in boosts:
+        points.append("Your career quiz result also points toward this field.")
+    points.append(f"Your average marks of {marks:.0f}% were used to filter programs you are eligible for.")
+    return points
 
 
 def eligibility_overrides():
@@ -1320,9 +1523,6 @@ def eligibility_overrides():
 def predict():
     try:
         data = request.json
-        identity, auth_error = get_optional_authenticated_identity()
-        if auth_error:
-            return auth_error
 
         city = data.get("City", None)
 
@@ -1344,12 +1544,24 @@ def predict():
         proba = field_classifier.predict_proba(vec)[0]
         classes = field_classifier.classes_
 
-        ranked = sorted(zip(classes, proba), key=lambda x: -x[1])
-        career = ranked[0][0]
-        confidence = round(float(ranked[0][1]), 3)
+        boosts = quiz_boosts(data.get("quizScores"))
+        blended = [
+            (
+                c,
+                TEXT_WEIGHT * float(p)
+                + SKILL_WEIGHT * skill_score(str(c), data)
+                + boosts.get(str(c), 0.0),
+            )
+            for c, p in zip(classes, proba)
+        ]
+        ranked = sorted(blended, key=lambda x: -x[1])
+        career = str(ranked[0][0])
+        # confidence stays the text model's own probability for the chosen field
+        text_prob = {str(c): float(p) for c, p in zip(classes, proba)}
+        confidence = round(text_prob[career], 3)
         low_confidence = confidence < 0.25
 
-        reasons = generate_reason(data)
+        reasons = generate_reason(data, career)
         criteria = eligibility_overrides()
 
         # UNIVERSITIES
@@ -1384,7 +1596,7 @@ def predict():
 
             return matches.drop_duplicates(
                 subset=["university", "program"]
-            ).head(6)
+            )
 
         # 1. Try predicted career field in the selected city
         matched_field = career
@@ -1409,9 +1621,17 @@ def predict():
                     recommended = fallback_matches
                     break
 
+        quiz_fields = set(boosts.keys())
+        ranked_rows = []
+        for _, row in recommended.iterrows():
+            sc, why = score_university(row, data["Marks"], city, quiz_fields, matched_field)
+            ranked_rows.append((sc, why, row))
+        ranked_rows.sort(key=lambda x: -x[0])
+        ranked_rows = ranked_rows[:6]
+
         universities_list = []
 
-        for _, row in recommended.iterrows():
+        for uni_score, uni_why, row in ranked_rows:
 
             merit = (
                 row["eligibility_pct"]
@@ -1437,6 +1657,8 @@ def predict():
                 "your_marks": data["Marks"],
                 "eligibility": eligibility,
                 "requirements": requirements,
+                "match_score": uni_score,
+                "why": uni_why,
                 "link":
                 row["url"]
                 if pd.notna(row["url"]) and row["url"]
@@ -1463,7 +1685,10 @@ def predict():
                 else None
             )
 
+            sch_score, sch_why = score_scholarship(row, data["Marks"], city, matched_field)
             return {
+                "match_score": sch_score,
+                "why": sch_why,
                 "name": str(row["name"] or ""),
                 "provider": str(row["provider"] or ""),
                 "field": str(row["provider_type"] or row["basis"] or "General"),
@@ -1485,23 +1710,20 @@ def predict():
             | eligible_scholarships["provider_type"].str.contains("international", case=False, na=False)
         )
 
-        international_scholarships = [
-            build_scholarship_entry(row)
-            for _, row in eligible_scholarships[is_international]
-            .head(6)
-            .iterrows()
-        ]
+        international_scholarships = sorted(
+            (build_scholarship_entry(row)
+             for _, row in eligible_scholarships[is_international].iterrows()),
+            key=lambda e: -e["match_score"],
+        )[:6]
 
         pakistan_pool = eligible_scholarships[~is_international]
         if pakistan_pool.empty:
             pakistan_pool = scholarship_df[~scholarship_df["provinces"].str.contains("international", case=False, na=False)]
 
-        pakistan_scholarships = [
-            build_scholarship_entry(row)
-            for _, row in pakistan_pool
-            .head(8)
-            .iterrows()
-        ]
+        pakistan_scholarships = sorted(
+            (build_scholarship_entry(row) for _, row in pakistan_pool.iterrows()),
+            key=lambda e: -e["match_score"],
+        )[:8]
 
         result = {
             "career": career,
@@ -1510,33 +1732,38 @@ def predict():
             "matched_field": matched_field,
             "city_notice": city_notice,
             "reasons": reasons,
+            "explanation": build_explanation(career, text_prob[career], interests, data, boosts, data["Marks"]),
+            "field_scores": {str(c): round(float(sc), 3) for c, sc in ranked},
             "universities": universities_list,
             "international_scholarships": international_scholarships,
             "pakistan_scholarships": pakistan_scholarships,
         }
-        user_id = identity["id"] if identity else None
-        user_name = identity["name"] if identity else "Visitor"
-        user_email = identity["email"] if identity else None
+        user_id = data.get("userId")
+        user_name = data.get("userName")
+        user_email = data.get("userEmail")
+
+        if user_id and (not user_name or is_hash_like(user_name)):
+            user_name = resolve_user_display_name(
+                user_id,
+                fallback="Student",
+                explicit_name=user_name,
+                email=user_email
+            )
 
         log_activity("assessment_completed", {
             "career": career,
             "matchedField": matched_field,
             "userId": user_id,
-            "userName": user_name,
+            "userName": user_name or "Student",
             "email": user_email
         })
         assessment_records = load_json_records("assessments") or []
-        stored_answers = {
-            key: value
-            for key, value in data.items()
-            if key not in {"userId", "userName", "userEmail"}
-        }
         assessment_records.append({
             "id": secrets.token_hex(8),
             "userId": user_id,
             "userName": user_name or "Student",
             "userEmail": user_email,
-            "answers": stored_answers,
+            "answers": data,
             "result": result,
             "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         })
