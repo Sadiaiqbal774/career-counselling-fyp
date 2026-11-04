@@ -180,14 +180,17 @@ def get_authenticated_user():
 
 def get_authenticated_admin():
     token = get_bearer_token()
-    session = admin_sessions.get(token)
-
-    if not session or session["expires_at"] <= time.time():
-        if token:
-            admin_sessions.pop(token, None)
+    if not token:
         return None
-
-    return session
+    try:
+        claims = verify_access_token(token)
+        require_verified_email(claims, token)
+    except SupabaseAuthError:
+        return None
+    email = str(claims.get("email") or "").strip().lower()
+    if not is_admin(claims, email):
+        return None
+    return {"username": ADMIN_USERNAME, "email": email}
 
 
 def require_admin():
@@ -920,9 +923,18 @@ def admin_login():
     payload = request.get_json(silent=True) or {}
     username = (payload.get("username") or payload.get("email") or "").strip()
     password = payload.get("password") or ""
+
     admin_emails = sorted(admin_email_allowlist())
-    if not username or not password or not ADMIN_USERNAME or not SUPABASE_URL or not SUPABASE_ANON_KEY or len(admin_emails) != 1:
-        return jsonify({"message": "Admin username authentication is not configured."}), 503
+    missing = [
+        name for name, ok in [
+            ("SUPABASE_URL", bool(SUPABASE_URL)),
+            ("SUPABASE_ANON_KEY", bool(SUPABASE_ANON_KEY)),
+            ("ADMIN_EMAILS (exactly one email)", len(admin_emails) == 1),
+        ] if not ok
+    ]
+    if not username or not password or missing:
+        return jsonify({"message": "Admin login not configured. Missing: " + ", ".join(missing or ["username/password"])}), 503
+    
     if not secrets.compare_digest(username, ADMIN_USERNAME):
         return jsonify({"message": "Invalid admin username or password."}), 401
 
@@ -1833,6 +1845,7 @@ def handle_405(e):
 
 @app.errorhandler(500)
 def handle_500(e):
+    app.logger.exception("Unhandled error: %s", e)
     return jsonify({"message": "Internal server error occurred on backend."}), 500
 
 
