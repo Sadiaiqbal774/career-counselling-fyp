@@ -88,7 +88,7 @@ admin_csv_resources = {
 active_sessions = {}
 admin_sessions = {}
 password_reset_tokens = {}
-# Single fixed administrator username and password (admin uses username, never email)
+# The admin username is public configuration; the password is verified by Supabase Auth.
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "").strip() or "admin"
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "").strip()
 ADMIN_SESSION_TTL = 60 * 60 * 8
@@ -938,7 +938,6 @@ def admin_login():
     if not secrets.compare_digest(username, ADMIN_USERNAME):
         return jsonify({"message": "Invalid admin username or password."}), 401
 
-    request_data = urlencode({"grant_type": "password"}).encode("utf-8")
     auth_request = Request(
         f"{SUPABASE_URL}/auth/v1/token?grant_type=password",
         data=json.dumps({"email": admin_emails[0], "password": password}).encode("utf-8"),
@@ -1020,8 +1019,6 @@ def admin_update_user(user_id):
         local_user["email"] = email
         if "blocked" in payload:
             local_user["blocked"] = bool(payload["blocked"])
-        if "emailConfirmed" in payload:
-            local_user["emailConfirmed"] = bool(payload["emailConfirmed"])
         save_users(users)
         log_activity("admin_user_updated", {"userId": user_id, "email": email})
         return jsonify({"user": sanitize_user(local_user)}), 200
@@ -1043,8 +1040,6 @@ def admin_update_user(user_id):
         if "blocked" in payload:
             will_block = bool(payload["blocked"])
             update_body["ban_duration"] = "876000h" if will_block else "none"
-        if "emailConfirmed" in payload:
-            update_body["email_confirm"] = bool(payload["emailConfirmed"])
 
         updated = supabase_admin_request("PUT", f"/auth/v1/admin/users/{user_id}", body=update_body)
         if will_block is not None:

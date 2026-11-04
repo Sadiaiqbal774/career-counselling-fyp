@@ -1609,28 +1609,13 @@ function AdminDashboard() {
     }
   };
 
-  const toggleUserVerified = async (user) => {
-    try {
-      const nextVerified = !user.emailConfirmed;
-      const result = await api(`/api/admin/users/${user.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: user.name, email: user.email, emailConfirmed: nextVerified }),
-      });
-      setUsers((prevUsers) => prevUsers.map((entry) => (entry.id === user.id ? result.user : entry)));
-      setNotice(`User ${user.name || user.email} is now ${nextVerified ? 'verified' : 'unverified'}.`);
-    } catch (toggleError) {
-      setError(toggleError.message);
-    }
-  };
-
   const saveUser = async (event) => {
     event.preventDefault();
     try {
       const result = await api(`/api/admin/users/${editingUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...editingUser, emailConfirmed: Boolean(editingUser.emailConfirmed) }),
+        body: JSON.stringify({ name: editingUser.name, email: editingUser.email, blocked: Boolean(editingUser.blocked) }),
       });
       setUsers((prevUsers) => prevUsers.map((user) => (user.id === result.user.id ? result.user : user)));
       setEditingUser(null);
@@ -1972,14 +1957,9 @@ function AdminDashboard() {
                       <td style={{ textAlign: 'left' }}>{user.email}</td>
                       <td style={{ textAlign: 'center' }}>{user.authProvider}</td>
                       <td style={{ textAlign: 'center' }}>
-                        <button 
-                          className={`admin-action admin-action--toggle ${user.emailConfirmed ? 'admin-action--good' : ''}`}
-                          style={{ minWidth: '86px' }}
-                          type="button" 
-                          onClick={() => toggleUserVerified(user)}
-                        >
+                        <StatusPill tone={user.emailConfirmed ? 'good' : 'warn'}>
                           {user.emailConfirmed ? 'Verified' : 'Unverified'}
-                        </button>
+                        </StatusPill>
                       </td>
                       <td style={{ textAlign: 'center' }}>{formatDateTime(user.lastSignInAt)}</td>
                       <td style={{ textAlign: 'center' }}><StatusPill tone={user.blocked ? 'warn' : 'good'}>{user.blocked ? 'Blocked' : 'Active'}</StatusPill></td>
@@ -2046,14 +2026,6 @@ function AdminDashboard() {
                         onChange={(event) => setEditingUser({ ...editingUser, blocked: event.target.checked })}
                       />
                       <span>Block account access (prevent user from signing in)</span>
-                    </label>
-                    <label className="admin-modal-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(editingUser.emailConfirmed)}
-                        onChange={(event) => setEditingUser({ ...editingUser, emailConfirmed: event.target.checked })}
-                      />
-                      <span>Mark email address as verified</span>
                     </label>
                     <div className="admin-modal-actions">
                       <button className="secondary-button" type="button" onClick={() => setEditingUser(null)}>Cancel</button>
