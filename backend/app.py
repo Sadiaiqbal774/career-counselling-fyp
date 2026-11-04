@@ -13,6 +13,13 @@ import csv
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
+from supabase_auth import (
+    SupabaseAuthError,
+    admin_email_allowlist,
+    is_admin,
+    require_verified_email,
+    verify_access_token,
+)
 
 app = Flask(__name__)
 
