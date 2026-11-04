@@ -12,7 +12,7 @@ import time
 import csv
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from supabase_auth import (
     SupabaseAuthError,
     admin_email_allowlist,
