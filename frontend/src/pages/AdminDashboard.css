@@ -57,8 +57,8 @@ html.dark-mode .admin-app {
 
 .admin-app {
   padding-top: 0px;
-  display: flex;
-  align-items: stretch;
+  padding-left: 240px;
+  display: block;
   background: var(--paper);
   color: var(--ink);
   font-family: 'Inter', sans-serif;
@@ -66,8 +66,14 @@ html.dark-mode .admin-app {
   -webkit-font-smoothing: antialiased;
   width: 100%;
   min-height: 100vh;
+  box-sizing: border-box;
   overflow-x: hidden;
   position: relative;
+  transition: padding-left 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-app--sidebar-collapsed {
+  padding-left: 76px;
 }
 
 .admin-app :focus-visible {
@@ -77,7 +83,6 @@ html.dark-mode .admin-app {
 
 
 .admin-sidebar {
-  flex: 0 0 240px;
   width: 240px;
   display: flex;
   flex-direction: column;
@@ -87,25 +92,25 @@ html.dark-mode .admin-app {
   position: fixed;
   top: 0;
   left: 0;
+  bottom: 0;
   z-index: 20;
   height: 100vh;
   overflow-y: hidden;
   border-right: 1px solid rgba(255, 255, 255, 0.04);
   box-sizing: border-box;
-  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), flex-basis 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .admin-app--sidebar-collapsed .admin-sidebar {
-  flex-basis: 76px;
   width: 76px;
   padding-left: 10px;
   padding-right: 10px;
 }
 
 .admin-app--sidebar-collapsed .admin-main {
-  width: calc(100% - 76px);
-  margin-left: 76px;
-  max-width: calc(100% - 76px);
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
 }
 
 .admin-app--sidebar-collapsed .admin-sidebar__brand {
@@ -321,16 +326,12 @@ html.dark-mode .admin-app {
 }
 
 .admin-main {
-  flex: 1;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
-  width: calc(100% - 240px);
-  margin-left: 240px;
-  padding: 16px 36px 64px;
-  max-width: calc(100% - 240px);
+  margin: 0;
+  padding: 20px 32px 64px;
   box-sizing: border-box;
-  transition: margin-left 0.22s cubic-bezier(0.4, 0, 0.2, 1),
-              width 0.22s cubic-bezier(0.4, 0, 0.2, 1),
-              max-width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .admin-topbar {
@@ -1152,7 +1153,12 @@ html.dark-mode .admin-app {
 
 @media (max-width: 900px) {
   .admin-app {
+    padding-left: 0;
     flex-direction: column;
+  }
+
+  .admin-app--sidebar-collapsed {
+    padding-left: 0;
   }
 
   .admin-sidebar {
@@ -1595,10 +1601,22 @@ html.dark-mode .admin-app {
 /* ---------- 4 Unified Executive KPI Cards ---------- */
 .admin-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
   width: 100%;
   box-sizing: border-box;
+}
+
+@media (max-width: 1240px) {
+  .admin-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-kpi-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .admin-kpi-card {
@@ -1686,10 +1704,16 @@ html.dark-mode .admin-app {
 /* ---------- Analytics Grid (Charts & Visualizations) ---------- */
 .admin-analytics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
   width: 100%;
   box-sizing: border-box;
+}
+
+@media (max-width: 1100px) {
+  .admin-analytics-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .admin-chart-card {
@@ -2018,7 +2042,6 @@ html.dark-mode .admin-app {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-}
 
 .admin-career-count {
   font-size: 0.82rem;
@@ -2042,7 +2065,17 @@ html.dark-mode .admin-app {
 }
 
 .admin-bar-item--detailed {
-  grid-template-columns: minmax(280px, max-content) 1fr 85px;
+  grid-template-columns: minmax(160px, 240px) 1fr 75px;
+}
+
+@media (max-width: 700px) {
+  .admin-bar-item--detailed {
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+  .admin-bar-item--detailed .admin-bar-track {
+    grid-column: 1 / -1;
+  }
 }
 
 .admin-bar-label-group {

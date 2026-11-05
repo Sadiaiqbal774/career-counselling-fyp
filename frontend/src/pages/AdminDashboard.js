@@ -621,7 +621,6 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
   const summary = activitySummary(records);
   const maxTypeCount = summary.breakdown[0]?.[1] || 1;
   const maxTimelineCount = summary.maxTimelineTotal;
-  const maxCareerCount = summary.careerBreakdown[0]?.[1] || 1;
 
   const eventGradients = {
     user_registered: 'linear-gradient(90deg, #1f7a4d 0%, #2ecc71 100%)',
@@ -710,7 +709,6 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
   const assessmentPct = summary.total ? Math.round((summary.categories.assessments / summary.total) * 100) : 0;
   const chatbotPct = summary.total ? Math.round((summary.categories.chatbot / summary.total) * 100) : 0;
   const userPct = summary.total ? Math.round((summary.categories.user / summary.total) * 100) : 0;
-  const adminPct = summary.total ? Math.round((summary.categories.admin / summary.total) * 100) : 0;
 
   return (
     <div className="admin-reports-container">
