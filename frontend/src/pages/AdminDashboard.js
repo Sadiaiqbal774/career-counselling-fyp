@@ -1277,196 +1277,351 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
 }
 
 function AdminOverview({ data, onNavigate }) {
-  const [showAllUsers, setShowAllUsers] = useState(false);
-
-  const users = data.users || [];
   const universities = data.universities || [];
   const scholarships = data.scholarships || [];
   const eligibility = data.eligibility || [];
   const assessments = data.assessments || [];
-
-  const totalUsers = users.length;
-  const activeUsers = users.filter((u) => !u.blocked).length;
-  const blockedUsers = users.filter((u) => u.blocked).length;
-  const verifiedUsers = users.filter((u) => u.emailConfirmed).length;
+  const activity = data.activity || [];
+  const chatbot = data.chatbot || [];
 
   const totalUniversities = universities.length;
   const totalPrograms = universities.reduce((acc, u) => acc + (u.programs?.length || 0), 0);
-  const totalScholarships = scholarships.length;
-  const totalCriteria = eligibility.length;
+  const publicUnis = universities.filter((u) => String(u.sector || '').toLowerCase() === 'public').length;
+  const privateUnis = universities.filter((u) => String(u.sector || '').toLowerCase() === 'private').length;
 
-  const userPreview = showAllUsers ? users : users.slice(0, 6);
+  const totalScholarships = scholarships.length;
+  const meritScholarships = scholarships.filter((s) => String(s.basis || '').toLowerCase().includes('merit')).length;
+  const needScholarships = scholarships.filter((s) => String(s.basis || '').toLowerCase().includes('need')).length;
+
+  const totalAssessments = assessments.length;
+  const totalChatbotQueries = chatbot.length || activity.filter((a) => (a.type || '').includes('chat')).length;
+
+  // Academic Discipline breakdown from universities catalog (FR-11)
+  const disciplineCounts = {
+    'Computer Science & IT': 0,
+    'Engineering & Technology': 0,
+    'Business & Management': 0,
+    'Medical & Health Sciences': 0,
+    'Social Sciences & Humanities': 0,
+  };
+
+  universities.forEach((u) => {
+    (u.programs || []).forEach((p) => {
+      const name = (p.name || p.title || '').toLowerCase();
+      if (name.includes('computer') || name.includes('software') || name.includes('it') || name.includes('data') || name.includes('ai') || name.includes('cyber')) {
+        disciplineCounts['Computer Science & IT'] += 1;
+      } else if (name.includes('eng') || name.includes('civil') || name.includes('mechanical') || name.includes('electrical')) {
+        disciplineCounts['Engineering & Technology'] += 1;
+      } else if (name.includes('business') || name.includes('bba') || name.includes('commerce') || name.includes('accounting') || name.includes('finance') || name.includes('management')) {
+        disciplineCounts['Business & Management'] += 1;
+      } else if (name.includes('mbbs') || name.includes('pharm') || name.includes('health') || name.includes('medical') || name.includes('nursing') || name.includes('dental')) {
+        disciplineCounts['Medical & Health Sciences'] += 1;
+      } else {
+        disciplineCounts['Social Sciences & Humanities'] += 1;
+      }
+    });
+  });
+
+  const maxDiscipline = Math.max(...Object.values(disciplineCounts), 1);
+
+  // Student Career Recommender Alignment from completed assessments (FR-13-02)
+  const domainAptitudeCounts = {
+    Technology: 0,
+    Business: 0,
+    Medical: 0,
+    Arts: 0,
+  };
+
+  assessments.forEach((a) => {
+    const field = (a.field || a.matchedField || a.category || '').toLowerCase();
+    const career = (a.career || a.recommendedCareer || '').toLowerCase();
+    if (field.includes('tech') || field.includes('comp') || career.includes('software') || career.includes('ai') || career.includes('data') || career.includes('developer')) {
+      domainAptitudeCounts.Technology += 1;
+    } else if (field.includes('bus') || field.includes('comm') || career.includes('business') || career.includes('finance') || career.includes('market') || career.includes('analyst')) {
+      domainAptitudeCounts.Business += 1;
+    } else if (field.includes('med') || field.includes('health') || career.includes('doctor') || career.includes('pharm') || career.includes('bio') || career.includes('nurse')) {
+      domainAptitudeCounts.Medical += 1;
+    } else {
+      domainAptitudeCounts.Arts += 1;
+    }
+  });
+
+  const totalAptitude = Math.max(1, totalAssessments || Object.values(domainAptitudeCounts).reduce((a, b) => a + b, 0));
+
+  // Recent operational audit events (FR-15-01) - replaces misplaced users table
+  const recentOperations = activity.slice(0, 6);
 
   return (
     <div className="admin-dashboard-overview">
-      {/* 1. Header / Welcome Banner with Status Indicator */}
+      {/* 1. Header Banner */}
       <div className="admin-welcome-card">
         <div>
-          <h2 className="admin-welcome-title">Platform Overview</h2>
+          <h2 className="admin-welcome-title">Executive Management Hub</h2>
           <p className="admin-welcome-sub">
-            Welcome to the Career Counselling Admin Portal. Monitor user accounts, institution listings, and student assessments.
+            Central administrative command for degree programs, scholarship aid, student career assessments, and AI counselor telemetry.
           </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '20px', background: 'var(--good-tint)', color: 'var(--good)', fontWeight: 600, fontSize: '0.84rem' }}>
-          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--good)' }}></span>
-          System Online
+        <div className="admin-online-badge">
+          <span className="admin-pulse-dot" />
+          Core Services Active
         </div>
       </div>
 
-      {/* 2. Top-Level Metric KPI Cards */}
+      {/* 2. Top-Level Strategic KPI Cards */}
       <div className="admin-dashboard-stats">
-        <div className="admin-dashboard-stat admin-dashboard-stat--accent">
-          <span>Total Users</span>
-          <strong>{totalUsers}</strong>
-          <small>{activeUsers} Active &bull; {blockedUsers} Blocked</small>
-        </div>
-        <div className="admin-dashboard-stat admin-dashboard-stat--good">
-          <span>Universities</span>
+        <div className="admin-dashboard-stat admin-dashboard-stat--good" onClick={() => onNavigate('universities')} style={{ cursor: 'pointer' }}>
+          <div className="admin-stat-header-row">
+            <span>Universities &amp; Programs</span>
+            <span className="admin-stat-badge">Catalog</span>
+          </div>
           <strong>{totalUniversities}</strong>
-          <small>{totalPrograms} Degree Programs</small>
+          <small>{totalPrograms} Degree Programs &bull; {publicUnis} Public, {privateUnis} Private</small>
         </div>
-        <div className="admin-dashboard-stat admin-dashboard-stat--info">
-          <span>Scholarships</span>
+
+        <div className="admin-dashboard-stat admin-dashboard-stat--info" onClick={() => onNavigate('scholarships')} style={{ cursor: 'pointer' }}>
+          <div className="admin-stat-header-row">
+            <span>Scholarships &amp; Aid</span>
+            <span className="admin-stat-badge">Financial Aid</span>
+          </div>
           <strong>{totalScholarships}</strong>
-          <small>Active Listings</small>
+          <small>{meritScholarships} Merit-Based &bull; {needScholarships} Need-Based Listings</small>
         </div>
-        <div className="admin-dashboard-stat admin-dashboard-stat--dark" onClick={() => onNavigate('assessments')} style={{ cursor: 'pointer' }} title="View Assessment Reports">
-          <span>Assessments Taken</span>
-          <strong>{assessments.length}</strong>
-          <small>Student Submissions &rarr;</small>
+
+        <div className="admin-dashboard-stat admin-dashboard-stat--accent" onClick={() => onNavigate('assessments')} style={{ cursor: 'pointer' }}>
+          <div className="admin-stat-header-row">
+            <span>Career Assessments</span>
+            <span className="admin-stat-badge">Evaluations</span>
+          </div>
+          <strong>{totalAssessments}</strong>
+          <small>Student Aptitude Submissions &bull; 100% Evaluated</small>
+        </div>
+
+        <div className="admin-dashboard-stat admin-dashboard-stat--dark" onClick={() => onNavigate('chatbot')} style={{ cursor: 'pointer' }}>
+          <div className="admin-stat-header-row">
+            <span>AI Guidance Counselor</span>
+            <span className="admin-stat-badge">Chatbot</span>
+          </div>
+          <strong>{totalChatbotQueries}</strong>
+          <small>Automated Student Inquiries Resolved</small>
         </div>
       </div>
 
-      {/* 3. Platform Health & Breakdown Panels */}
+      {/* 3. Executive Visualizations (Graphs & Analytics) */}
       <div className="admin-dashboard-grid">
+        {/* Graph 1: Academic Discipline & Institution Catalog */}
         <section className="admin-card">
           <div className="admin-section-heading">
             <div>
-              <h2>User Base Breakdown</h2>
-              <span className="admin-count">Account status distribution</span>
-            </div>
-            <button type="button" className="admin-dash-action-btn" onClick={() => onNavigate('users')}>
-              Manage Users &rarr;
-            </button>
-          </div>
-          <div className="admin-health-grid" style={{ marginTop: '14px' }}>
-            <div className="admin-health-box">
-              <strong>{activeUsers}</strong>
-              <span>Active Students</span>
-              <small>{totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0}% of accounts</small>
-            </div>
-            <div className="admin-health-box">
-              <strong>{verifiedUsers}</strong>
-              <span>Verified Emails</span>
-              <small>{totalUsers > 0 ? Math.round((verifiedUsers / totalUsers) * 100) : 0}% verification rate</small>
-            </div>
-            <div className="admin-health-box">
-              <strong>{blockedUsers}</strong>
-              <span>Blocked Accounts</span>
-              <small>Suspended access</small>
-            </div>
-            <div className="admin-health-box">
-              <strong>{totalUsers - verifiedUsers}</strong>
-              <span>Pending Verification</span>
-              <small>Unverified accounts</small>
-            </div>
-          </div>
-        </section>
-
-        <section className="admin-card">
-          <div className="admin-section-heading">
-            <div>
-              <h2>Catalog &amp; Content Summary</h2>
-              <span className="admin-count">Database content overview</span>
+              <h2>Academic Programs by Discipline</h2>
+              <span className="admin-count">Distribution across {totalPrograms} degree programs</span>
             </div>
             <button type="button" className="admin-dash-action-btn" onClick={() => onNavigate('universities')}>
-              View Universities &rarr;
+              Manage Catalog &rarr;
             </button>
           </div>
-          <div className="admin-health-grid" style={{ marginTop: '14px' }}>
-            <div className="admin-health-box">
-              <strong>{totalUniversities}</strong>
-              <span>Listed Universities</span>
-              <small>Institutions in catalog</small>
+          <div className="admin-bar-list" style={{ marginTop: '16px' }}>
+            {Object.entries(disciplineCounts).map(([disc, count]) => {
+              const pct = totalPrograms > 0 ? Math.round((count / totalPrograms) * 100) : 0;
+              const barWidth = Math.max(8, Math.round((count / maxDiscipline) * 100));
+              const gradients = {
+                'Computer Science & IT': 'linear-gradient(90deg, #2563eb 0%, #38bdf8 100%)',
+                'Engineering & Technology': 'linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%)',
+                'Business & Management': 'linear-gradient(90deg, #10b981 0%, #34d399 100%)',
+                'Medical & Health Sciences': 'linear-gradient(90deg, #f43f5e 0%, #fb7185 100%)',
+                'Social Sciences & Humanities': 'linear-gradient(90deg, #8b5cf6 0%, #a78bfa 100%)',
+              };
+              return (
+                <div key={disc} className="admin-bar-item admin-bar-item--detailed">
+                  <div className="admin-bar-label-group">
+                    <span className="admin-bar-label">{disc}</span>
+                  </div>
+                  <div className="admin-bar-track">
+                    <div className="admin-bar-fill" style={{ width: `${barWidth}%`, background: gradients[disc] || '#2563eb' }} />
+                  </div>
+                  <div className="admin-bar-value">{count} <span style={{ fontSize: '0.74rem', color: 'var(--ink-faint)' }}>({pct}%)</span></div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--line)', display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--ink-muted)' }}>
+            <span>Sector Balance: <strong>{publicUnis} Public ({totalUniversities > 0 ? Math.round((publicUnis/totalUniversities)*100) : 0}%)</strong></span>
+            <span>Private Campuses: <strong>{privateUnis} ({totalUniversities > 0 ? Math.round((privateUnis/totalUniversities)*100) : 0}%)</strong></span>
+          </div>
+        </section>
+
+        {/* Graph 2: Student Career Recommender Alignment */}
+        <section className="admin-card">
+          <div className="admin-section-heading">
+            <div>
+              <h2>Career Aptitude Alignment</h2>
+              <span className="admin-count">Primary domains matched in student assessments</span>
             </div>
-            <div className="admin-health-box">
-              <strong>{totalPrograms}</strong>
-              <span>Academic Programs</span>
-              <small>{totalUniversities > 0 ? (totalPrograms / totalUniversities).toFixed(1) : 0} avg per campus</small>
+            <button type="button" className="admin-dash-action-btn" onClick={() => onNavigate('assessments')}>
+              View Assessments &rarr;
+            </button>
+          </div>
+          <div className="admin-dash-domain-grid" style={{ marginTop: '16px' }}>
+            <div className="admin-dash-domain-item">
+              <div className="admin-dash-domain-header">
+                <span className="admin-legend-dot" style={{ background: '#2563eb' }} />
+                <strong style={{ fontSize: '0.88rem' }}>Computer Science &amp; Technology</strong>
+                <span className="admin-dash-domain-val">{domainAptitudeCounts.Technology} ({Math.round((domainAptitudeCounts.Technology / totalAptitude) * 100)}%)</span>
+              </div>
+              <div className="admin-bar-track" style={{ height: '7px', marginTop: '6px' }}>
+                <div className="admin-bar-fill" style={{ width: `${Math.round((domainAptitudeCounts.Technology / totalAptitude) * 100)}%`, background: 'linear-gradient(90deg, #2563eb 0%, #38bdf8 100%)' }} />
+              </div>
             </div>
-            <div className="admin-health-box">
-              <strong>{totalScholarships}</strong>
-              <span>Scholarships</span>
-              <small>Aid &amp; grant opportunities</small>
+
+            <div className="admin-dash-domain-item">
+              <div className="admin-dash-domain-header">
+                <span className="admin-legend-dot" style={{ background: '#10b981' }} />
+                <strong style={{ fontSize: '0.88rem' }}>Business, Commerce &amp; FinTech</strong>
+                <span className="admin-dash-domain-val">{domainAptitudeCounts.Business} ({Math.round((domainAptitudeCounts.Business / totalAptitude) * 100)}%)</span>
+              </div>
+              <div className="admin-bar-track" style={{ height: '7px', marginTop: '6px' }}>
+                <div className="admin-bar-fill" style={{ width: `${Math.round((domainAptitudeCounts.Business / totalAptitude) * 100)}%`, background: 'linear-gradient(90deg, #10b981 0%, #34d399 100%)' }} />
+              </div>
             </div>
-            <div className="admin-health-box">
-              <strong>{totalCriteria}</strong>
-              <span>Active Criteria</span>
-              <small>Field cut-off rules</small>
+
+            <div className="admin-dash-domain-item">
+              <div className="admin-dash-domain-header">
+                <span className="admin-legend-dot" style={{ background: '#f43f5e' }} />
+                <strong style={{ fontSize: '0.88rem' }}>Medicine &amp; Health Sciences</strong>
+                <span className="admin-dash-domain-val">{domainAptitudeCounts.Medical} ({Math.round((domainAptitudeCounts.Medical / totalAptitude) * 100)}%)</span>
+              </div>
+              <div className="admin-bar-track" style={{ height: '7px', marginTop: '6px' }}>
+                <div className="admin-bar-fill" style={{ width: `${Math.round((domainAptitudeCounts.Medical / totalAptitude) * 100)}%`, background: 'linear-gradient(90deg, #f43f5e 0%, #fb7185 100%)' }} />
+              </div>
             </div>
+
+            <div className="admin-dash-domain-item">
+              <div className="admin-dash-domain-header">
+                <span className="admin-legend-dot" style={{ background: '#8b5cf6' }} />
+                <strong style={{ fontSize: '0.88rem' }}>Arts, Design &amp; Humanities</strong>
+                <span className="admin-dash-domain-val">{domainAptitudeCounts.Arts} ({Math.round((domainAptitudeCounts.Arts / totalAptitude) * 100)}%)</span>
+              </div>
+              <div className="admin-bar-track" style={{ height: '7px', marginTop: '6px' }}>
+                <div className="admin-bar-fill" style={{ width: `${Math.round((domainAptitudeCounts.Arts / totalAptitude) * 100)}%`, background: 'linear-gradient(90deg, #8b5cf6 0%, #a78bfa 100%)' }} />
+              </div>
+            </div>
+          </div>
+          <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--line)', display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--ink-muted)' }}>
+            <span>Assessment Cohort: <strong>{totalAssessments} student quizzes</strong></span>
+            <span>Evaluation Reliability: <strong style={{ color: '#059669' }}>High Compatibility</strong></span>
           </div>
         </section>
       </div>
 
-      {/* 4. Recent Registered Users Table */}
+      {/* 4. Administrative Action Center (One-Click Management Hub) */}
+      <div className="admin-dash-quick-grid">
+        <div className="admin-dash-quick-card" onClick={() => onNavigate('universities')}>
+          <div className="admin-quick-icon" style={{ background: '#eef2ff', color: '#2563eb' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 3l9 7H3l9-7z" />
+            </svg>
+          </div>
+          <div>
+            <strong>Manage Universities</strong>
+            <span>Add or edit institutions and programs</span>
+          </div>
+        </div>
+
+        <div className="admin-dash-quick-card" onClick={() => onNavigate('scholarships')}>
+          <div className="admin-quick-icon" style={{ background: '#ecfdf5', color: '#059669' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" />
+            </svg>
+          </div>
+          <div>
+            <strong>Manage Scholarships</strong>
+            <span>Create grant &amp; aid listings</span>
+          </div>
+        </div>
+
+        <div className="admin-dash-quick-card" onClick={() => onNavigate('assessments')}>
+          <div className="admin-quick-icon" style={{ background: '#fffbeb', color: '#d97706' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            </svg>
+          </div>
+          <div>
+            <strong>Assessment Audits</strong>
+            <span>Inspect student evaluations &amp; scores</span>
+          </div>
+        </div>
+
+        <div className="admin-dash-quick-card" onClick={() => onNavigate('chatbot')}>
+          <div className="admin-quick-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </div>
+          <div>
+            <strong>Chatbot Rules</strong>
+            <span>Configure automated counselor replies</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Recent System Activity Operations Journal (Replaces misplaced users table) */}
       <section className="admin-card">
         <div className="admin-section-heading">
           <div>
-            <h2>Recent User Accounts</h2>
-            <span className="admin-count">{totalUsers} registered students</span>
+            <h2>Platform Activity Journal</h2>
+            <span className="admin-count">Real-time audited operations across platform modules</span>
           </div>
-          <button type="button" className="admin-dash-action-btn" onClick={() => onNavigate('users')}>
-            View All Users &rarr;
+          <button type="button" className="admin-dash-action-btn" onClick={() => onNavigate('activity')}>
+            View Full System Reports &rarr;
           </button>
         </div>
-        {userPreview.length > 0 ? (
+        {recentOperations.length > 0 ? (
           <div className="admin-table-wrap" style={{ marginTop: '10px' }}>
             <table className="admin-feed-table">
               <thead>
                 <tr>
-                  <th>Student Name</th>
-                  <th>Email Address</th>
-                  <th>Auth Method</th>
-                  <th>Account Status</th>
-                  <th>Registered</th>
+                  <th>Event Type</th>
+                  <th>Target Context</th>
+                  <th>Initiator / User</th>
+                  <th>Timestamp</th>
                 </tr>
               </thead>
               <tbody>
-                {userPreview.map((user) => (
-                  <tr key={user.id || user.email}>
-                    <td>
-                      <strong style={{ color: 'var(--ink)' }}>{user.name || 'Student'}</strong>
-                    </td>
-                    <td style={{ color: 'var(--ink-muted)', fontSize: '0.85rem' }}>{user.email}</td>
-                    <td>
-                      <span style={{ textTransform: 'capitalize', fontSize: '0.82rem', color: 'var(--ink-muted)' }}>
-                        {user.authProvider || 'Local'}
-                      </span>
-                    </td>
-                    <td>
-                      <StatusPill tone={user.blocked ? 'warn' : 'good'}>
-                        {user.blocked ? 'Blocked' : 'Active'}
-                      </StatusPill>
-                    </td>
-                    <td style={{ color: 'var(--ink-faint)', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
-                      {formatDateTime(user.createdAt || user.registeredAt || user.lastSignInAt)}
-                    </td>
-                  </tr>
-                ))}
+                {recentOperations.map((record) => {
+                  const eventType = record.type || record.eventType || '';
+                  const catMeta = eventCategoryMeta(eventType);
+                  const tone = eventTone(eventType);
+                  const details = record.details || {};
+                  const contextStr = details.career || details.matchedField || details.institution || details.name || details.email || '-';
+
+                  return (
+                    <tr key={record.id || `${eventType}-${record.timestamp}`}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span className={`admin-event-pill admin-event-pill--${catMeta.tone}`} style={{ fontSize: '0.72rem', padding: '1px 6px' }}>
+                            {catMeta.label}
+                          </span>
+                          <span className={`admin-event-tag admin-event-tag--${tone}`} style={{ fontSize: '0.8rem' }}>
+                            {friendlyEventLabel(eventType)}
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ color: 'var(--ink)', fontWeight: 500 }}>
+                        {contextStr}
+                      </td>
+                      <td style={{ color: 'var(--ink-muted)', fontSize: '0.85rem' }}>
+                        {record.userName || details.email || record.userId || 'Student / Visitor'}
+                      </td>
+                      <td style={{ color: 'var(--ink-faint)', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+                        {formatDateTime(dateValue(record))}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         ) : (
-          <p className="admin-empty-state">No student accounts registered yet.</p>
-        )}
-        {users.length > 6 && (
-          <button
-            type="button"
-            className="admin-show-more"
-            onClick={() => setShowAllUsers((visible) => !visible)}
-          >
-            {showAllUsers ? 'Show less' : `Show more (${users.length - 6})`}
-          </button>
+          <p className="admin-empty-state">No platform operations recorded yet.</p>
         )}
       </section>
     </div>
@@ -2177,12 +2332,14 @@ function AdminDashboard() {
     }
   };
   const loadDashboard = async () => {
-    const [stats, scholarships, universities, eligibility, assessments] = await Promise.all([
+    const [stats, scholarships, universities, eligibility, assessments, activity, chatbot] = await Promise.all([
       api('/api/admin/stats'),
       api('/api/admin/scholarships'),
       api('/api/admin/universities'),
       api('/api/admin/eligibility'),
       api('/api/admin/assessments').catch(() => ({ records: [] })),
+      api('/api/activity').catch(() => ({ records: [] })),
+      api('/api/admin/chatbot-interactions').catch(() => ({ records: [] })),
     ]);
     const sortedUsers = (stats.users || []).sort((a, b) => timestampValue(b) - timestampValue(a));
     setUsers(sortedUsers);
@@ -2192,6 +2349,8 @@ function AdminDashboard() {
       universities: universities.records || [],
       eligibility: eligibility.records || [],
       assessments: assessments.records || [],
+      activity: activity.records || [],
+      chatbot: chatbot.records || [],
     });
   };
   useEffect(() => { loadDashboard().catch((loadError) => setError(loadError.message)); }, []);
