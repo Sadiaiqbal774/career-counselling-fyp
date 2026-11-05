@@ -613,6 +613,63 @@ function eventCategoryMeta(type) {
   return { key: 'other', label: 'System Event', tone: 'login' };
 }
 
+// Modern SVG Donut Chart for Discipline Distribution
+function DonutChart({ data, total }) {
+  const size = 150;
+  const strokeWidth = 18;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const validTotal = Math.max(1, total || 0);
+
+  let accumulatedOffset = 0;
+
+  return (
+    <div className="admin-donut-wrapper">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="admin-donut-svg">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="var(--line, #e2e8f0)"
+          strokeWidth={strokeWidth}
+        />
+        {data.map((item) => {
+          const pct = item.count / validTotal;
+          const strokeDash = pct * circumference;
+          const strokeGap = circumference - strokeDash;
+          const currentOffset = accumulatedOffset;
+          accumulatedOffset += strokeDash;
+
+          if (item.count === 0) return null;
+
+          return (
+            <circle
+              key={item.name}
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke={item.color}
+              strokeWidth={strokeWidth}
+              strokeDasharray={`${strokeDash} ${strokeGap}`}
+              strokeDashoffset={-currentOffset}
+              transform={`rotate(-90 ${size / 2} ${size / 2})`}
+              className="admin-donut-slice"
+            >
+              <title>{`${item.name}: ${item.count} students (${Math.round(pct * 100)}%)`}</title>
+            </circle>
+          );
+        })}
+      </svg>
+      <div className="admin-donut-center">
+        <span className="admin-donut-center-value">{total}</span>
+        <span className="admin-donut-center-label">STUDENTS</span>
+      </div>
+    </div>
+  );
+}
+
 function SystemReportsView({ records, users = [], showHistory = true }) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [visibleHistoryCount, setVisibleHistoryCount] = useState(10);
@@ -623,14 +680,14 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
   const maxTimelineCount = summary.maxTimelineTotal;
 
   const eventGradients = {
-    user_registered: 'linear-gradient(90deg, #1f7a4d 0%, #2ecc71 100%)',
-    user_login: 'linear-gradient(90deg, #2457a8 0%, #3498db 100%)',
-    assessment_completed: 'linear-gradient(90deg, #b8863a 0%, #f39c12 100%)',
-    chatbot_interaction: 'linear-gradient(90deg, #2563eb 0%, #60a5fa 100%)',
-    admin_user_blocked: 'linear-gradient(90deg, #dc2626 0%, #ef4444 100%)',
-    admin_user_unblocked: 'linear-gradient(90deg, #059669 0%, #10b981 100%)',
-    admin_user_updated: 'linear-gradient(90deg, #0284c7 0%, #38bdf8 100%)',
-    admin_user_deleted: 'linear-gradient(90deg, #b91c1c 0%, #dc2626 100%)',
+    user_registered: 'linear-gradient(90deg, #10b981 0%, #059669 100%)',
+    user_login: 'linear-gradient(90deg, #0284c7 0%, #2563eb 100%)',
+    assessment_completed: 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)',
+    chatbot_interaction: 'linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%)',
+    admin_user_blocked: 'linear-gradient(90deg, #dc2626 0%, #b91c1c 100%)',
+    admin_user_unblocked: 'linear-gradient(90deg, #10b981 0%, #059669 100%)',
+    admin_user_updated: 'linear-gradient(90deg, #0284c7 0%, #0369a1 100%)',
+    admin_user_deleted: 'linear-gradient(90deg, #b91c1c 0%, #991b1b 100%)',
   };
 
   const domainConfig = {
@@ -710,20 +767,27 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
   const chatbotPct = summary.total ? Math.round((summary.categories.chatbot / summary.total) * 100) : 0;
   const userPct = summary.total ? Math.round((summary.categories.user / summary.total) * 100) : 0;
 
+  const donutData = [
+    { name: 'Computer Science & Tech', count: summary.domainCounts.Technology || 0, color: '#2563eb' },
+    { name: 'Business & Commerce', count: summary.domainCounts.Business || 0, color: '#10b981' },
+    { name: 'Medicine & Health', count: summary.domainCounts.Medical || 0, color: '#f43f5e' },
+    { name: 'Arts & Humanities', count: summary.domainCounts.Arts || 0, color: '#8b5cf6' },
+  ];
+
   return (
     <div className="admin-reports-container">
-      {/* 4 Unified Executive KPI Cards — FR-15-01: Monitor System Usage, FR-15-02: Usage Reporting */}
+      {/* 4 Unified Executive KPI Cards */}
       <div className="admin-kpi-grid">
         {/* Card 1: Total Operations & Audit Logs */}
         <div className="admin-kpi-card">
           <div className="admin-kpi-header">
             <div className="admin-kpi-icon-wrap" style={{ background: '#eef2ff', color: '#2563eb' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
               </svg>
             </div>
-            <span className="admin-kpi-tag" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>
-              ● Live Telemetry
+            <span className="admin-kpi-tag admin-kpi-tag--live">
+              <span className="admin-pulse-dot" /> Live Telemetry
             </span>
           </div>
           <div>
@@ -732,23 +796,23 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
               <span className="admin-kpi-share" style={{ color: '#2563eb' }}>100% Volume</span>
             </div>
             <div className="admin-kpi-title">Total System Operations</div>
-            <div className="admin-kpi-desc">Total lifetime audit operations recorded across all modules</div>
+            <div className="admin-kpi-desc">Total audited actions recorded across all platform modules</div>
           </div>
           <div className="admin-bar-track" style={{ height: '6px' }}>
             <div className="admin-bar-fill" style={{ width: '100%', background: 'linear-gradient(90deg, #2563eb 0%, #38bdf8 100%)' }} />
           </div>
         </div>
 
-        {/* Card 2: Student Assessments (FR-13) */}
+        {/* Card 2: Student Assessments */}
         <div className="admin-kpi-card">
           <div className="admin-kpi-header">
             <div className="admin-kpi-icon-wrap" style={{ background: '#fffbeb', color: '#f59e0b' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
               </svg>
             </div>
             <span className="admin-kpi-tag" style={{ background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' }}>
-              FR-13 Assessments
+              Aptitude &amp; Quizzes
             </span>
           </div>
           <div>
@@ -757,23 +821,23 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
               <span className="admin-kpi-share" style={{ color: '#d97706' }}>{assessmentPct}% Share</span>
             </div>
             <div className="admin-kpi-title">Career Assessments</div>
-            <div className="admin-kpi-desc">Aptitude evaluations &amp; career quiz submissions by students</div>
+            <div className="admin-kpi-desc">Student aptitude evaluations &amp; career recommendations</div>
           </div>
           <div className="admin-bar-track" style={{ height: '6px' }}>
             <div className="admin-bar-fill" style={{ width: `${assessmentPct}%`, background: 'linear-gradient(90deg, #f59e0b 0%, #ea580c 100%)' }} />
           </div>
         </div>
 
-        {/* Card 3: AI Assistant Inquiries (FR-14) */}
+        {/* Card 3: AI Assistant Inquiries */}
         <div className="admin-kpi-card">
           <div className="admin-kpi-header">
             <div className="admin-kpi-icon-wrap" style={{ background: '#eff6ff', color: '#3b82f6' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
             </div>
             <span className="admin-kpi-tag" style={{ background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe' }}>
-              FR-14 Chatbot
+              AI Inquiries
             </span>
           </div>
           <div>
@@ -782,23 +846,23 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
               <span className="admin-kpi-share" style={{ color: '#2563eb' }}>{chatbotPct}% Share</span>
             </div>
             <div className="admin-kpi-title">Assistant Inquiries</div>
-            <div className="admin-kpi-desc">Student guidance questions answered by the AI counselor</div>
+            <div className="admin-kpi-desc">Student guidance queries resolved by automated counselor</div>
           </div>
           <div className="admin-bar-track" style={{ height: '6px' }}>
             <div className="admin-bar-fill" style={{ width: `${chatbotPct}%`, background: 'linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%)' }} />
           </div>
         </div>
 
-        {/* Card 4: Registered Students & Sign-ins (FR-15) */}
+        {/* Card 4: Registered Students & Sign-ins */}
         <div className="admin-kpi-card">
           <div className="admin-kpi-header">
             <div className="admin-kpi-icon-wrap" style={{ background: '#f0fdf4', color: '#10b981' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
             </div>
             <span className="admin-kpi-tag" style={{ background: '#f0fdf4', color: '#059669', border: '1px solid #bbf7d0' }}>
-              Users &amp; Auth
+              User Engagements
             </span>
           </div>
           <div>
@@ -821,28 +885,58 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
         <div className="admin-horizon-chart-card">
           <div className="admin-chart-card-header">
             <div className="admin-chart-card-title-row">
-              <h3>Daily Activity Timeline Horizon</h3>
+              <div>
+                <h3>System Operations Horizon</h3>
+                <p className="admin-chart-card-subtitle">
+                  Rolling 7-day audited platform activity and student interaction telemetry
+                </p>
+              </div>
               <div className="admin-timeline-legend">
-                <span><span className="admin-legend-dot admin-legend-dot--assessment" /> Assessments ({summary.categories.assessments})</span>
-                <span><span className="admin-legend-dot admin-legend-dot--chatbot" /> Chatbot ({summary.categories.chatbot})</span>
-                <span><span className="admin-legend-dot admin-legend-dot--user" /> Users ({summary.categories.user})</span>
-                <span><span className="admin-legend-dot admin-legend-dot--admin" /> Admin ({summary.categories.admin})</span>
+                <span className="admin-legend-item">
+                  <span className="admin-legend-dot admin-legend-dot--assessment" /> Assessments ({summary.categories.assessments})
+                </span>
+                <span className="admin-legend-item">
+                  <span className="admin-legend-dot admin-legend-dot--chatbot" /> Chatbot ({summary.categories.chatbot})
+                </span>
+                <span className="admin-legend-item">
+                  <span className="admin-legend-dot admin-legend-dot--user" /> Logins ({summary.categories.user})
+                </span>
+                <span className="admin-legend-item">
+                  <span className="admin-legend-dot admin-legend-dot--admin" /> Admin ({summary.categories.admin})
+                </span>
               </div>
             </div>
-            <p className="admin-chart-card-subtitle">
-              System operations over the past 7 days. Hover any day to inspect the exact activity composition.
-            </p>
+          </div>
+
+          {/* Quick telemetry chips bar */}
+          <div className="admin-horizon-telemetry-bar">
+            <div className="admin-telemetry-chip">
+              <span className="admin-telemetry-label">7-Day Volume:</span>
+              <strong className="admin-telemetry-val">{summary.totalVolume7Days} ops</strong>
+            </div>
+            <div className="admin-telemetry-chip">
+              <span className="admin-telemetry-label">Daily Average:</span>
+              <strong className="admin-telemetry-val">{(summary.totalVolume7Days / 7).toFixed(1)} / day</strong>
+            </div>
+            <div className="admin-telemetry-chip">
+              <span className="admin-telemetry-label">Peak Volume:</span>
+              <strong className="admin-telemetry-val">{summary.maxTimelineTotal} ops</strong>
+            </div>
+            <div className="admin-telemetry-chip">
+              <span className="admin-telemetry-label">Audit:</span>
+              <strong className="admin-telemetry-val" style={{ color: '#059669' }}>100% Verified</strong>
+            </div>
           </div>
 
           <div className="admin-horizon-wrap">
             {summary.timeline.map((item) => {
               const heightPct = item.total > 0
-                ? Math.max(18, Math.round((item.total / maxTimelineCount) * 100))
+                ? Math.max(20, Math.round((item.total / maxTimelineCount) * 100))
                 : 0;
               const formattedDate = formatShortDate(item.day);
               const weekday = formatDayWeekday(item.day);
               const isHovered = hoveredDay === item.day;
-              const tooltipText = `${formattedDate} (${item.day}): ${item.total} events — ${item.breakdown.assessments} assessments, ${item.breakdown.chatbot} chat queries, ${item.breakdown.user} user logins, ${item.breakdown.admin} admin actions`;
+              const tooltipText = `${weekday}, ${formattedDate}: ${item.total} events (${item.breakdown.assessments} assessments, ${item.breakdown.chatbot} chat queries, ${item.breakdown.user} logins, ${item.breakdown.admin} admin)`;
 
               return (
                 <div
@@ -854,45 +948,49 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
                 >
                   {item.total > 0 ? (
                     <span className="admin-horizon-count">{item.total}</span>
-                  ) : null}
-
-                  {item.total > 0 ? (
-                    <div
-                      className="admin-horizon-bar-track"
-                      style={{ height: `${heightPct}%` }}
-                    >
-                      {item.breakdown.admin > 0 && (
-                        <div
-                          className="admin-bar-segment admin-bar-segment--admin"
-                          style={{ flex: item.breakdown.admin }}
-                          title={`Admin: ${item.breakdown.admin}`}
-                        />
-                      )}
-                      {item.breakdown.user > 0 && (
-                        <div
-                          className="admin-bar-segment admin-bar-segment--user"
-                          style={{ flex: item.breakdown.user }}
-                          title={`Users: ${item.breakdown.user}`}
-                        />
-                      )}
-                      {item.breakdown.chatbot > 0 && (
-                        <div
-                          className="admin-bar-segment admin-bar-segment--chatbot"
-                          style={{ flex: item.breakdown.chatbot }}
-                          title={`Chatbot: ${item.breakdown.chatbot}`}
-                        />
-                      )}
-                      {item.breakdown.assessments > 0 && (
-                        <div
-                          className="admin-bar-segment admin-bar-segment--assessment"
-                          style={{ flex: item.breakdown.assessments }}
-                          title={`Assessments: ${item.breakdown.assessments}`}
-                        />
-                      )}
-                    </div>
                   ) : (
-                    <div className="admin-horizon-zero" title="No operations recorded on this day" />
+                    <span className="admin-horizon-count admin-horizon-count--zero">0</span>
                   )}
+
+                  <div className="admin-horizon-col-track">
+                    {item.total > 0 ? (
+                      <div
+                        className="admin-horizon-bar-track"
+                        style={{ height: `${heightPct}%` }}
+                      >
+                        {item.breakdown.admin > 0 && (
+                          <div
+                            className="admin-bar-segment admin-bar-segment--admin"
+                            style={{ flex: item.breakdown.admin }}
+                            title={`Admin: ${item.breakdown.admin}`}
+                          />
+                        )}
+                        {item.breakdown.user > 0 && (
+                          <div
+                            className="admin-bar-segment admin-bar-segment--user"
+                            style={{ flex: item.breakdown.user }}
+                            title={`User Logins: ${item.breakdown.user}`}
+                          />
+                        )}
+                        {item.breakdown.chatbot > 0 && (
+                          <div
+                            className="admin-bar-segment admin-bar-segment--chatbot"
+                            style={{ flex: item.breakdown.chatbot }}
+                            title={`Chatbot: ${item.breakdown.chatbot}`}
+                          />
+                        )}
+                        {item.breakdown.assessments > 0 && (
+                          <div
+                            className="admin-bar-segment admin-bar-segment--assessment"
+                            style={{ flex: item.breakdown.assessments }}
+                            title={`Assessments: ${item.breakdown.assessments}`}
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="admin-horizon-zero" />
+                    )}
+                  </div>
 
                   <span className={`admin-horizon-day-name ${item.isToday ? 'admin-horizon-day-name--today' : ''}`}>
                     {item.isToday ? 'Today' : weekday}
@@ -903,95 +1001,117 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
             })}
           </div>
 
-          {hoveredDay ? (
-            <div className="admin-timeline-hover-info">
-              {(() => {
-                const found = summary.timeline.find((t) => t.day === hoveredDay);
-                if (!found) return null;
-                const weekday = formatDayWeekday(found.day);
-                const formatted = formatShortDate(found.day);
-                return (
-                  <span>
-                    <strong>{found.isToday ? 'Today' : weekday}, {formatted}:</strong> {found.total} total system operations &mdash;{' '}
-                    <span style={{ color: '#d97706', fontWeight: 600 }}>{found.breakdown.assessments} assessments</span>,{' '}
-                    <span style={{ color: '#2563eb', fontWeight: 600 }}>{found.breakdown.chatbot} chat queries</span>,{' '}
-                    <span style={{ color: '#059669', fontWeight: 600 }}>{found.breakdown.user} user logins</span>,{' '}
-                    <span style={{ color: '#8b5cf6', fontWeight: 600 }}>{found.breakdown.admin} admin actions</span>.
-                  </span>
-                );
-              })()}
-            </div>
-          ) : (
-            <div style={{ display: 'flex', gap: '16px', marginTop: '14px', flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--ink-muted)' }}>
-              <span>7-Day Volume: <strong style={{ color: 'var(--ink)' }}>{summary.totalVolume7Days} ops</strong></span>
-              <span>Peak Day: <strong style={{ color: 'var(--ink)' }}>{summary.maxTimelineTotal} ops</strong></span>
-              <span>Audit Trail: <strong style={{ color: '#059669' }}>100% Verified</strong></span>
-            </div>
-          )}
+          <div className="admin-timeline-hover-info">
+            {hoveredDay ? (() => {
+              const found = summary.timeline.find((t) => t.day === hoveredDay);
+              if (!found) return null;
+              const weekday = formatDayWeekday(found.day);
+              const formatted = formatShortDate(found.day);
+              return (
+                <span>
+                  <strong>{found.isToday ? 'Today' : weekday}, {formatted}:</strong> {found.total} total operations &mdash;{' '}
+                  <span style={{ color: '#d97706', fontWeight: 600 }}>{found.breakdown.assessments} assessments</span>,{' '}
+                  <span style={{ color: '#2563eb', fontWeight: 600 }}>{found.breakdown.chatbot} chat queries</span>,{' '}
+                  <span style={{ color: '#059669', fontWeight: 600 }}>{found.breakdown.user} logins</span>,{' '}
+                  <span style={{ color: '#8b5cf6', fontWeight: 600 }}>{found.breakdown.admin} admin actions</span>.
+                </span>
+              );
+            })() : (
+              <span style={{ color: 'var(--ink-muted)' }}>
+                Hover over any day column above to inspect its exact operational composition.
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Chart 2: Student Career Pathways & Domain Distribution (FR-13-02 / FR-15-01) */}
+        {/* Chart 2: Student Career Pathways & Domain Distribution */}
         <div className="admin-chart-card">
           <div className="admin-chart-card-header">
             <div className="admin-chart-card-title-row">
-              <h3>Career Pathways &amp; Aptitude Distribution</h3>
+              <div>
+                <h3>Career Pathways &amp; Aptitude Distribution</h3>
+                <p className="admin-chart-card-subtitle">
+                  Student aptitude alignment across primary academic disciplines and recommended tracks
+                </p>
+              </div>
               <span className="admin-kpi-tag" style={{ background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe' }}>
-                FR-13 Analysis
+                Aptitude Analytics
               </span>
             </div>
-            <p className="admin-chart-card-subtitle">
-              Aptitude alignment and primary career categories matched across student quiz evaluations.
-            </p>
           </div>
 
-          <div className="admin-domain-list">
-            {Object.entries(domainConfig).map(([key, config]) => {
-              const count = summary.domainCounts[key] || 0;
-              const pct = totalAssessments > 0 ? ((count / totalAssessments) * 100).toFixed(1) : 0;
-              const barWidth = Math.max(count > 0 ? 12 : 2, Math.round((count / Math.max(1, totalAssessments)) * 100));
+          {/* Donut Chart + Domain Cards Split */}
+          <div className="admin-domain-layout">
+            <div className="admin-donut-container">
+              <DonutChart data={donutData} total={totalAssessments} />
+              <div className="admin-donut-legend">
+                {donutData.map((d) => (
+                  <div key={d.name} className="admin-donut-legend-item">
+                    <span className="admin-donut-legend-dot" style={{ background: d.color }} />
+                    <span className="admin-donut-legend-name">{d.name}</span>
+                    <strong className="admin-donut-legend-count">{d.count}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-              return (
-                <div key={key} className="admin-domain-card">
-                  <div className="admin-domain-header">
-                    <div className="admin-domain-identity">
-                      <span className="admin-domain-icon" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
-                        {config.icon}
-                      </span>
-                      <strong className="admin-domain-title">{config.title}</strong>
+            <div className="admin-domain-list">
+              {Object.entries(domainConfig).map(([key, config]) => {
+                const count = summary.domainCounts[key] || 0;
+                const pct = totalAssessments > 0 ? ((count / totalAssessments) * 100).toFixed(1) : 0;
+                const barWidth = Math.max(count > 0 ? 12 : 2, Math.round((count / Math.max(1, totalAssessments)) * 100));
+
+                return (
+                  <div key={key} className="admin-domain-card">
+                    <div className="admin-domain-header">
+                      <div className="admin-domain-identity">
+                        <span className="admin-domain-icon" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
+                          {config.icon}
+                        </span>
+                        <strong className="admin-domain-title">{config.title}</strong>
+                      </div>
+                      <div className="admin-domain-metrics">
+                        <span className="admin-domain-students">{count} students</span>
+                        <span className="admin-domain-pct">({pct}%)</span>
+                      </div>
                     </div>
-                    <div className="admin-domain-metrics">
-                      <span className="admin-domain-students">{count} students</span>
-                      <span className="admin-domain-pct">({pct}%)</span>
+                    <div className="admin-bar-track" style={{ height: '7px' }}>
+                      <div className="admin-bar-fill" style={{ width: `${barWidth}%`, background: config.gradient }} />
+                    </div>
+                    <div className="admin-domain-subpaths">
+                      <span style={{ fontWeight: 600, color: 'var(--ink-faint)' }}>Key Paths:</span> {config.subpaths}
                     </div>
                   </div>
-                  <div className="admin-bar-track" style={{ height: '8px' }}>
-                    <div className="admin-bar-fill" style={{ width: `${barWidth}%`, background: config.gradient }} />
-                  </div>
-                  <div className="admin-domain-subpaths">
-                    <span style={{ fontWeight: 600, color: 'var(--ink-faint)' }}>Matched Careers:</span> {config.subpaths}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
-          {/* Specific Top Career Titles */}
+          {/* Specific Top Career Titles Leaderboard */}
           {summary.careerBreakdown.length > 0 && (
-            <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--line)' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--ink)', display: 'block', marginBottom: '8px' }}>
-                Top Recommended Roles:
-              </span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div className="admin-top-roles-section">
+              <div className="admin-top-roles-header">
+                <span className="admin-top-roles-title">Top Recommended Career Targets</span>
+                <span className="admin-top-roles-badge">Ranked by Match Frequency</span>
+              </div>
+              <div className="admin-top-roles-grid">
                 {summary.careerBreakdown.slice(0, 3).map(([career, count], index) => {
-                  const pct = ((count / totalAssessments) * 100).toFixed(0);
+                  const pct = totalAssessments > 0 ? ((count / totalAssessments) * 100).toFixed(0) : 0;
+                  const rankColors = [
+                    { bg: '#fef3c7', text: '#b45309', border: '#fde68a', label: '#1' },
+                    { bg: '#f1f5f9', text: '#475569', border: '#cbd5e1', label: '#2' },
+                    { bg: '#ffedd5', text: '#c2410c', border: '#fed7aa', label: '#3' },
+                  ];
+                  const rank = rankColors[index] || rankColors[1];
                   return (
-                    <div key={career} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem', padding: '4px 8px', background: 'var(--paper)', borderRadius: '6px' }}>
-                      <span style={{ color: 'var(--ink)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '280px' }}>
-                        #{index + 1} {career}
-                      </span>
-                      <span style={{ fontWeight: 700, color: 'var(--ink-muted)', flexShrink: 0 }}>
-                        {count} ({pct}%)
-                      </span>
+                    <div key={career} className="admin-top-role-card">
+                      <div className="admin-top-role-rank" style={{ background: rank.bg, color: rank.text, border: `1px solid ${rank.border}` }}>
+                        {rank.label}
+                      </div>
+                      <div className="admin-top-role-info">
+                        <span className="admin-top-role-title" title={career}>{career}</span>
+                        <span className="admin-top-role-metric">{count} students ({pct}%)</span>
+                      </div>
                     </div>
                   );
                 })}
@@ -1005,14 +1125,16 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
       <div className="admin-chart-card">
         <div className="admin-chart-card-header">
           <div className="admin-chart-card-title-row">
-            <h3>System Operations Registry Breakdown</h3>
+            <div>
+              <h3>System Operations Breakdown</h3>
+              <p className="admin-chart-card-subtitle">
+                Exact frequency of every specific action logged in the platform audit journal
+              </p>
+            </div>
             <span style={{ fontSize: '0.82rem', color: 'var(--ink-muted)', fontWeight: 600 }}>
-              {summary.breakdown.length} unique operations
+              {summary.breakdown.length} unique event types
             </span>
           </div>
-          <p className="admin-chart-card-subtitle">
-            Exact frequency of every individual action logged in the system activity journal (FR-15-01).
-          </p>
         </div>
         <div className="admin-bar-list">
           {summary.breakdown.map(([type, count]) => {
@@ -1083,7 +1205,7 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
                 type="button"
                 className="admin-export-btn"
                 onClick={() => exportActivityCsv(filteredRecords, users)}
-                title="Download filtered activity report as CSV"
+                title="Download activity report as CSV"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -1094,30 +1216,38 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
               </button>
             </div>
           </div>
+
           <div className="admin-table-wrap">
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>Event Type</th>
-                  <th>Category</th>
+                  <th>Event</th>
+                  <th>Target User</th>
                   <th>Timestamp</th>
-                  <th>Event Metadata</th>
+                  <th>Operation Context</th>
                 </tr>
               </thead>
               <tbody>
                 {visibleHistoryRecords.map((record) => {
-                  const catMeta = eventCategoryMeta(record.type || record.eventType || '');
+                  const eventType = record.type || record.eventType || '';
+                  const catMeta = eventCategoryMeta(eventType);
+                  const tone = eventTone(eventType);
+                  const resolvedUser = record.userName || record.userEmail || (record.userId ? getUserDisplayName({ userId: record.userId }, users) : null);
+
                   return (
-                    <tr key={record.id}>
+                    <tr key={record.id || `${eventType}-${record.timestamp}`}>
                       <td>
-                        <span className={`admin-event-pill admin-event-pill--${eventTone(record.type || record.eventType || '')}`}>
-                          {friendlyEventLabel(record.type || record.eventType || 'system_event')}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span className={`admin-event-pill admin-event-pill--${catMeta.tone}`} style={{ fontSize: '0.72rem', padding: '1px 6px' }}>
+                            {catMeta.label}
+                          </span>
+                          <span className={`admin-event-tag admin-event-tag--${tone}`} style={{ fontSize: '0.8rem' }}>
+                            {friendlyEventLabel(eventType)}
+                          </span>
+                        </div>
                       </td>
-                      <td>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', fontWeight: 500 }}>
-                          {catMeta.label}
-                        </span>
+                      <td style={{ fontWeight: 600, color: 'var(--ink)' }}>
+                        {resolvedUser || record.userId || 'Guest Student'}
                       </td>
                       <td style={{ whiteSpace: 'nowrap', color: 'var(--ink-muted)', fontSize: '0.85rem' }}>
                         {formatDateTime(dateValue(record))}
@@ -1584,7 +1714,7 @@ function AssessmentDetailModal({ record, users = [], onClose }) {
           <div className="admin-assessment-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <h3 className="admin-assessment-section-title" style={{ margin: 0 }}>Category Aptitude Breakdown</h3>
-              <span style={{ fontSize: '0.78rem', color: 'var(--ink-muted)' }}>FR-13-02 Performance Analysis</span>
+              <span style={{ fontSize: '0.78rem', color: 'var(--ink-muted)' }}>Aptitude Diagnostics</span>
             </div>
 
             {scoreEntries.length > 0 ? (
