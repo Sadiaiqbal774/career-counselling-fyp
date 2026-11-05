@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import supabase, { ensureSupabaseConfigured, getSupabaseConfigError } from '../lib/supabase';
 
 const AuthContext = createContext(null);
-const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5001';
+const API_URL = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000').trim().replace(/\/+$/, '');
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

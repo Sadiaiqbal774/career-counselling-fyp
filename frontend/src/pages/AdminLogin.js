@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import PasswordField from '../components/PasswordField';
 import supabase from '../lib/supabase';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5001';
+const API_URL = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000').trim().replace(/\/+$/, '');
 
 function AdminLogin() {
   const navigate = useNavigate();
@@ -25,7 +25,15 @@ function AdminLogin() {
         body: JSON.stringify({ username, password }),
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(result.message || 'Invalid admin username or password.');
+      if (!response.ok) {
+        if (response.status === 503) {
+          throw new Error(result.message || 'Admin login not configured on the backend server.');
+        }
+        if (response.status === 502 || response.status === 504) {
+          throw new Error('Backend server on Render is waking up or deploying. Please wait 30 seconds and retry.');
+        }
+        throw new Error(result.message || 'Invalid admin username or password.');
+      }
 
       const { error: sessionError } = await supabase.auth.setSession({
         access_token: result.access_token,
@@ -34,7 +42,11 @@ function AdminLogin() {
       if (sessionError) throw sessionError;
       navigate(location.state?.from?.pathname || '/admin', { replace: true });
     } catch (loginError) {
-      setError(loginError.message || 'Unable to sign in as admin.');
+      if (loginError.name === 'TypeError' && loginError.message.includes('fetch')) {
+        setError('Cannot connect to backend server. Make sure your Render backend is running and REACT_APP_API_URL is configured in Vercel.');
+      } else {
+        setError(loginError.message || 'Unable to sign in as admin.');
+      }
     } finally {
       setLoading(false);
     }

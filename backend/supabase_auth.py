@@ -85,7 +85,7 @@ def require_verified_email(claims, token):
 
 
 def admin_email_allowlist():
-    raw = os.environ.get("ADMIN_EMAILS", "")
+    raw = os.environ.get("ADMIN_EMAILS", "").strip() or os.environ.get("ADMIN_EMAIL", "").strip()
     return {
         email.strip().lower()
         for email in raw.split(",")

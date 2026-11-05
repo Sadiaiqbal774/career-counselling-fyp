@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { readUserQuizData } from '../data/userData';
 import './ChatbotWidget.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
+const API_URL = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000').trim().replace(/\/+$/, '');
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

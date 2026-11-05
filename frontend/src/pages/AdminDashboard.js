@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import supabase from '../lib/supabase';
 import './AdminDashboard.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
+const API_URL = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000').trim().replace(/\/+$/, '');
 
 const tabs = [
   ['dashboard', 'Dashboard'],
@@ -266,6 +266,15 @@ function timestampValue(record) {
   return Number.isNaN(timestamp) ? 0 : timestamp;
 }
 
+function getCategoryBadgeTone(category = '') {
+  const cat = String(category || '').toLowerCase();
+  if (cat.includes('tech') || cat.includes('comput') || cat.includes('software') || cat.includes('it')) return 'info';
+  if (cat.includes('med') || cat.includes('health') || cat.includes('bio') || cat.includes('pharma')) return 'good';
+  if (cat.includes('biz') || cat.includes('business') || cat.includes('commerce') || cat.includes('manag') || cat.includes('finance')) return 'bronze';
+  if (cat.includes('art') || cat.includes('humanities') || cat.includes('design') || cat.includes('law')) return 'warn';
+  return 'muted';
+}
+
 function assessmentResult(record) {
   if (record.score !== null && record.score !== undefined) return record.score;
   if (record.result) return typeof record.result === 'object' ? JSON.stringify(record.result) : record.result;
@@ -297,14 +306,18 @@ function exportToCsv(filename, headers, rows) {
 }
 
 function exportAssessmentsCsv(records, users = []) {
-  const headers = ['User', 'Source', 'Top Category / Field', 'Score / Result', 'Date Taken'];
+  const headers = ['Student Name', 'Student Email', 'Assessment Source', 'Primary Field', 'Recommended Career', 'Score Breakdown', 'Date Taken'];
   const rows = records.map((record) => {
     const user = getUserDisplayName(record, users);
+    const email = record.userEmail || record.email || record.user?.email || '-';
     const source = record.source === 'university_recommender' ? 'University Recommender' : 'Career Quiz';
-    const topField = record.highest_category || record.result?.career || record.result?.matchedField || record.matched_field || '-';
-    const score = assessmentResult(record);
+    const topField = record.highest_category || record.result?.matchedField || record.matched_field || '-';
+    const career = record.recommendation || record.result?.career || '-';
+    const scoreBreakdown = record.scores && typeof record.scores === 'object'
+      ? Object.entries(record.scores).map(([k, v]) => `${k}: ${v}`).join('; ')
+      : assessmentResult(record);
     const date = dateValue(record);
-    return [user, source, topField, score, date];
+    return [user, email, source, topField, career, scoreBreakdown, date];
   });
   exportToCsv(`assessments_report_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
 }
@@ -1005,6 +1018,7 @@ function AdminOverview({ data, onNavigate }) {
   const universities = data.universities || [];
   const scholarships = data.scholarships || [];
   const eligibility = data.eligibility || [];
+  const assessments = data.assessments || [];
 
   const totalUsers = users.length;
   const activeUsers = users.filter((u) => !u.blocked).length;
@@ -1025,7 +1039,7 @@ function AdminOverview({ data, onNavigate }) {
         <div>
           <h2 className="admin-welcome-title">Platform Overview</h2>
           <p className="admin-welcome-sub">
-            Welcome to the Career Counselling Admin Portal. Monitor user accounts, institution listings, and platform data.
+            Welcome to the Career Counselling Admin Portal. Monitor user accounts, institution listings, and student assessments.
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '20px', background: 'var(--good-tint)', color: 'var(--good)', fontWeight: 600, fontSize: '0.84rem' }}>
@@ -1051,10 +1065,10 @@ function AdminOverview({ data, onNavigate }) {
           <strong>{totalScholarships}</strong>
           <small>Active Listings</small>
         </div>
-        <div className="admin-dashboard-stat admin-dashboard-stat--dark">
-          <span>Eligibility Rules</span>
-          <strong>{totalCriteria}</strong>
-          <small>Threshold Criteria</small>
+        <div className="admin-dashboard-stat admin-dashboard-stat--dark" onClick={() => onNavigate('assessments')} style={{ cursor: 'pointer' }} title="View Assessment Reports">
+          <span>Assessments Taken</span>
+          <strong>{assessments.length}</strong>
+          <small>Student Submissions &rarr;</small>
         </div>
       </div>
 
@@ -1319,45 +1333,396 @@ function ExpandableCell({ value, empty = '-', previewLength = 130 }) {
   return <div className={expanded ? 'admin-expandable admin-expandable--open' : 'admin-expandable'}><span>{text}</span><button type="button" onClick={() => setExpanded((open) => !open)}>{expanded ? 'Show less' : '... more'}</button></div>;
 }
 
+function AssessmentDetailModal({ record, users = [], onClose }) {
+  if (!record) return null;
+
+  const studentName = getUserDisplayName(record, users);
+  const studentEmail = record.userEmail || record.email || record.user?.email || 'No email provided';
+  const sourceLabel = record.source === 'university_recommender' ? 'University Recommender' : 'Career Aptitude Quiz';
+  const dateStr = formatDateTime(dateValue(record));
+  const category = record.highest_category || record.result?.matchedField || record.matched_field || 'General';
+  const recommendation = record.recommendation || record.result?.career || 'General Degree Program';
+  const categoryTone = getCategoryBadgeTone(category);
+
+  // Parse scores for aptitude performance analysis
+  const scoresObj = record.scores && typeof record.scores === 'object' && Object.keys(record.scores).length > 0
+    ? record.scores
+    : null;
+
+  let scoreEntries = [];
+  let maxScoreVal = 1;
+  if (scoresObj) {
+    scoreEntries = Object.entries(scoresObj).map(([key, val]) => {
+      const num = Number(val) || 0;
+      return { category: key, score: num };
+    }).sort((a, b) => b.score - a.score);
+    maxScoreVal = Math.max(...scoreEntries.map((s) => s.score), 1);
+  }
+
+  const academic = record.academicProfile || {};
+  const hasAcademic = academic && (
+    academic.intermediateMarks ||
+    academic.intermediateGroup ||
+    academic.city ||
+    academic.school ||
+    academic.entryTest
+  );
+
+  return (
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <div className="admin-modal-card admin-modal-card--assessment" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-modal-header">
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <span className={`status-pill status-pill--${categoryTone}`}>
+                {category}
+              </span>
+              <span className="status-pill status-pill--muted">
+                {sourceLabel}
+              </span>
+            </div>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--ink)' }}>Assessment Report: {studentName}</h2>
+          </div>
+          <button type="button" className="admin-modal-close" onClick={onClose} aria-label="Close modal">×</button>
+        </div>
+
+        <div className="admin-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          {/* 1. Recommendation Highlight Banner */}
+          <div className="admin-assessment-recommendation-card">
+            <div className="admin-assessment-recommendation-label">Recommended Career Direction</div>
+            <div className="admin-assessment-recommendation-title">{recommendation}</div>
+            <div className="admin-assessment-recommendation-sub">
+              Primary Fit Field: <strong>{category}</strong> &bull; Recorded {dateStr}
+            </div>
+          </div>
+
+          {/* 2. Student & Academic Background */}
+          <div className="admin-assessment-section">
+            <h3 className="admin-assessment-section-title">Student Profile</h3>
+            <div className="admin-assessment-grid">
+              <div className="admin-assessment-info-item">
+                <span className="admin-assessment-info-label">Full Name</span>
+                <strong className="admin-assessment-info-value">{studentName}</strong>
+              </div>
+              <div className="admin-assessment-info-item">
+                <span className="admin-assessment-info-label">Email Address</span>
+                <span className="admin-assessment-info-value">{studentEmail}</span>
+              </div>
+              {hasAcademic && (
+                <>
+                  {academic.intermediateMarks && (
+                    <div className="admin-assessment-info-item">
+                      <span className="admin-assessment-info-label">Intermediate Marks</span>
+                      <strong className="admin-assessment-info-value">{academic.intermediateMarks}%</strong>
+                    </div>
+                  )}
+                  {academic.intermediateGroup && (
+                    <div className="admin-assessment-info-item">
+                      <span className="admin-assessment-info-label">Group / Stream</span>
+                      <span className="admin-assessment-info-value">{academic.intermediateGroup}</span>
+                    </div>
+                  )}
+                  {academic.city && (
+                    <div className="admin-assessment-info-item">
+                      <span className="admin-assessment-info-label">Location / City</span>
+                      <span className="admin-assessment-info-value">{academic.city}</span>
+                    </div>
+                  )}
+                  {academic.school && (
+                    <div className="admin-assessment-info-item">
+                      <span className="admin-assessment-info-label">College / School</span>
+                      <span className="admin-assessment-info-value">{academic.school}</span>
+                    </div>
+                  )}
+                  {academic.entryTest && (
+                    <div className="admin-assessment-info-item">
+                      <span className="admin-assessment-info-label">Entry Test</span>
+                      <span className="admin-assessment-info-value">{academic.entryTest} {academic.entryTestScore ? `(${academic.entryTestScore})` : ''}</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* 3. Performance & Aptitude Breakdown (FR-13-02) */}
+          <div className="admin-assessment-section">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h3 className="admin-assessment-section-title" style={{ margin: 0 }}>Category Aptitude Breakdown</h3>
+              <span style={{ fontSize: '0.78rem', color: 'var(--ink-muted)' }}>FR-13-02 Performance Analysis</span>
+            </div>
+
+            {scoreEntries.length > 0 ? (
+              <div className="admin-assessment-scores-list">
+                {scoreEntries.map((item) => {
+                  const percentage = Math.min(100, Math.round((item.score / maxScoreVal) * 100));
+                  const isTop = item.category.toLowerCase() === category.toLowerCase() || item.score === maxScoreVal;
+                  const itemTone = getCategoryBadgeTone(item.category);
+                  return (
+                    <div key={item.category} className="admin-assessment-score-row">
+                      <div className="admin-assessment-score-header">
+                        <span className="admin-assessment-score-name">
+                          {item.category}
+                          {isTop && (
+                            <span className="status-pill status-pill--good" style={{ marginLeft: '6px', fontSize: '0.7rem', padding: '1px 6px' }}>
+                              Top Match
+                            </span>
+                          )}
+                        </span>
+                        <span className="admin-assessment-score-points">
+                          <strong>{item.score}</strong> pts ({percentage}%)
+                        </span>
+                      </div>
+                      <div className="admin-assessment-progress-track">
+                        <div
+                          className={`admin-assessment-progress-bar admin-assessment-progress-bar--${itemTone}`}
+                          style={{ width: `${Math.max(percentage, 6)}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="admin-assessment-single-score">
+                <span>Recorded Score / Result:</span>
+                <code>{assessmentResult(record)}</code>
+              </div>
+            )}
+          </div>
+
+          {/* Modal Actions */}
+          <div className="admin-modal-actions" style={{ marginTop: '6px' }}>
+            <button
+              type="button"
+              className="admin-secondary-btn"
+              onClick={() => window.print()}
+              title="Print this assessment report"
+            >
+              Print Report
+            </button>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={onClose}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MonitoringTable({ tab, records, users = [] }) {
   const [visibleChatbotCount, setVisibleChatbotCount] = useState(10);
   const [visibleAssessmentsCount, setVisibleAssessmentsCount] = useState(10);
   const [chatbotSearch, setChatbotSearch] = useState('');
   const [chatbotFilter, setChatbotFilter] = useState('all');
+  const [assessmentSearch, setAssessmentSearch] = useState('');
+  const [assessmentFilter, setAssessmentFilter] = useState('all');
+  const [selectedAssessment, setSelectedAssessment] = useState(null);
+
   if (tab === 'assessments') {
-    const visibleRecords = records.slice(0, visibleAssessmentsCount);
+    // Extract unique categories for filter pills
+    const categories = Array.from(new Set(
+      records.map((r) => r.highest_category || r.result?.matchedField || r.matched_field).filter(Boolean)
+    ));
+
+    const filteredRecords = records.filter((record) => {
+      const recCategory = record.highest_category || record.result?.matchedField || record.matched_field || '';
+      if (assessmentFilter !== 'all' && recCategory.toLowerCase() !== assessmentFilter.toLowerCase()) {
+        return false;
+      }
+      if (!assessmentSearch.trim()) return true;
+      const terms = assessmentSearch.trim().toLowerCase().split(/\s+/).filter(Boolean);
+      const user = getUserDisplayName(record, users).toLowerCase();
+      const email = String(record.userEmail || record.email || record.user?.email || '').toLowerCase();
+      const career = String(record.recommendation || record.result?.career || '').toLowerCase();
+      const cat = String(recCategory).toLowerCase();
+      const combined = `${user} ${email} ${career} ${cat}`;
+      return terms.every((t) => combined.includes(t));
+    });
+
+    const visibleRecords = filteredRecords.slice(0, visibleAssessmentsCount);
     return (
       <>
+        {/* Search & Category Filter Toolbar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+          <div className="admin-search-wrapper" style={{ margin: 0, flex: '1 1 260px', maxWidth: '380px' }}>
+            <svg className="admin-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              className="admin-search"
+              type="text"
+              inputMode="search"
+              placeholder="Search student, email, or career..."
+              aria-label="Search student assessments"
+              value={assessmentSearch}
+              onChange={(e) => { setAssessmentSearch(e.target.value); setVisibleAssessmentsCount(10); }}
+            />
+            {assessmentSearch && (
+              <button
+                type="button"
+                className="admin-search-clear"
+                onClick={() => setAssessmentSearch('')}
+                aria-label="Clear search"
+                title="Clear search"
+              >
+                &times;
+              </button>
+            )}
+          </div>
+          <div className="admin-filter-pills" role="tablist">
+            <button
+              type="button"
+              className={`admin-filter-pill ${assessmentFilter === 'all' ? 'admin-filter-pill--active' : ''}`}
+              onClick={() => { setAssessmentFilter('all'); setVisibleAssessmentsCount(10); }}
+            >
+              All ({records.length})
+            </button>
+            {categories.map((cat) => {
+              const count = records.filter((r) => (r.highest_category || r.result?.matchedField || r.matched_field) === cat).length;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  className={`admin-filter-pill ${assessmentFilter.toLowerCase() === cat.toLowerCase() ? 'admin-filter-pill--active' : ''}`}
+                  onClick={() => { setAssessmentFilter(cat); setVisibleAssessmentsCount(10); }}
+                >
+                  {cat} ({count})
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Detailed Assessment Modal when selected */}
+        {selectedAssessment && (
+          <AssessmentDetailModal
+            record={selectedAssessment}
+            users={users}
+            onClose={() => setSelectedAssessment(null)}
+          />
+        )}
+
         <div className="admin-table-wrap">
           <table className="admin-table admin-table--monitoring">
             <thead>
               <tr>
-                <th>User</th>
-                <th>Source</th>
-                <th>Score / result</th>
-                <th>Date taken</th>
+                <th>Student</th>
+                <th>Primary Field</th>
+                <th>Recommended Career</th>
+                <th>Performance Breakdown</th>
+                <th>Date Taken</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {visibleRecords.map((record) => (
-                <tr key={record.id}>
-                  <td>{getUserDisplayName(record, users)}</td>
-                  <td>{record.source === 'university_recommender' ? 'University Recommender' : 'Career Quiz'}</td>
-                  <td><ExpandableCell value={assessmentResult(record)} /></td>
-                  <td>{formatDateTime(dateValue(record))}</td>
+              {visibleRecords.length > 0 ? (
+                visibleRecords.map((record) => {
+                  const name = getUserDisplayName(record, users);
+                  const email = record.userEmail || record.email || record.user?.email;
+                  const cat = record.highest_category || record.result?.matchedField || record.matched_field || '-';
+                  const career = record.recommendation || record.result?.career || '-';
+                  const tone = getCategoryBadgeTone(cat);
+                  const scores = record.scores && typeof record.scores === 'object' && Object.keys(record.scores).length > 0 ? record.scores : null;
+
+                  return (
+                    <tr key={record.id}>
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <strong style={{ color: 'var(--ink)', fontSize: '0.94rem' }}>{name}</strong>
+                          {email && (
+                            <span style={{ color: 'var(--ink-faint)', fontSize: '0.8rem', marginTop: '2px' }}>
+                              {email}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`status-pill status-pill--${tone}`}>
+                          {cat}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontWeight: 600, color: 'var(--ink)' }}>{career}</span>
+                          <span style={{ fontSize: '0.78rem', color: 'var(--ink-faint)' }}>
+                            {record.source === 'university_recommender' ? 'University Recommender' : 'Career Quiz'}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        {scores ? (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', maxWidth: '280px' }}>
+                            {Object.entries(scores).map(([k, v]) => (
+                              <span
+                                key={k}
+                                style={{
+                                  fontSize: '0.75rem',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  background: k.toLowerCase() === cat.toLowerCase() ? 'var(--good-tint)' : 'var(--muted-tint)',
+                                  color: k.toLowerCase() === cat.toLowerCase() ? 'var(--good)' : 'var(--ink-muted)',
+                                  fontWeight: k.toLowerCase() === cat.toLowerCase() ? 600 : 400,
+                                }}
+                              >
+                                {k}: {v}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <ExpandableCell value={assessmentResult(record)} />
+                        )}
+                      </td>
+                      <td style={{ whiteSpace: 'nowrap', fontSize: '0.85rem', color: 'var(--ink-muted)' }}>
+                        {formatDateTime(dateValue(record))}
+                      </td>
+                      <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        <button
+                          type="button"
+                          className="admin-action-btn admin-action-btn--primary"
+                          onClick={() => setSelectedAssessment(record)}
+                          title="View detailed assessment report"
+                          style={{
+                            padding: '5px 12px',
+                            fontSize: '0.82rem',
+                            fontWeight: 600,
+                            borderRadius: '6px',
+                            background: 'var(--info-tint)',
+                            color: 'var(--info)',
+                            border: '1px solid rgba(36, 87, 168, 0.25)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '36px 16px', color: 'var(--ink-muted)' }}>
+                    No assessment records match your search or filter.
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
-        {records.length > visibleRecords.length && (
+        {filteredRecords.length > visibleRecords.length && (
           <div className="admin-load-more">
             <button
               type="button"
               className="admin-small-button"
               onClick={() => setVisibleAssessmentsCount((count) => count + 10)}
             >
-              Show more ({records.length - visibleRecords.length} remaining)
+              Show more ({filteredRecords.length - visibleRecords.length} remaining)
             </button>
           </div>
         )}
@@ -1547,11 +1912,12 @@ function AdminDashboard() {
     }
   };
   const loadDashboard = async () => {
-    const [stats, scholarships, universities, eligibility] = await Promise.all([
+    const [stats, scholarships, universities, eligibility, assessments] = await Promise.all([
       api('/api/admin/stats'),
       api('/api/admin/scholarships'),
       api('/api/admin/universities'),
       api('/api/admin/eligibility'),
+      api('/api/admin/assessments').catch(() => ({ records: [] })),
     ]);
     const sortedUsers = (stats.users || []).sort((a, b) => timestampValue(b) - timestampValue(a));
     setUsers(sortedUsers);
@@ -1560,6 +1926,7 @@ function AdminDashboard() {
       scholarships: scholarships.records || [],
       universities: universities.records || [],
       eligibility: eligibility.records || [],
+      assessments: assessments.records || [],
     });
   };
   useEffect(() => { loadDashboard().catch((loadError) => setError(loadError.message)); }, []);

@@ -402,44 +402,99 @@ def resolve_user_display_name(uid, fallback=None, explicit_name=None, email=None
 
 
 def load_supabase_quiz_scores():
-    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+    supabase_url = os.environ.get("SUPABASE_URL", "").strip().rstrip("/") or SUPABASE_URL
+    service_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").strip() or SUPABASE_SERVICE_ROLE_KEY
+    if not supabase_url or not service_key:
         raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for admin assessment access.")
     headers = {
-        "apikey": SUPABASE_SERVICE_ROLE_KEY,
-        "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
+        "apikey": service_key,
+        "Authorization": f"Bearer {service_key}",
     }
-    scores_request = Request(
-        f"{SUPABASE_URL}/rest/v1/quiz_scores?{urlencode({'select': '*'})}",
-        headers=headers,
-    )
-    with urlopen(scores_request, timeout=10) as response:
-        records = json.loads(response.read().decode("utf-8"))
 
-    profile_request = Request(
-        f"{SUPABASE_URL}/rest/v1/profiles?{urlencode({'select': 'id,full_name,email'})}",
-        headers=headers,
-    )
+    raw_records = []
+    # 1. Fetch from recommendations table (where student career assessments are stored)
     try:
+        recs_request = Request(
+            f"{supabase_url}/rest/v1/recommendations?{urlencode({'select': '*'})}",
+            headers=headers,
+        )
+        with urlopen(recs_request, timeout=10) as response:
+            recs_data = json.loads(response.read().decode("utf-8"))
+            for r in recs_data:
+                r["source"] = "career_quiz"
+                r["createdAt"] = r.get("saved_at") or r.get("created_at")
+                raw_records.append(r)
+    except Exception as error:
+        print(f"Error loading Supabase recommendations: {error}")
+
+    # 2. Also fetch from quiz_scores table if any exist
+    try:
+        scores_request = Request(
+            f"{supabase_url}/rest/v1/quiz_scores?{urlencode({'select': '*'})}",
+            headers=headers,
+        )
+        with urlopen(scores_request, timeout=10) as response:
+            scores_data = json.loads(response.read().decode("utf-8"))
+            for s in scores_data:
+                s["source"] = "quiz_scores"
+                raw_records.append(s)
+    except Exception:
+        pass
+
+    # 3. Fetch student profile details
+    profiles = {}
+    try:
+        profile_request = Request(
+            f"{supabase_url}/rest/v1/profiles?{urlencode({'select': '*'})}",
+            headers=headers,
+        )
         with urlopen(profile_request, timeout=10) as response:
             profiles = {str(row["id"]): row for row in json.loads(response.read().decode("utf-8"))}
     except Exception:
-        profiles = {}
+        pass
 
+    # 4. Resolve user accounts from auth directory
     user_map = get_all_known_users_map()
-    for record in records:
-        uid = str(record.get("user_id") or "")
-        record["id"] = record.get("user_id")
-        record["source"] = "quiz"
+
+    enriched = []
+    for record in raw_records:
+        uid = str(record.get("user_id") or record.get("userId") or "")
         profile = profiles.get(uid)
-        if not profile and uid in user_map:
-            profile = user_map[uid]
+        user_info = user_map.get(uid) or {}
+
+        name = None
+        email = None
         if profile:
-            record["user"] = profile
-            record["userName"] = profile.get("full_name") or profile.get("name") or profile.get("email")
-            record["userEmail"] = profile.get("email")
-        else:
-            record["userName"] = resolve_user_display_name(uid, fallback="Student")
-    return records
+            name = profile.get("full_name") or profile.get("name")
+            email = profile.get("email")
+        if not name and user_info:
+            name = user_info.get("name")
+            email = email or user_info.get("email")
+        if not name:
+            name = resolve_user_display_name(uid, fallback="Student", email=email)
+
+        enriched.append({
+            "id": record.get("id"),
+            "userId": uid,
+            "userName": name,
+            "userEmail": email,
+            "source": record.get("source", "career_quiz"),
+            "recommendation": record.get("recommendation"),
+            "highest_category": record.get("highest_category"),
+            "top_categories": record.get("top_categories") or ([record.get("highest_category")] if record.get("highest_category") else []),
+            "scores": record.get("scores") or {},
+            "academicProfile": {
+                "intermediateMarks": profile.get("intermediate_marks") or profile.get("marks") if profile else None,
+                "intermediateGroup": profile.get("intermediate_group") if profile else None,
+                "city": profile.get("city") if profile else None,
+                "school": profile.get("school") if profile else None,
+                "entryTest": profile.get("entry_test") if profile else None,
+                "entryTestScore": profile.get("entry_test_score") if profile else None,
+            } if profile else None,
+            "createdAt": record.get("saved_at") or record.get("created_at") or record.get("createdAt"),
+        })
+
+    return enriched
 
 
 def load_local_assessment_records():
@@ -469,6 +524,16 @@ def load_local_assessment_records():
             "userName": resolved_name,
             "userEmail": email,
             "user": user_info or ({"name": resolved_name, "email": email} if email else None),
+            "recommendation": result.get("career"),
+            "highest_category": result.get("matched_field"),
+            "top_categories": [result.get("matched_field")] if result.get("matched_field") else [],
+            "scores": result.get("field_scores") or {},
+            "academicProfile": {
+                "intermediateMarks": (record.get("answers") or {}).get("Marks"),
+                "city": (record.get("answers") or {}).get("City"),
+                "interests": (record.get("answers") or {}).get("Interests"),
+                "background": (record.get("answers") or {}).get("Background"),
+            } if record.get("answers") else None,
             "result": {"career": result.get("career"), "matchedField": result.get("matched_field")} if result else None,
             "createdAt": record.get("createdAt"),
         })
@@ -925,24 +990,28 @@ def admin_login():
     password = payload.get("password") or ""
 
     admin_emails = sorted(admin_email_allowlist())
+    supabase_url = os.environ.get("SUPABASE_URL", "").strip().rstrip("/") or SUPABASE_URL
+    anon_key = os.environ.get("SUPABASE_ANON_KEY", "").strip() or SUPABASE_ANON_KEY
+    admin_un = os.environ.get("ADMIN_USERNAME", "").strip() or ADMIN_USERNAME or "admin"
+
     missing = [
         name for name, ok in [
-            ("SUPABASE_URL", bool(SUPABASE_URL)),
-            ("SUPABASE_ANON_KEY", bool(SUPABASE_ANON_KEY)),
-            ("ADMIN_EMAILS (exactly one email)", len(admin_emails) == 1),
+            ("SUPABASE_URL", bool(supabase_url)),
+            ("SUPABASE_ANON_KEY", bool(anon_key)),
+            ("ADMIN_EMAILS (or ADMIN_EMAIL) (exactly one email)", len(admin_emails) == 1),
         ] if not ok
     ]
     if not username or not password or missing:
         return jsonify({"message": "Admin login not configured. Missing: " + ", ".join(missing or ["username/password"])}), 503
     
-    if not secrets.compare_digest(username, ADMIN_USERNAME):
+    if not secrets.compare_digest(username, admin_un):
         return jsonify({"message": "Invalid admin username or password."}), 401
 
     auth_request = Request(
-        f"{SUPABASE_URL}/auth/v1/token?grant_type=password",
+        f"{supabase_url}/auth/v1/token?grant_type=password",
         data=json.dumps({"email": admin_emails[0], "password": password}).encode("utf-8"),
         headers={
-            "apikey": SUPABASE_ANON_KEY,
+            "apikey": anon_key,
             "Content-Type": "application/json",
         },
         method="POST",
@@ -1792,6 +1861,18 @@ def predict():
             "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         })
         save_json_records("assessments", assessment_records[-1000:])
+        if user_id:
+            try:
+                rec_payload = {
+                    "user_id": user_id,
+                    "recommendation": career,
+                    "highest_category": matched_field,
+                    "top_categories": [matched_field],
+                    "scores": result.get("field_scores") or {},
+                }
+                supabase_admin_request("POST", "/rest/v1/recommendations", body=rec_payload)
+            except Exception as e:
+                print(f"Could not persist recommender assessment to Supabase: {e}")
         return jsonify(result)
 
     except Exception as e:
@@ -1845,8 +1926,9 @@ def handle_500(e):
 
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
     app.run(
         debug=True,
-        host="127.0.0.1",
-        port=5000
+        host="0.0.0.0",
+        port=port
     )

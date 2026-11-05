@@ -6,7 +6,7 @@ import supabase from "../lib/supabase";
 import { readUserProfile, readUserQuizData } from "../data/userData";
 import { isItemBookmarked, toggleItemBookmark } from "../data/bookmarkData";
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
+const API_URL = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000').trim().replace(/\/+$/, '');
 
 // ─── Google Font ───────────────────────────────────────────────────
 const fontLink = document.createElement("link");
