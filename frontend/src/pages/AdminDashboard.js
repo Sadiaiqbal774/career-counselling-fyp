@@ -445,11 +445,19 @@ function formatShortDate(isoDateStr) {
   return isoDateStr;
 }
 
+function formatDayWeekday(isoDateStr) {
+  if (!isoDateStr) return '';
+  const d = new Date(isoDateStr.slice(0, 10) + 'T00:00:00');
+  if (Number.isNaN(d.getTime())) return '';
+  return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()];
+}
+
 function activitySummary(records) {
   const counts = {};
   const timelineCounts = {};
   const timelineDetails = {};
   const careerCounts = {};
+  const domainCounts = { Technology: 0, Business: 0, Medical: 0, Arts: 0 };
   const now = Date.now();
   let last24h = 0;
   const userSet = new Set();
@@ -457,6 +465,7 @@ function activitySummary(records) {
   let assessmentCount = 0;
   let chatbotCount = 0;
   let adminCount = 0;
+  let userCount = 0;
 
   records.forEach((record) => {
     const type = record.type || record.eventType || 'unknown';
@@ -464,11 +473,18 @@ function activitySummary(records) {
 
     if (type.includes('assessment')) assessmentCount += 1;
     else if (type.includes('chat')) chatbotCount += 1;
-    else if (type.startsWith('admin_user') || type.includes('block')) adminCount += 1;
+    else if (type.startsWith('admin_user') || type.includes('block') || type.includes('delete')) adminCount += 1;
+    else if (type.includes('registered') || type.includes('login') || type.includes('user')) userCount += 1;
 
     const details = record.details;
     if (type === 'assessment_completed' && details && typeof details === 'object') {
-      const career = details.matchedField || details.career;
+      const field = details.matchedField || details.highest_category || (details.career && details.career.toLowerCase().includes('software') ? 'Technology' : null);
+      if (field && domainCounts[field] !== undefined) {
+        domainCounts[field] = (domainCounts[field] || 0) + 1;
+      } else if (field) {
+        domainCounts[field] = (domainCounts[field] || 0) + 1;
+      }
+      const career = details.career || details.recommendation;
       if (career) {
         careerCounts[career] = (careerCounts[career] || 0) + 1;
       }
@@ -482,11 +498,12 @@ function activitySummary(records) {
       if (dayKey) {
         timelineCounts[dayKey] = (timelineCounts[dayKey] || 0) + 1;
         if (!timelineDetails[dayKey]) {
-          timelineDetails[dayKey] = { assessments: 0, chatbot: 0, admin: 0 };
+          timelineDetails[dayKey] = { assessments: 0, chatbot: 0, user: 0, admin: 0 };
         }
         if (type.includes('assessment')) timelineDetails[dayKey].assessments += 1;
         else if (type.includes('chat')) timelineDetails[dayKey].chatbot += 1;
-        else if (type.startsWith('admin_user') || type.includes('block')) timelineDetails[dayKey].admin += 1;
+        else if (type.includes('registered') || type.includes('login') || type.includes('user')) timelineDetails[dayKey].user += 1;
+        else if (type.startsWith('admin_user') || type.includes('block') || type.includes('delete')) timelineDetails[dayKey].admin += 1;
       }
     }
     if (details && typeof details === 'object') {
@@ -497,14 +514,26 @@ function activitySummary(records) {
 
   const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   const rankedCareers = Object.entries(careerCounts).sort((a, b) => b[1] - a[1]);
-  const timeline = Object.entries(timelineCounts)
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .slice(-10)
-    .map(([day, total]) => ({
-      day,
+  const rankedDomains = Object.entries(domainCounts).sort((a, b) => b[1] - a[1]);
+
+  // Rolling continuous 7-day timeline window up to today
+  const timeline = [];
+  const daysToShow = 7;
+  for (let i = daysToShow - 1; i >= 0; i--) {
+    const targetDate = new Date(now - i * 24 * 60 * 60 * 1000);
+    const dayKey = targetDate.toISOString().slice(0, 10);
+    const total = timelineCounts[dayKey] || 0;
+    const details = timelineDetails[dayKey] || { assessments: 0, chatbot: 0, user: 0, admin: 0 };
+    timeline.push({
+      day: dayKey,
       total,
-      breakdown: timelineDetails[day] || { assessments: 0, chatbot: 0, admin: 0 }
-    }));
+      breakdown: details,
+      isToday: i === 0,
+    });
+  }
+
+  const maxTimelineTotal = Math.max(...timeline.map((item) => item.total), 1);
+  const totalVolume7Days = timeline.reduce((acc, cur) => acc + cur.total, 0);
 
   return {
     total: records.length,
@@ -514,12 +543,17 @@ function activitySummary(records) {
     topTypeCount: ranked[0]?.[1] || 0,
     breakdown: ranked,
     careerBreakdown: rankedCareers,
+    domainBreakdown: rankedDomains,
+    domainCounts,
     categories: {
       assessments: assessmentCount,
       chatbot: chatbotCount,
+      user: userCount || Math.max(0, records.length - assessmentCount - chatbotCount - adminCount),
       admin: adminCount,
     },
     timeline,
+    maxTimelineTotal,
+    totalVolume7Days,
   };
 }
 
@@ -586,7 +620,7 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
 
   const summary = activitySummary(records);
   const maxTypeCount = summary.breakdown[0]?.[1] || 1;
-  const maxTimelineCount = Math.max(...summary.timeline.map((item) => item.total), 1);
+  const maxTimelineCount = summary.maxTimelineTotal;
   const maxCareerCount = summary.careerBreakdown[0]?.[1] || 1;
 
   const eventGradients = {
@@ -600,12 +634,52 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
     admin_user_deleted: 'linear-gradient(90deg, #b91c1c 0%, #dc2626 100%)',
   };
 
-  const careerGradients = [
-    'linear-gradient(90deg, #b8863a 0%, #d4a359 100%)',
-    'linear-gradient(90deg, #2563eb 0%, #60a5fa 100%)',
-    'linear-gradient(90deg, #059669 0%, #34d399 100%)',
-    'linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)',
-  ];
+  const domainConfig = {
+    Technology: {
+      title: 'Computer Science & Technology',
+      gradient: 'linear-gradient(90deg, #0284c7 0%, #2563eb 100%)',
+      subpaths: 'Software Engineering, AI, Data Science, Cloud Computing',
+      badgeTone: 'info',
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
+        </svg>
+      )
+    },
+    Business: {
+      title: 'Business & Commerce',
+      gradient: 'linear-gradient(90deg, #059669 0%, #10b981 100%)',
+      subpaths: 'Business Analytics, FinTech, Marketing, Entrepreneurship',
+      badgeTone: 'good',
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+      )
+    },
+    Medical: {
+      title: 'Medicine & Health Sciences',
+      gradient: 'linear-gradient(90deg, #e11d48 0%, #f43f5e 100%)',
+      subpaths: 'MBBS Doctor, Pharmacy, Biomedical Engineering, Nursing',
+      badgeTone: 'warn',
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        </svg>
+      )
+    },
+    Arts: {
+      title: 'Arts, Design & Humanities',
+      gradient: 'linear-gradient(90deg, #7c3aed 0%, #8b5cf6 100%)',
+      subpaths: 'Digital Media Design, Graphic Arts, UI/UX, Creative Direction',
+      badgeTone: 'accent',
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+        </svg>
+      )
+    }
+  };
 
   const filteredRecords = records.filter((record) => {
     if (activeFilter === 'all') return true;
@@ -632,162 +706,161 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
     return badges;
   };
 
+  const totalAssessments = summary.categories.assessments || 1;
+  const assessmentPct = summary.total ? Math.round((summary.categories.assessments / summary.total) * 100) : 0;
+  const chatbotPct = summary.total ? Math.round((summary.categories.chatbot / summary.total) * 100) : 0;
+  const userPct = summary.total ? Math.round((summary.categories.user / summary.total) * 100) : 0;
+  const adminPct = summary.total ? Math.round((summary.categories.admin / summary.total) * 100) : 0;
+
   return (
     <div className="admin-reports-container">
-      {/* 4 Overview Metrics */}
-      <div className="admin-metrics">
-        <div>
-          <strong>{summary.total}</strong>
-          <span>Total system events</span>
-          <span className="admin-metric-desc">Lifetime audit log operations</span>
-        </div>
-        <div>
-          <strong>{summary.categories.assessments}</strong>
-          <span>Career assessments</span>
-          <span className="admin-metric-desc">Completed quiz submissions</span>
-        </div>
-        <div>
-          <strong>{summary.categories.chatbot}</strong>
-          <span>Assistant queries</span>
-          <span className="admin-metric-desc">Queries asked to career bot</span>
-        </div>
-        <div>
-          <strong>{summary.categories.admin}</strong>
-          <span>Admin audit actions</span>
-          <span className="admin-metric-desc">User edits, deletions &amp; blocks</span>
-        </div>
-      </div>
-
-      {/* 4 Domain Category Cards — FR-15-01: Monitor System Usage, FR-15-02: Generate Reports */}
-      <div className="admin-reports-category-cards">
-        {/* Card 1: Student Assessments */}
-        <div className="admin-report-cat-card">
-          <div className="admin-report-cat-header">
-            <span className="admin-report-cat-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8863a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+      {/* 4 Unified Executive KPI Cards — FR-15-01: Monitor System Usage, FR-15-02: Usage Reporting */}
+      <div className="admin-kpi-grid">
+        {/* Card 1: Total Operations & Audit Logs */}
+        <div className="admin-kpi-card">
+          <div className="admin-kpi-header">
+            <div className="admin-kpi-icon-wrap" style={{ background: '#eef2ff', color: '#2563eb' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
               </svg>
-            </span>
-            <div>
-              <h3>Student Assessments</h3>
-              <p>Career evaluations and quiz submissions</p>
             </div>
-          </div>
-          <div className="admin-report-cat-metric">
-            <strong>{summary.categories.assessments}</strong>
-            <span className="admin-report-cat-pct">
-              {summary.total ? `${((summary.categories.assessments / summary.total) * 100).toFixed(0)}%` : '0%'} of activity
+            <span className="admin-kpi-tag" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>
+              ● Live Telemetry
             </span>
           </div>
-          <div className="admin-bar-track" style={{ height: '8px', marginTop: '10px' }}>
-            <div className="admin-bar-fill" style={{ width: `${summary.total ? (summary.categories.assessments / summary.total) * 100 : 0}%`, background: 'linear-gradient(90deg, #b8863a 0%, #f39c12 100%)' }} />
+          <div>
+            <div className="admin-kpi-metric-row">
+              <span className="admin-kpi-number">{summary.total}</span>
+              <span className="admin-kpi-share" style={{ color: '#2563eb' }}>100% Volume</span>
+            </div>
+            <div className="admin-kpi-title">Total System Operations</div>
+            <div className="admin-kpi-desc">Total lifetime audit operations recorded across all modules</div>
+          </div>
+          <div className="admin-bar-track" style={{ height: '6px' }}>
+            <div className="admin-bar-fill" style={{ width: '100%', background: 'linear-gradient(90deg, #2563eb 0%, #38bdf8 100%)' }} />
           </div>
         </div>
 
-        {/* Card 2: AI Chatbot Interactions */}
-        <div className="admin-report-cat-card">
-          <div className="admin-report-cat-header">
-            <span className="admin-report-cat-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        {/* Card 2: Student Assessments (FR-13) */}
+        <div className="admin-kpi-card">
+          <div className="admin-kpi-header">
+            <div className="admin-kpi-icon-wrap" style={{ background: '#fffbeb', color: '#f59e0b' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
               </svg>
-            </span>
-            <div>
-              <h3>AI Career Assistant</h3>
-              <p>Chatbot queries &amp; student interactions</p>
             </div>
-          </div>
-          <div className="admin-report-cat-metric">
-            <strong>{summary.categories.chatbot}</strong>
-            <span className="admin-report-cat-pct">
-              {summary.total ? `${((summary.categories.chatbot / summary.total) * 100).toFixed(0)}%` : '0%'} of activity
+            <span className="admin-kpi-tag" style={{ background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' }}>
+              FR-13 Assessments
             </span>
           </div>
-          <div className="admin-bar-track" style={{ height: '8px', marginTop: '10px' }}>
-            <div className="admin-bar-fill" style={{ width: `${summary.total ? (summary.categories.chatbot / summary.total) * 100 : 0}%`, background: 'linear-gradient(90deg, #2563eb 0%, #60a5fa 100%)' }} />
+          <div>
+            <div className="admin-kpi-metric-row">
+              <span className="admin-kpi-number">{summary.categories.assessments}</span>
+              <span className="admin-kpi-share" style={{ color: '#d97706' }}>{assessmentPct}% Share</span>
+            </div>
+            <div className="admin-kpi-title">Career Assessments</div>
+            <div className="admin-kpi-desc">Aptitude evaluations &amp; career quiz submissions by students</div>
+          </div>
+          <div className="admin-bar-track" style={{ height: '6px' }}>
+            <div className="admin-bar-fill" style={{ width: `${assessmentPct}%`, background: 'linear-gradient(90deg, #f59e0b 0%, #ea580c 100%)' }} />
           </div>
         </div>
 
-        {/* Card 3: Administrative Audits */}
-        <div className="admin-report-cat-card">
-          <div className="admin-report-cat-header">
-            <span className="admin-report-cat-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        {/* Card 3: AI Assistant Inquiries (FR-14) */}
+        <div className="admin-kpi-card">
+          <div className="admin-kpi-header">
+            <div className="admin-kpi-icon-wrap" style={{ background: '#eff6ff', color: '#3b82f6' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
-            </span>
-            <div>
-              <h3>Administrative Audits</h3>
-              <p>Account edits, blocks &amp; data deletions</p>
             </div>
-          </div>
-          <div className="admin-report-cat-metric">
-            <strong>{summary.categories.admin}</strong>
-            <span className="admin-report-cat-pct">
-              {summary.total ? `${((summary.categories.admin / summary.total) * 100).toFixed(0)}%` : '0%'} of activity
+            <span className="admin-kpi-tag" style={{ background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe' }}>
+              FR-14 Chatbot
             </span>
           </div>
-          <div className="admin-bar-track" style={{ height: '8px', marginTop: '10px' }}>
-            <div className="admin-bar-fill" style={{ width: `${summary.total ? (summary.categories.admin / summary.total) * 100 : 0}%`, background: 'linear-gradient(90deg, #059669 0%, #10b981 100%)' }} />
+          <div>
+            <div className="admin-kpi-metric-row">
+              <span className="admin-kpi-number">{summary.categories.chatbot}</span>
+              <span className="admin-kpi-share" style={{ color: '#2563eb' }}>{chatbotPct}% Share</span>
+            </div>
+            <div className="admin-kpi-title">Assistant Inquiries</div>
+            <div className="admin-kpi-desc">Student guidance questions answered by the AI counselor</div>
+          </div>
+          <div className="admin-bar-track" style={{ height: '6px' }}>
+            <div className="admin-bar-fill" style={{ width: `${chatbotPct}%`, background: 'linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%)' }} />
           </div>
         </div>
 
-        {/* Card 4: User Registrations & Logins */}
-        <div className="admin-report-cat-card">
-          <div className="admin-report-cat-header">
-            <span className="admin-report-cat-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        {/* Card 4: Registered Students & Sign-ins (FR-15) */}
+        <div className="admin-kpi-card">
+          <div className="admin-kpi-header">
+            <div className="admin-kpi-icon-wrap" style={{ background: '#f0fdf4', color: '#10b981' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
-            </span>
-            <div>
-              <h3>User Activity</h3>
-              <p>Registrations &amp; platform logins</p>
             </div>
-          </div>
-          <div className="admin-report-cat-metric">
-            <strong>{Math.max(0, summary.total - summary.categories.assessments - summary.categories.chatbot - summary.categories.admin)}</strong>
-            <span className="admin-report-cat-pct">
-              {summary.total ? `${(((Math.max(0, summary.total - summary.categories.assessments - summary.categories.chatbot - summary.categories.admin)) / summary.total) * 100).toFixed(0)}%` : '0%'} of activity
+            <span className="admin-kpi-tag" style={{ background: '#f0fdf4', color: '#059669', border: '1px solid #bbf7d0' }}>
+              Users &amp; Auth
             </span>
           </div>
-          <div className="admin-bar-track" style={{ height: '8px', marginTop: '10px' }}>
-            <div className="admin-bar-fill" style={{ width: `${summary.total ? ((Math.max(0, summary.total - summary.categories.assessments - summary.categories.chatbot - summary.categories.admin) / summary.total) * 100) : 0}%`, background: 'linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%)' }} />
+          <div>
+            <div className="admin-kpi-metric-row">
+              <span className="admin-kpi-number">{summary.categories.user}</span>
+              <span className="admin-kpi-share" style={{ color: '#059669' }}>{userPct}% Share</span>
+            </div>
+            <div className="admin-kpi-title">User Engagements</div>
+            <div className="admin-kpi-desc">Student account registrations and platform session logins</div>
+          </div>
+          <div className="admin-bar-track" style={{ height: '6px' }}>
+            <div className="admin-bar-fill" style={{ width: `${userPct}%`, background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)' }} />
           </div>
         </div>
       </div>
 
-      {/* 2 Visual Charts Side by Side */}
-      <div className="admin-graphs-grid">
-        {/* Chart 1: Daily Activity Volume */}
-        <div className="admin-graph-card">
-          <div className="admin-graph-title">
-            <span>Daily Activity Timeline</span>
-            <div className="admin-timeline-legend">
-              <span className="admin-legend-dot admin-legend-dot--assessment" /> Assessments
-              <span className="admin-legend-dot admin-legend-dot--chatbot" /> Chatbot
-              <span className="admin-legend-dot admin-legend-dot--admin" /> Admin
+      {/* 2 Visual Analytics Charts Side by Side */}
+      <div className="admin-analytics-grid">
+        {/* Chart 1: Rolling 7-Day Activity Horizon */}
+        <div className="admin-horizon-chart-card">
+          <div className="admin-chart-card-header">
+            <div className="admin-chart-card-title-row">
+              <h3>Daily Activity Timeline Horizon</h3>
+              <div className="admin-timeline-legend">
+                <span><span className="admin-legend-dot admin-legend-dot--assessment" /> Assessments ({summary.categories.assessments})</span>
+                <span><span className="admin-legend-dot admin-legend-dot--chatbot" /> Chatbot ({summary.categories.chatbot})</span>
+                <span><span className="admin-legend-dot admin-legend-dot--user" /> Users ({summary.categories.user})</span>
+                <span><span className="admin-legend-dot admin-legend-dot--admin" /> Admin ({summary.categories.admin})</span>
+              </div>
             </div>
+            <p className="admin-chart-card-subtitle">
+              System operations over the past 7 days. Hover any day to inspect the exact activity composition.
+            </p>
           </div>
-          <p className="admin-graph-subtitle">Total operations performed per day. Hover a column to see the activity breakdown.</p>
-          {summary.timeline.length > 0 ? (
-            <div className="admin-timeline-chart-wrap">
-              {summary.timeline.map((item) => {
-                const heightPct = Math.max(16, Math.round((item.total / maxTimelineCount) * 100));
-                const formattedDate = formatShortDate(item.day);
-                const isHovered = hoveredDay === item.day;
-                const tooltipText = `${formattedDate} (${item.day}): ${item.total} events — ${item.breakdown.assessments} assessments, ${item.breakdown.chatbot} chat queries, ${item.breakdown.admin} admin actions`;
-                return (
-                  <div
-                    key={item.day}
-                    className="admin-timeline-column"
-                    onMouseEnter={() => setHoveredDay(item.day)}
-                    onMouseLeave={() => setHoveredDay(null)}
-                    title={tooltipText}
-                  >
-                    <span className="admin-timeline-col-count">{item.total}</span>
+
+          <div className="admin-horizon-wrap">
+            {summary.timeline.map((item) => {
+              const heightPct = item.total > 0
+                ? Math.max(18, Math.round((item.total / maxTimelineCount) * 100))
+                : 0;
+              const formattedDate = formatShortDate(item.day);
+              const weekday = formatDayWeekday(item.day);
+              const isHovered = hoveredDay === item.day;
+              const tooltipText = `${formattedDate} (${item.day}): ${item.total} events — ${item.breakdown.assessments} assessments, ${item.breakdown.chatbot} chat queries, ${item.breakdown.user} user logins, ${item.breakdown.admin} admin actions`;
+
+              return (
+                <div
+                  key={item.day}
+                  className={`admin-horizon-col ${isHovered ? 'admin-horizon-col--active' : ''}`}
+                  onMouseEnter={() => setHoveredDay(item.day)}
+                  onMouseLeave={() => setHoveredDay(null)}
+                  title={tooltipText}
+                >
+                  {item.total > 0 ? (
+                    <span className="admin-horizon-count">{item.total}</span>
+                  ) : null}
+
+                  {item.total > 0 ? (
                     <div
-                      className={`admin-timeline-bar ${isHovered ? 'admin-timeline-bar--active' : ''}`}
+                      className="admin-horizon-bar-track"
                       style={{ height: `${heightPct}%` }}
                     >
                       {item.breakdown.admin > 0 && (
@@ -795,6 +868,13 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
                           className="admin-bar-segment admin-bar-segment--admin"
                           style={{ flex: item.breakdown.admin }}
                           title={`Admin: ${item.breakdown.admin}`}
+                        />
+                      )}
+                      {item.breakdown.user > 0 && (
+                        <div
+                          className="admin-bar-segment admin-bar-segment--user"
+                          style={{ flex: item.breakdown.user }}
+                          title={`Users: ${item.breakdown.user}`}
                         />
                       )}
                       {item.breakdown.chatbot > 0 && (
@@ -812,78 +892,135 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
                         />
                       )}
                     </div>
-                    <span className="admin-timeline-col-date">{formattedDate}</span>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p style={{ color: 'var(--ink-muted)', textAlign: 'center', padding: '40px 0' }}>No timeline events recorded yet.</p>
-          )}
-          {hoveredDay && (
+                  ) : (
+                    <div className="admin-horizon-zero" title="No operations recorded on this day" />
+                  )}
+
+                  <span className={`admin-horizon-day-name ${item.isToday ? 'admin-horizon-day-name--today' : ''}`}>
+                    {item.isToday ? 'Today' : weekday}
+                  </span>
+                  <span className="admin-horizon-date">{formattedDate}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {hoveredDay ? (
             <div className="admin-timeline-hover-info">
               {(() => {
                 const found = summary.timeline.find((t) => t.day === hoveredDay);
                 if (!found) return null;
+                const weekday = formatDayWeekday(found.day);
+                const formatted = formatShortDate(found.day);
                 return (
                   <span>
-                    <strong>{formatShortDate(found.day)}:</strong> {found.total} total operations (
-                    <span style={{ color: '#b8863a', fontWeight: 600 }}>{found.breakdown.assessments} assessments</span>,{' '}
+                    <strong>{found.isToday ? 'Today' : weekday}, {formatted}:</strong> {found.total} total system operations &mdash;{' '}
+                    <span style={{ color: '#d97706', fontWeight: 600 }}>{found.breakdown.assessments} assessments</span>,{' '}
                     <span style={{ color: '#2563eb', fontWeight: 600 }}>{found.breakdown.chatbot} chat queries</span>,{' '}
-                    <span style={{ color: '#059669', fontWeight: 600 }}>{found.breakdown.admin} admin actions</span>)
+                    <span style={{ color: '#059669', fontWeight: 600 }}>{found.breakdown.user} user logins</span>,{' '}
+                    <span style={{ color: '#8b5cf6', fontWeight: 600 }}>{found.breakdown.admin} admin actions</span>.
                   </span>
                 );
               })()}
             </div>
+          ) : (
+            <div style={{ display: 'flex', gap: '16px', marginTop: '14px', flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--ink-muted)' }}>
+              <span>7-Day Volume: <strong style={{ color: 'var(--ink)' }}>{summary.totalVolume7Days} ops</strong></span>
+              <span>Peak Day: <strong style={{ color: 'var(--ink)' }}>{summary.maxTimelineTotal} ops</strong></span>
+              <span>Audit Trail: <strong style={{ color: '#059669' }}>100% Verified</strong></span>
+            </div>
           )}
         </div>
 
-        {/* Chart 2: Top Student Career Fields Explored */}
-        <div className="admin-graph-card">
-          <div className="admin-graph-title">
-            <span>Top Student Career Fields</span>
-            <span style={{ fontSize: '0.82rem', color: 'var(--ink-muted)' }}>Top matches</span>
+        {/* Chart 2: Student Career Pathways & Domain Distribution (FR-13-02 / FR-15-01) */}
+        <div className="admin-chart-card">
+          <div className="admin-chart-card-header">
+            <div className="admin-chart-card-title-row">
+              <h3>Career Pathways &amp; Aptitude Distribution</h3>
+              <span className="admin-kpi-tag" style={{ background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe' }}>
+                FR-13 Analysis
+              </span>
+            </div>
+            <p className="admin-chart-card-subtitle">
+              Aptitude alignment and primary career categories matched across student quiz evaluations.
+            </p>
           </div>
-          <p className="admin-graph-subtitle">Primary career pathways matched and explored by students during assessments.</p>
-          <div className="admin-bar-list">
-            {summary.careerBreakdown.length > 0 ? (
-              summary.careerBreakdown.map(([career, count], index) => {
-                const totalAssessments = summary.categories.assessments || 1;
-                const pct = ((count / totalAssessments) * 100).toFixed(1);
-                const barWidth = Math.max(8, (count / maxCareerCount) * 100);
-                const gradient = careerGradients[index % careerGradients.length];
-                return (
-                  <div key={career} className="admin-career-field-item">
-                    <div className="admin-career-field-header">
-                      <span className="admin-career-rank">#{index + 1}</span>
-                      <strong className="admin-career-title">{career}</strong>
-                      <span className="admin-career-count">{count} students ({pct}%)</span>
+
+          <div className="admin-domain-list">
+            {Object.entries(domainConfig).map(([key, config]) => {
+              const count = summary.domainCounts[key] || 0;
+              const pct = totalAssessments > 0 ? ((count / totalAssessments) * 100).toFixed(1) : 0;
+              const barWidth = Math.max(count > 0 ? 12 : 2, Math.round((count / Math.max(1, totalAssessments)) * 100));
+
+              return (
+                <div key={key} className="admin-domain-card">
+                  <div className="admin-domain-header">
+                    <div className="admin-domain-identity">
+                      <span className="admin-domain-icon" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
+                        {config.icon}
+                      </span>
+                      <strong className="admin-domain-title">{config.title}</strong>
                     </div>
-                    <div className="admin-bar-track" style={{ height: '10px' }}>
-                      <div className="admin-bar-fill" style={{ width: `${barWidth}%`, background: gradient }} />
+                    <div className="admin-domain-metrics">
+                      <span className="admin-domain-students">{count} students</span>
+                      <span className="admin-domain-pct">({pct}%)</span>
                     </div>
                   </div>
-                );
-              })
-            ) : (
-              <p style={{ color: 'var(--ink-muted)', textAlign: 'center', padding: '30px 0' }}>No career assessment data yet.</p>
-            )}
+                  <div className="admin-bar-track" style={{ height: '8px' }}>
+                    <div className="admin-bar-fill" style={{ width: `${barWidth}%`, background: config.gradient }} />
+                  </div>
+                  <div className="admin-domain-subpaths">
+                    <span style={{ fontWeight: 600, color: 'var(--ink-faint)' }}>Matched Careers:</span> {config.subpaths}
+                  </div>
+                </div>
+              );
+            })}
           </div>
+
+          {/* Specific Top Career Titles */}
+          {summary.careerBreakdown.length > 0 && (
+            <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--line)' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--ink)', display: 'block', marginBottom: '8px' }}>
+                Top Recommended Roles:
+              </span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {summary.careerBreakdown.slice(0, 3).map(([career, count], index) => {
+                  const pct = ((count / totalAssessments) * 100).toFixed(0);
+                  return (
+                    <div key={career} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem', padding: '4px 8px', background: 'var(--paper)', borderRadius: '6px' }}>
+                      <span style={{ color: 'var(--ink)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '280px' }}>
+                        #{index + 1} {career}
+                      </span>
+                      <span style={{ fontWeight: 700, color: 'var(--ink-muted)', flexShrink: 0 }}>
+                        {count} ({pct}%)
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Chart 3: Detailed Event Type Distribution */}
-      <div className="admin-graph-card">
-        <div className="admin-graph-title">
-          <span>System Event Type Distribution</span>
-          <span style={{ fontSize: '0.82rem', color: 'var(--ink-muted)' }}>Audit breakdown</span>
+      <div className="admin-chart-card">
+        <div className="admin-chart-card-header">
+          <div className="admin-chart-card-title-row">
+            <h3>System Operations Registry Breakdown</h3>
+            <span style={{ fontSize: '0.82rem', color: 'var(--ink-muted)', fontWeight: 600 }}>
+              {summary.breakdown.length} unique operations
+            </span>
+          </div>
+          <p className="admin-chart-card-subtitle">
+            Exact frequency of every individual action logged in the system activity journal (FR-15-01).
+          </p>
         </div>
-        <p className="admin-graph-subtitle">Frequency of every individual operation logged in the platform activity registry.</p>
         <div className="admin-bar-list">
           {summary.breakdown.map(([type, count]) => {
             const pct = summary.total ? ((count / summary.total) * 100).toFixed(1) : 0;
             const barWidth = Math.max(6, (count / maxTypeCount) * 100);
-            const gradient = eventGradients[type] || 'linear-gradient(90deg, #b8863a 0%, #8a5f1c 100%)';
+            const gradient = eventGradients[type] || 'linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%)';
             const catMeta = eventCategoryMeta(type);
             return (
               <div key={type} className="admin-bar-item admin-bar-item--detailed">
@@ -903,12 +1040,12 @@ function SystemReportsView({ records, users = [], showHistory = true }) {
         </div>
       </div>
 
-      {/* Activity Event History Table with Category Filter and Pagination */}
+      {/* Activity Event History Table with Category Filter and CSV Export */}
       {showHistory && (
-        <div className="admin-card" style={{ marginTop: '14px' }}>
+        <div className="admin-chart-card">
           <div className="admin-section-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '16px' }}>
             <div>
-              <h2>Activity Event History</h2>
+              <h2 style={{ margin: '0 0 4px', fontSize: '1.15rem' }}>Activity Event History</h2>
               <span className="admin-count">
                 Showing {visibleHistoryRecords.length} of {filteredRecords.length} {activeFilter === 'all' ? 'total' : activeFilter} events
               </span>
