@@ -17,7 +17,3 @@ build/
 # Local user data
 backend/users.json
 
-# Local user records and application logs
-backend/assessment_results.json
-backend/chatbot_interactions.json
-backend/system_activity.json

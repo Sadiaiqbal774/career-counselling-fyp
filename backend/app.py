@@ -409,6 +409,7 @@ def load_supabase_quiz_scores():
     headers = {
         "apikey": service_key,
         "Authorization": f"Bearer {service_key}",
+        "User-Agent": "CareerCounsellingFYP-Backend/1.0",
     }
 
     raw_records = []
@@ -519,23 +520,23 @@ def load_local_assessment_records():
 
         output.append({
             "id": record.get("id"),
-            "source": "university_recommender",
+            "source": record.get("source", "career_quiz"),
             "userId": uid or None,
             "userName": resolved_name,
             "userEmail": email,
             "user": user_info or ({"name": resolved_name, "email": email} if email else None),
-            "recommendation": result.get("career"),
-            "highest_category": result.get("matched_field"),
-            "top_categories": [result.get("matched_field")] if result.get("matched_field") else [],
-            "scores": result.get("field_scores") or {},
-            "academicProfile": {
+            "recommendation": record.get("recommendation") or result.get("career"),
+            "highest_category": record.get("highest_category") or result.get("matched_field"),
+            "top_categories": record.get("top_categories") or ([record.get("highest_category")] if record.get("highest_category") else ([result.get("matched_field")] if result.get("matched_field") else [])),
+            "scores": record.get("scores") or result.get("field_scores") or {},
+            "academicProfile": record.get("academicProfile") or ({
                 "intermediateMarks": (record.get("answers") or {}).get("Marks"),
                 "city": (record.get("answers") or {}).get("City"),
                 "interests": (record.get("answers") or {}).get("Interests"),
                 "background": (record.get("answers") or {}).get("Background"),
-            } if record.get("answers") else None,
-            "result": {"career": result.get("career"), "matchedField": result.get("matched_field")} if result else None,
-            "createdAt": record.get("createdAt"),
+            } if record.get("answers") else None),
+            "result": {"career": record.get("recommendation") or result.get("career"), "matchedField": record.get("highest_category") or result.get("matched_field")} if (record.get("recommendation") or result) else None,
+            "createdAt": record.get("createdAt") or record.get("saved_at"),
         })
     return output
 
@@ -552,6 +553,7 @@ def supabase_admin_request(method, path, body=None, params=None):
         "apikey": SUPABASE_SERVICE_ROLE_KEY,
         "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
         "Content-Type": "application/json",
+        "User-Agent": "CareerCounsellingFYP-Backend/1.0",
     }
     data = json.dumps(body).encode("utf-8") if body is not None else None
     admin_request = Request(url, data=data, headers=headers, method=method)
@@ -1159,11 +1161,20 @@ def admin_assessments():
     if auth_error:
         return auth_error
     records = []
+    seen_ids = set()
     try:
-        records.extend(load_supabase_quiz_scores())
+        for r in load_supabase_quiz_scores():
+            rid = str(r.get("id"))
+            if rid not in seen_ids:
+                records.append(r)
+                seen_ids.add(rid)
     except Exception as error:
         print(f"Unable to load Supabase assessment results: {error}")
-    records.extend(load_local_assessment_records())
+    for r in load_local_assessment_records():
+        rid = str(r.get("id"))
+        if rid not in seen_ids:
+            records.append(r)
+            seen_ids.add(rid)
     records.sort(key=lambda record: record.get("createdAt") or record.get("updated_at") or "", reverse=True)
     return jsonify({"records": records, "readOnly": True}), 200
 
@@ -1189,10 +1200,18 @@ def admin_resource(resource):
         return jsonify({"message": "Unknown admin resource."}), 404
     if request.method == "GET":
         if resource == "chatbot-interactions":
-            records = load_json_records("chatbot-interactions") or []
+            raw_chats = load_json_records("chatbot-interactions") or []
+            if not raw_chats:
+                seed_chat_file = backend_dir / "chatbot_interactions.json"
+                if seed_chat_file.exists():
+                    try:
+                        with seed_chat_file.open("r", encoding="utf-8") as f:
+                            raw_chats = json.load(f)
+                    except Exception:
+                        raw_chats = []
             user_map = get_all_known_users_map()
             enriched_records = []
-            for r in records:
+            for r in raw_chats:
                 item = dict(r)
                 uid = str(item.get("userId") or "")
                 raw_name = item.get("userName")
@@ -1212,18 +1231,74 @@ def admin_resource(resource):
                 enriched_records.append(item)
             records = enriched_records
         elif resource == "activity":
-            records = load_json_records("activity") or []
+            activity_list = load_json_records("activity") or []
+            if not activity_list:
+                seed_act_file = backend_dir / "system_activity.json"
+                if seed_act_file.exists():
+                    try:
+                        with seed_act_file.open("r", encoding="utf-8") as f:
+                            activity_list = json.load(f)
+                    except Exception:
+                        activity_list = []
+
             user_map = get_all_known_users_map()
-            for r in records:
+            existing_act_ids = {str(item.get("id")) for item in activity_list}
+
+            # 1. Enrich existing activity records with known user names
+            for r in activity_list:
                 details = r.get("details")
                 if isinstance(details, dict):
                     uid = str(details.get("userId") or "")
                     if uid in user_map:
                         uinfo = user_map[uid]
-                        if not details.get("userName"):
+                        if not details.get("userName") or details.get("userName") in ("Student", "Visitor"):
                             details["userName"] = uinfo.get("name")
                         if not details.get("email"):
                             details["email"] = uinfo.get("email")
+
+            # 2. Dynamically synthesize assessment completion events from Supabase quiz results
+            try:
+                supabase_assessments = load_supabase_quiz_scores()
+                for sa in supabase_assessments:
+                    event_id = f"act_quiz_{sa.get('id')}"
+                    if event_id not in existing_act_ids:
+                        activity_list.append({
+                            "id": event_id,
+                            "type": "assessment_completed",
+                            "details": {
+                                "userId": sa.get("userId"),
+                                "userName": sa.get("userName"),
+                                "email": sa.get("userEmail"),
+                                "career": sa.get("recommendation"),
+                                "matchedField": sa.get("highest_category"),
+                                "source": sa.get("source", "career_quiz"),
+                            },
+                            "createdAt": sa.get("createdAt") or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                        })
+                        existing_act_ids.add(event_id)
+            except Exception:
+                pass
+
+            # 3. Dynamically synthesize user registration events from registered user directory
+            try:
+                for uid, uinfo in user_map.items():
+                    event_id = f"act_reg_{uid}"
+                    if event_id not in existing_act_ids and uinfo.get("email"):
+                        activity_list.append({
+                            "id": event_id,
+                            "type": "user_registered",
+                            "details": {
+                                "userId": uid,
+                                "userName": uinfo.get("name"),
+                                "email": uinfo.get("email"),
+                            },
+                            "createdAt": uinfo.get("createdAt") or "2026-11-04T14:00:00Z",
+                        })
+                        existing_act_ids.add(event_id)
+            except Exception:
+                pass
+
+            records = activity_list
         if resource in ("chatbot-interactions", "assessments", "activity"):
             def extract_sort_key(record):
                 val = record.get("createdAt") or record.get("created_at") or record.get("date") or record.get("timestamp") or ""

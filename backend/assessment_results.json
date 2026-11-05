@@ -1,0 +1,152 @@
+[
+  {
+    "id": "asmt_seed_001",
+    "source": "career_quiz",
+    "userId": "usr_ayesha_tariq",
+    "userName": "Ayesha Tariq",
+    "userEmail": "ayesha.tariq@gmail.com",
+    "recommendation": "MBBS / Medical Doctor or Healthcare Professional",
+    "highest_category": "Medical",
+    "top_categories": ["Medical", "Technology"],
+    "scores": {
+      "Medical": 25,
+      "Technology": 5,
+      "Business": 6,
+      "Arts": 4
+    },
+    "academicProfile": {
+      "intermediateMarks": "85.5%",
+      "intermediateGroup": "Pre-Medical",
+      "city": "Lahore",
+      "school": "Kinnaird College for Women, Lahore",
+      "entryTest": "MDCAT",
+      "entryTestScore": "168/200"
+    },
+    "createdAt": "2026-11-04T17:30:00Z"
+  },
+  {
+    "id": "asmt_seed_002",
+    "source": "career_quiz",
+    "userId": "usr_fatima_zahra",
+    "userName": "Fatima Zahra",
+    "userEmail": "fatima.zahra@gmail.com",
+    "recommendation": "Data Scientist or Machine Learning Engineer",
+    "highest_category": "Technology",
+    "top_categories": ["Technology", "Business"],
+    "scores": {
+      "Technology": 26,
+      "Business": 10,
+      "Arts": 5,
+      "Medical": 3
+    },
+    "academicProfile": {
+      "intermediateMarks": "83.2%",
+      "intermediateGroup": "ICS (Physics)",
+      "city": "Islamabad",
+      "school": "Punjab College Islamabad",
+      "entryTest": "NTS-NAT",
+      "entryTestScore": "78/100"
+    },
+    "createdAt": "2026-11-03T14:15:00Z"
+  },
+  {
+    "id": "asmt_seed_003",
+    "source": "career_quiz",
+    "userId": "usr_bilal_ahmed",
+    "userName": "Bilal Ahmed",
+    "userEmail": "bilal.ahmed99@gmail.com",
+    "recommendation": "Financial Analyst or Investment Banker",
+    "highest_category": "Business",
+    "top_categories": ["Business", "Technology"],
+    "scores": {
+      "Business": 24,
+      "Technology": 10,
+      "Arts": 8,
+      "Medical": 2
+    },
+    "academicProfile": {
+      "intermediateMarks": "74.5%",
+      "intermediateGroup": "I.Com (Commerce)",
+      "city": "Karachi",
+      "school": "Commecs College Karachi",
+      "entryTest": "KUBS Test",
+      "entryTestScore": "72/100"
+    },
+    "createdAt": "2026-11-02T11:45:00Z"
+  },
+  {
+    "id": "asmt_seed_004",
+    "source": "career_quiz",
+    "userId": "usr_mahnoor_ali",
+    "userName": "Mahnoor Ali",
+    "userEmail": "mahnoor.ali@gmail.com",
+    "recommendation": "Digital Media Designer or Creative Director",
+    "highest_category": "Arts",
+    "top_categories": ["Arts", "Business"],
+    "scores": {
+      "Arts": 25,
+      "Business": 11,
+      "Technology": 8,
+      "Medical": 3
+    },
+    "academicProfile": {
+      "intermediateMarks": "71.8%",
+      "intermediateGroup": "Humanities / FA Fine Arts",
+      "city": "Rawalpindi",
+      "school": "Army Public College Rawalpindi",
+      "entryTest": "NCA Aptitude Test",
+      "entryTestScore": "81/100"
+    },
+    "createdAt": "2026-11-01T16:20:00Z"
+  },
+  {
+    "id": "asmt_seed_005",
+    "source": "career_quiz",
+    "userId": "usr_hamza_nav",
+    "userName": "Hamza Naveed",
+    "userEmail": "hamza.nav@gmail.com",
+    "recommendation": "Electrical or Mechatronics Engineer",
+    "highest_category": "Technology",
+    "top_categories": ["Technology", "Business"],
+    "scores": {
+      "Technology": 22,
+      "Business": 12,
+      "Arts": 6,
+      "Medical": 4
+    },
+    "academicProfile": {
+      "intermediateMarks": "80.0%",
+      "intermediateGroup": "FSc Pre-Engineering",
+      "city": "Lahore",
+      "school": "Government College University (GCU) Lahore",
+      "entryTest": "ECAT",
+      "entryTestScore": "280/400"
+    },
+    "createdAt": "2026-10-31T09:30:00Z"
+  },
+  {
+    "id": "asmt_seed_006",
+    "source": "career_quiz",
+    "userId": "usr_usman_farooq",
+    "userName": "Usman Farooq",
+    "userEmail": "usman.farooq@gmail.com",
+    "recommendation": "Biomedical Scientist or Pharmacist",
+    "highest_category": "Medical",
+    "top_categories": ["Medical", "Technology"],
+    "scores": {
+      "Medical": 23,
+      "Technology": 9,
+      "Business": 5,
+      "Arts": 4
+    },
+    "academicProfile": {
+      "intermediateMarks": "78.2%",
+      "intermediateGroup": "Pre-Medical",
+      "city": "Multan",
+      "school": "Emerson University Multan",
+      "entryTest": "NUMS Test",
+      "entryTestScore": "142/200"
+    },
+    "createdAt": "2026-10-30T13:10:00Z"
+  }
+]

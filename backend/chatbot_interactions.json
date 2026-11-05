@@ -1,0 +1,128 @@
+[
+  {
+    "id": "chat_1730790100001",
+    "userId": "usr_annaya45",
+    "userName": "Annaya Khan",
+    "userEmail": "annaya45@gmail.com",
+    "message": "Best CS universities?",
+    "response": "Based on academic ranking, faculty quality, and industry placement in Pakistan, the top universities for BS Computer Science are: 1. FAST-NUCES (Islamabad, Lahore, Karachi), 2. NUST (SEECS Islamabad), 3. COMSATS University Islamabad (Lahore & Islamabad campuses), 4. LUMS, 5. ITU Lahore. You can use our University Finder to check your eligibility based on your intermediate marks.",
+    "createdAt": "2026-11-04T18:42:10Z"
+  },
+  {
+    "id": "chat_1730790200002",
+    "userId": "usr_sadia09",
+    "userName": "Sadia Iqbal",
+    "userEmail": "iqbalsadia808@gmail.com",
+    "message": "Can I do Software Engineering or Computer Science after FSc Pre-Medical?",
+    "response": "Yes! According to the revised HEC policy, students with an FSc Pre-Medical background are eligible for BS Computer Science and BS Software Engineering by passing two deficiency mathematics courses during their first two semesters.",
+    "createdAt": "2026-11-04T16:15:30Z"
+  },
+  {
+    "id": "chat_1730790300003",
+    "userId": "usr_asma31",
+    "userName": "ASMA",
+    "userEmail": "asmaafazalaf31@gmail.com",
+    "message": "How can I apply for PEEF scholarship?",
+    "response": "The Punjab Educational Endowment Fund (PEEF) scholarship is available for undergraduate students with at least 60% marks in Intermediate and a monthly family income of PKR 60,000 or below. Applications can be submitted through the official PEEF portal or your university financial aid office.",
+    "createdAt": "2026-11-04T11:20:05Z"
+  },
+  {
+    "id": "chat_1730790400004",
+    "userId": "usr_shamama143",
+    "userName": "Shamama Aslam",
+    "userEmail": "sp23-bcs-143@cuilahore.edu.pk",
+    "message": "What is the fee structure and merit for COMSATS Lahore BSCS?",
+    "response": "For BS Computer Science at COMSATS Lahore, the per-semester tuition fee is approximately PKR 125,000 to 135,000. The typical closing merit aggregate is around 84% to 86% based on your Matric, Intermediate, and NTS-NAT test scores.",
+    "createdAt": "2026-11-03T20:10:45Z"
+  },
+  {
+    "id": "chat_1730790500005",
+    "userId": "usr_zukhruf131",
+    "userName": "Zukhruf Fatima",
+    "userEmail": "sp23-bcs-131@cuilahore.edu.pk",
+    "message": "What are the career options in Business Analytics and Data Science?",
+    "response": "Business Analytics and Data Science are high-growth interdisciplinary fields. Major career paths include Business Intelligence Analyst, Data Scientist, Marketing Strategist, Financial Risk Analyst, and Machine Learning Consultant.",
+    "createdAt": "2026-11-03T15:05:12Z"
+  },
+  {
+    "id": "chat_1730790600006",
+    "userId": "usr_dania_aslam",
+    "userName": "Dania Aslam",
+    "userEmail": "daniaaslam@gmail.com",
+    "message": "How does the AI career quiz calculate my recommended field?",
+    "response": "Our career assessment analyzes your answers across Technology, Business, Medical, and Arts categories. The AI recommendation engine evaluates your aptitude scores alongside your intermediate academic background to identify your highest-fit career direction.",
+    "createdAt": "2026-11-02T19:30:00Z"
+  },
+  {
+    "id": "chat_1730790700007",
+    "userId": null,
+    "userName": "Visitor",
+    "userEmail": null,
+    "message": "Which universities in Lahore offer Need-Based financial assistance?",
+    "response": "Several top universities in Lahore offer need-based financial aid, including: COMSATS Lahore (HEC Need-Based and Qarz-e-Hasna), FAST Lahore, ITU, UET Lahore, and GCU. You can filter by Need basis in our Scholarship Finder.",
+    "createdAt": "2026-11-02T13:40:22Z"
+  },
+  {
+    "id": "chat_1730790800008",
+    "userId": "usr_annaya45",
+    "userName": "Annaya Khan",
+    "userEmail": "annaya45@gmail.com",
+    "message": "What is the merit formula for FAST University?",
+    "response": "FAST-NUCES calculates aggregate merit based on: 50% Intermediate (Part 1/2) or Matric, and 50% FAST Entry Test (or SAT/NTS). For Computing disciplines, closing merits typically range between 68% and 75% depending on campus.",
+    "createdAt": "2026-11-01T21:18:00Z"
+  },
+  {
+    "id": "chat_1730790900009",
+    "userId": "usr_sadia09",
+    "userName": "Sadia Iqbal",
+    "userEmail": "iqbalsadia808@gmail.com",
+    "message": "Are there government scholarships for university students in Pakistan?",
+    "response": "Yes! The major government scholarship programs in Pakistan include: 1. HEC Need-Based Scholarships, 2. Ehsaas Undergraduate Scholarship, 3. PEEF (Punjab), 4. SEEF (Sindh), and 5. BEEF (Balochistan). Full details and links are listed under our Scholarships tab.",
+    "createdAt": "2026-11-01T17:02:15Z"
+  },
+  {
+    "id": "chat_1730791000010",
+    "userId": "usr_asma31",
+    "userName": "ASMA",
+    "userEmail": "asmaafazalaf31@gmail.com",
+    "message": "What is the scope of Artificial Intelligence versus Software Engineering?",
+    "response": "Software Engineering focuses broadly on system design, mobile/web architectures, and enterprise code quality. AI focuses on machine learning, predictive modeling, and automation. Both have exceptional market demand and export opportunities in Pakistan and internationally.",
+    "createdAt": "2026-10-31T14:45:30Z"
+  },
+  {
+    "id": "chat_1730791100011",
+    "userId": null,
+    "userName": "Visitor",
+    "userEmail": null,
+    "message": "How do I take the career quiz?",
+    "response": "You can take the career assessment by clicking 'Take Assessment' on the homepage or navigation bar. It includes quick situational questions to evaluate your analytical and creative interests.",
+    "createdAt": "2026-10-31T10:12:00Z"
+  },
+  {
+    "id": "chat_1730791200012",
+    "userId": "usr_dania_aslam",
+    "userName": "Dania Aslam",
+    "userEmail": "daniaaslam@gmail.com",
+    "message": "What are the entry test dates for NUST and FAST?",
+    "response": "NUST conducts four series of NET (NET-1 in Dec, NET-2 in Feb, NET-3 in Apr, NET-4 in Jun/Jul). FAST-NUCES typically conducts its admissions entry test in July each year.",
+    "createdAt": "2026-10-30T16:22:18Z"
+  },
+  {
+    "id": "chat_1730791300013",
+    "userId": "usr_shamama143",
+    "userName": "Shamama Aslam",
+    "userEmail": "sp23-bcs-143@cuilahore.edu.pk",
+    "message": "How to prepare for university entry tests?",
+    "response": "Review your FSc/A-Levels syllabus with emphasis on Mathematics, Physics, and English. Practice timed MCQs, solve previous NTS-NAT and university past papers, and work on analytical and quantitative reasoning skills.",
+    "createdAt": "2026-10-29T18:05:40Z"
+  },
+  {
+    "id": "chat_1730791400014",
+    "userId": "usr_annaya45",
+    "userName": "Annaya Khan",
+    "userEmail": "annaya45@gmail.com",
+    "message": "What is the difference between BS CS and BS IT?",
+    "response": "BS Computer Science focuses on algorithm design, software engineering, and mathematical computing theory. BS Information Technology focuses more on network administration, database management, and enterprise infrastructure implementation.",
+    "createdAt": "2026-10-28T12:14:55Z"
+  }
+]

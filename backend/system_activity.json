@@ -1,0 +1,302 @@
+[
+  {
+    "id": "act_1001",
+    "type": "assessment_completed",
+    "details": {
+      "userName": "Annaya Khan",
+      "email": "annaya45@gmail.com",
+      "career": "Software Developer or IT Specialist",
+      "matchedField": "Technology",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-04T18:45:00Z"
+  },
+  {
+    "id": "act_1002",
+    "type": "chatbot_interaction",
+    "details": {
+      "userName": "Annaya Khan",
+      "email": "annaya45@gmail.com",
+      "message": "Best CS universities?"
+    },
+    "createdAt": "2026-11-04T18:42:10Z"
+  },
+  {
+    "id": "act_1003",
+    "type": "user_login",
+    "details": {
+      "userName": "Annaya Khan",
+      "email": "annaya45@gmail.com"
+    },
+    "createdAt": "2026-11-04T18:35:12Z"
+  },
+  {
+    "id": "act_1004",
+    "type": "assessment_completed",
+    "details": {
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com",
+      "career": "Business Analyst, Marketer, or Entrepreneur",
+      "matchedField": "Business",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-04T16:20:00Z"
+  },
+  {
+    "id": "act_1005",
+    "type": "chatbot_interaction",
+    "details": {
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com",
+      "message": "Can I do Software Engineering after FSc Pre-Medical?"
+    },
+    "createdAt": "2026-11-04T16:15:30Z"
+  },
+  {
+    "id": "act_1006",
+    "type": "user_login",
+    "details": {
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com"
+    },
+    "createdAt": "2026-11-04T16:05:00Z"
+  },
+  {
+    "id": "act_1007",
+    "type": "assessment_completed",
+    "details": {
+      "userName": "ASMA",
+      "email": "asmaafazalaf31@gmail.com",
+      "career": "Software Developer or IT Specialist",
+      "matchedField": "Technology",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-04T11:25:00Z"
+  },
+  {
+    "id": "act_1008",
+    "type": "chatbot_interaction",
+    "details": {
+      "userName": "ASMA",
+      "email": "asmaafazalaf31@gmail.com",
+      "message": "How can I apply for PEEF scholarship?"
+    },
+    "createdAt": "2026-11-04T11:20:05Z"
+  },
+  {
+    "id": "act_1009",
+    "type": "user_registered",
+    "details": {
+      "userName": "ASMA",
+      "email": "asmaafazalaf31@gmail.com",
+      "authProvider": "email"
+    },
+    "createdAt": "2026-11-04T11:15:00Z"
+  },
+  {
+    "id": "act_1010",
+    "type": "chatbot_interaction",
+    "details": {
+      "userName": "Shamama Aslam",
+      "email": "sp23-bcs-143@cuilahore.edu.pk",
+      "message": "What is the fee structure and merit for COMSATS Lahore BSCS?"
+    },
+    "createdAt": "2026-11-03T20:10:45Z"
+  },
+  {
+    "id": "act_1011",
+    "type": "assessment_completed",
+    "details": {
+      "userName": "Shamama Aslam",
+      "email": "sp23-bcs-143@cuilahore.edu.pk",
+      "career": "AI Engineer & Data Scientist",
+      "matchedField": "Technology",
+      "source": "university_recommender"
+    },
+    "createdAt": "2026-11-03T19:50:00Z"
+  },
+  {
+    "id": "act_1012",
+    "type": "user_login",
+    "details": {
+      "userName": "Shamama Aslam",
+      "email": "sp23-bcs-143@cuilahore.edu.pk"
+    },
+    "createdAt": "2026-11-03T19:40:00Z"
+  },
+  {
+    "id": "act_1013",
+    "type": "assessment_completed",
+    "details": {
+      "userName": "Zukhruf Fatima",
+      "email": "sp23-bcs-131@cuilahore.edu.pk",
+      "career": "Business Analyst, Marketer, or Entrepreneur",
+      "matchedField": "Business",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-03T15:15:00Z"
+  },
+  {
+    "id": "act_1014",
+    "type": "chatbot_interaction",
+    "details": {
+      "userName": "Zukhruf Fatima",
+      "email": "sp23-bcs-131@cuilahore.edu.pk",
+      "message": "What are the career options in Business Analytics and Data Science?"
+    },
+    "createdAt": "2026-11-03T15:05:12Z"
+  },
+  {
+    "id": "act_1015",
+    "type": "user_registered",
+    "details": {
+      "userName": "Zukhruf Fatima",
+      "email": "sp23-bcs-131@cuilahore.edu.pk",
+      "authProvider": "email"
+    },
+    "createdAt": "2026-11-03T14:50:00Z"
+  },
+  {
+    "id": "act_1016",
+    "type": "assessment_completed",
+    "details": {
+      "userName": "Dania Aslam",
+      "email": "daniaaslam@gmail.com",
+      "career": "Doctor, Healthcare Specialist, or Pharmacist",
+      "matchedField": "Medical",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-02T19:40:00Z"
+  },
+  {
+    "id": "act_1017",
+    "type": "chatbot_interaction",
+    "details": {
+      "userName": "Dania Aslam",
+      "email": "daniaaslam@gmail.com",
+      "message": "How does the AI career quiz calculate my recommended field?"
+    },
+    "createdAt": "2026-11-02T19:30:00Z"
+  },
+  {
+    "id": "act_1018",
+    "type": "admin_user_updated",
+    "details": {
+      "userName": "Admin",
+      "target": "University and scholarship listings updated"
+    },
+    "createdAt": "2026-11-02T16:00:00Z"
+  },
+  {
+    "id": "act_1019",
+    "type": "chatbot_interaction",
+    "details": {
+      "userName": "Visitor",
+      "message": "Which universities in Lahore offer Need-Based financial assistance?"
+    },
+    "createdAt": "2026-11-02T13:40:22Z"
+  },
+  {
+    "id": "act_1020",
+    "type": "assessment_completed",
+    "details": {
+      "userName": "Annaya Khan",
+      "email": "annaya45@gmail.com",
+      "career": "Graphic Designer, Content Creator, or Writer",
+      "matchedField": "Arts",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-01T21:30:00Z"
+  },
+  {
+    "id": "act_1021",
+    "type": "chatbot_interaction",
+    "details": {
+      "userName": "Annaya Khan",
+      "email": "annaya45@gmail.com",
+      "message": "What is the merit formula for FAST University?"
+    },
+    "createdAt": "2026-11-01T21:18:00Z"
+  },
+  {
+    "id": "act_1022",
+    "type": "user_registered",
+    "details": {
+      "userName": "Annaya Khan",
+      "email": "annaya45@gmail.com",
+      "authProvider": "email"
+    },
+    "createdAt": "2026-11-01T21:00:00Z"
+  },
+  {
+    "id": "act_1023",
+    "type": "chatbot_interaction",
+    "details": {
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com",
+      "message": "Are there government scholarships for university students in Pakistan?"
+    },
+    "createdAt": "2026-11-01T17:02:15Z"
+  },
+  {
+    "id": "act_1024",
+    "type": "user_registered",
+    "details": {
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com",
+      "authProvider": "email"
+    },
+    "createdAt": "2026-11-01T16:50:00Z"
+  },
+  {
+    "id": "act_1025",
+    "type": "assessment_completed",
+    "details": {
+      "userName": "ASMA",
+      "email": "asmaafazalaf31@gmail.com",
+      "career": "Business Analyst, Marketer, or Entrepreneur",
+      "matchedField": "Business",
+      "source": "university_recommender"
+    },
+    "createdAt": "2026-10-31T15:00:00Z"
+  },
+  {
+    "id": "act_1026",
+    "type": "chatbot_interaction",
+    "details": {
+      "userName": "ASMA",
+      "email": "asmaafazalaf31@gmail.com",
+      "message": "What is the scope of Artificial Intelligence versus Software Engineering?"
+    },
+    "createdAt": "2026-10-31T14:45:30Z"
+  },
+  {
+    "id": "act_1027",
+    "type": "chatbot_interaction",
+    "details": {
+      "userName": "Visitor",
+      "message": "How do I take the career quiz?"
+    },
+    "createdAt": "2026-10-31T10:12:00Z"
+  },
+  {
+    "id": "act_1028",
+    "type": "user_registered",
+    "details": {
+      "userName": "Dania Aslam",
+      "email": "daniaaslam@gmail.com",
+      "authProvider": "email"
+    },
+    "createdAt": "2026-10-30T16:10:00Z"
+  },
+  {
+    "id": "act_1029",
+    "type": "user_registered",
+    "details": {
+      "userName": "Shamama Aslam",
+      "email": "sp23-bcs-143@cuilahore.edu.pk",
+      "authProvider": "email"
+    },
+    "createdAt": "2026-10-29T18:00:00Z"
+  }
+]
