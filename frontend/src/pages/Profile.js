@@ -451,8 +451,22 @@ function Profile() {
         </header>
 
         <div className="profile-step-indicator">
-          <span className={step === 1 ? 'profile-step profile-step--active' : 'profile-step'}>1. Personal information</span>
-          <span className={step === 2 ? 'profile-step profile-step--active' : 'profile-step'}>2. Academic record</span>
+          <button
+            type="button"
+            className={step === 1 ? 'profile-step profile-step--active' : 'profile-step'}
+            onClick={() => setStep(1)}
+            style={{ background: 'transparent', border: 0, cursor: 'pointer', padding: '8px 16px', borderRadius: '999px', transition: 'all 0.2s' }}
+          >
+            1. Personal information
+          </button>
+          <button
+            type="button"
+            className={step === 2 ? 'profile-step profile-step--active' : 'profile-step'}
+            onClick={() => validateStep(1) && setStep(2)}
+            style={{ background: 'transparent', border: 0, cursor: 'pointer', padding: '8px 16px', borderRadius: '999px', transition: 'all 0.2s' }}
+          >
+            2. Academic record
+          </button>
         </div>
 
         {profileSaved ? (

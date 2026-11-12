@@ -14,6 +14,7 @@ import Profile from './pages/Profile';
 import GeneralQuiz from './pages/GeneralQuiz';
 import SpecificQuiz from './pages/SpecificQuiz';
 import Result from './pages/Result';
+import SavedOpportunities from './pages/SavedOpportunities';
 import CareerGuideLogo from './components/CareerGuideLogo';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
@@ -65,9 +66,14 @@ function Header() {
                 Dashboard
               </Link>
               {currentUser && (
-                <Link className={location.pathname === '/profile' ? 'app-navbar__link app-navbar__link--active' : 'app-navbar__link'} to="/profile">
-                  Profile
-                </Link>
+                <>
+                  <Link className={location.pathname === '/saved' ? 'app-navbar__link app-navbar__link--active' : 'app-navbar__link'} to="/saved">
+                    Saved
+                  </Link>
+                  <Link className={location.pathname === '/profile' ? 'app-navbar__link app-navbar__link--active' : 'app-navbar__link'} to="/profile">
+                    Profile
+                  </Link>
+                </>
               )}
             </>
           )}
@@ -133,6 +139,8 @@ function AppLayout() {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" Component={Dashboard} />
             <Route path="/profile" Component={Profile} />
+            <Route path="/saved" Component={SavedOpportunities} />
+            <Route path="/saved-opportunities" Component={SavedOpportunities} />
             <Route path="/university-recommender" Component={UniversityRecommender} />
             <Route path="/scholarships" Component={ScholarshipFinder} />
             <Route path="/quiz" Component={GeneralQuiz} />

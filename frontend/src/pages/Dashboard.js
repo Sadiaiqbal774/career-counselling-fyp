@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getEmptyScores } from '../data/quizData';
 import { getProfileCompletion, readUserProfile } from '../data/userData';
+import { getBookmarks } from '../data/bookmarkData';
 import useQuizScores from '../hooks/useQuizScores';
 import './Dashboard.css';
 
@@ -14,6 +15,8 @@ function Dashboard() {
   const profileEmail = currentUser?.email || 'No email available';
   const profile = useMemo(() => readUserProfile(currentUser?.id), [currentUser?.id]);
   const profileCompletion = getProfileCompletion(profile);
+  const bookmarks = useMemo(() => getBookmarks(currentUser?.id), [currentUser?.id]);
+  const savedCount = (bookmarks.universities?.length || 0) + (bookmarks.scholarships?.length || 0);
 
   const { scores: storedScores, topCategories: storedTopCategories } = useQuizScores(currentUser);
 
@@ -86,6 +89,14 @@ function Dashboard() {
                 onClick={() => navigate('/scholarships')}
               >
                 🎓 Scholarships
+              </button>
+              <button
+                type="button"
+                className="cg-action-btn cg-action-btn--saved"
+                onClick={() => navigate('/saved')}
+                title="View your saved universities and scholarships"
+              >
+                ⭐ Saved {savedCount > 0 ? `(${savedCount})` : ''}
               </button>
             </div>
           </div>
@@ -174,14 +185,19 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="cg-metric-card cg-metric-card--1">
+          <div
+            className="cg-metric-card cg-metric-card--1"
+            style={{ cursor: 'pointer' }}
+            onClick={() => navigate('/saved')}
+            title="Click to view all saved opportunities"
+          >
             <div className="cg-metric-top">
-              <span className="cg-metric-label">Saved paths</span>
-              <span className="cg-metric-icon">🧭</span>
+              <span className="cg-metric-label">Saved opportunities</span>
+              <span className="cg-metric-icon">⭐</span>
             </div>
-            <div className="cg-metric-value">{savedPathsCount}</div>
+            <div className="cg-metric-value">{savedCount}</div>
             <div className="cg-metric-hint">
-              {hasQuizResults ? 'Career matches stored from your quiz results.' : 'No saved career matches yet.'}
+              {savedCount > 0 ? `${savedCount} saved universities & scholarships.` : 'Bookmark universities or scholarships to view them here.'}
             </div>
           </div>
 

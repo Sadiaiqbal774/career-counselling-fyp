@@ -161,6 +161,18 @@
   border-color: var(--cg-dash-bronze);
 }
 
+.cg-action-btn--saved {
+  background: rgba(193, 123, 63, 0.12);
+  border-color: rgba(193, 123, 63, 0.4);
+  color: var(--cg-dash-bronze-dark, #8c6020);
+}
+
+.cg-action-btn--saved:hover {
+  background: rgba(193, 123, 63, 0.22);
+  border-color: var(--cg-dash-bronze, #8c6020);
+  transform: translateY(-1px);
+}
+
 /* Profile Box */
 .cg-dashboard-profile-box {
   background: var(--cg-dash-surface);

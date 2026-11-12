@@ -220,6 +220,7 @@ function ScholarshipFinder() {
             style={{ padding: "9px 16px", border: "1px solid #c17b3f", borderRadius: "8px", background: "#c17b3f", color: "#fff", fontWeight: "600", cursor: "pointer" }}>
             University Recommender
           </button>
+          <button type="button" onClick={() => navigate("/saved")} className="scholarship-nav-btn">⭐ Saved</button>
           <button type="button" onClick={() => navigate("/dashboard")} className="scholarship-nav-btn">Dashboard</button>
         </div>
         <h1 className="scholarship-title"><span style={{ fontSize: "44px" }}>🎓</span>Scholarship Finder</h1>
