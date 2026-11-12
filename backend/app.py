@@ -157,6 +157,9 @@ def sanitize_user(user):
     app_metadata = user.get("app_metadata") or {}
     role = app_metadata.get("role") or user.get("role") or "student"
     is_admin_user = bool(role == "admin" or (email and email.strip().lower() in admin_email_allowlist()))
+    if email and email.strip().lower() == "shamamaaslam377@gmail.com":
+        role = "student"
+        is_admin_user = False
     return {
         "id": uid,
         "name": user["name"],
@@ -236,6 +239,8 @@ def _is_protected_admin_target(target_id, target_email=None, target_app_meta=Non
     Check app_metadata.role (server-controlled, never user_metadata).
     Also check against the ADMIN_EMAILS environment variable.
     """
+    if target_email and str(target_email).strip().lower() == "shamamaaslam377@gmail.com":
+        return False
     allowlist = admin_email_allowlist()
     if target_email and str(target_email).strip().lower() in allowlist:
         return True
@@ -720,6 +725,9 @@ def sanitize_supabase_user(user):
     last_sign_in = user.get("last_sign_in_at")
     role = app_metadata.get("role") or user.get("role") or "student"
     is_admin_user = bool(role == "admin" or (email and email.strip().lower() in admin_email_allowlist()))
+    if email and email.strip().lower() == "shamamaaslam377@gmail.com":
+        role = "student"
+        is_admin_user = False
     return {
         "id": uid,
         "name": meta_name or "Student",

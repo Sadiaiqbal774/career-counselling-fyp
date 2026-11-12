@@ -2830,16 +2830,16 @@ function AdminDashboard() {
     }
   };
   const KNOWN_ADMIN_EMAILS = [
-    'shamamaaslam377@gmail.com',
     ...(process.env.REACT_APP_ADMIN_EMAILS ? process.env.REACT_APP_ADMIN_EMAILS.split(',') : []),
   ].map((e) => e.trim().toLowerCase());
 
   const isUserAdmin = (u) => {
     if (!u) return false;
+    const uEmail = (u.email || '').trim().toLowerCase();
+    if (uEmail === 'shamamaaslam377@gmail.com') return false;
     if (u.isAdmin) return true;
     if (u.app_metadata?.role === 'admin') return true;
     if (u.role === 'admin') return true;
-    const uEmail = (u.email || '').trim().toLowerCase();
     if (uEmail) {
       if (KNOWN_ADMIN_EMAILS.includes(uEmail)) return true;
       if (adminEmailsList.includes(uEmail)) return true;
