@@ -1,0 +1,478 @@
+[
+  {
+    "id": "43997b09-13b5-4ac8-9e0c-0741fd284d48",
+    "source": "career_quiz",
+    "userId": "c8850537-241b-4a54-bdf2-8b92d8d18092",
+    "userName": "Shamama Aslam",
+    "userEmail": "shamamaaslam377@gmail.com",
+    "recommendation": "Software Developer or IT Specialist",
+    "highest_category": "Technology",
+    "top_categories": [
+      "Technology",
+      "Business"
+    ],
+    "scores": {
+      "Technology": 24,
+      "Business": 12,
+      "Medical": 4,
+      "Arts": 6
+    },
+    "academicProfile": {
+      "intermediateMarks": "88.2%",
+      "intermediateGroup": "Pre-Engineering",
+      "city": "Lahore",
+      "school": "Lahore College for Women University",
+      "entryTest": "ECAT",
+      "entryTestScore": "152/200"
+    },
+    "createdAt": "2026-11-08T08:35:05Z"
+  },
+  {
+    "id": "092cf380-aba0-44ec-9fb3-fd2152487092",
+    "source": "career_quiz",
+    "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+    "userName": "Sadia Iqbal",
+    "userEmail": "iqbalsadia808@gmail.com",
+    "recommendation": "Software Developer or IT Specialist",
+    "highest_category": "Technology",
+    "top_categories": [
+      "Technology",
+      "Business"
+    ],
+    "scores": {
+      "Technology": 26,
+      "Business": 14,
+      "Medical": 3,
+      "Arts": 5
+    },
+    "academicProfile": {
+      "intermediateMarks": "91.4%",
+      "intermediateGroup": "Pre-Engineering",
+      "city": "Lahore",
+      "school": "Punjab Group of Colleges, Lahore",
+      "entryTest": "NUST NET",
+      "entryTestScore": "158/200"
+    },
+    "createdAt": "2026-11-05T07:30:56Z"
+  },
+  {
+    "id": "9f7e74fd-973d-4aaf-be03-7236a6b93c3e",
+    "source": "career_quiz",
+    "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+    "userName": "Sadia Iqbal",
+    "userEmail": "iqbalsadia808@gmail.com",
+    "recommendation": "Software Developer or IT Specialist",
+    "highest_category": "Technology",
+    "top_categories": [
+      "Technology",
+      "Arts"
+    ],
+    "scores": {
+      "Technology": 25,
+      "Business": 11,
+      "Medical": 5,
+      "Arts": 7
+    },
+    "academicProfile": {
+      "intermediateMarks": "91.4%",
+      "intermediateGroup": "Pre-Engineering",
+      "city": "Lahore",
+      "school": "Punjab Group of Colleges, Lahore",
+      "entryTest": "NUST NET",
+      "entryTestScore": "158/200"
+    },
+    "createdAt": "2026-11-05T07:30:22Z"
+  },
+  {
+    "id": "6729aab0-bc10-4b34-9ace-98feb8f34625",
+    "source": "career_quiz",
+    "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+    "userName": "Sadia Iqbal",
+    "userEmail": "iqbalsadia808@gmail.com",
+    "recommendation": "Software Developer or IT Specialist",
+    "highest_category": "Technology",
+    "top_categories": [
+      "Technology",
+      "Business"
+    ],
+    "scores": {
+      "Technology": 27,
+      "Business": 10,
+      "Medical": 2,
+      "Arts": 4
+    },
+    "academicProfile": {
+      "intermediateMarks": "91.4%",
+      "intermediateGroup": "Pre-Engineering",
+      "city": "Lahore",
+      "school": "Punjab Group of Colleges, Lahore",
+      "entryTest": "FAST Test",
+      "entryTestScore": "78/100"
+    },
+    "createdAt": "2026-11-05T07:25:44Z"
+  },
+  {
+    "id": "8dcabc38-cc86-4968-9464-7f28154cd37e",
+    "source": "career_quiz",
+    "userId": "9d08b6bf-8a3d-4849-8204-61180134cab0",
+    "userName": "ASMA",
+    "userEmail": "asmaafazalaf31@gmail.com",
+    "recommendation": "Software Developer or IT Specialist",
+    "highest_category": "Technology",
+    "top_categories": [
+      "Technology",
+      "Business"
+    ],
+    "scores": {
+      "Technology": 23,
+      "Business": 13,
+      "Medical": 4,
+      "Arts": 5
+    },
+    "academicProfile": {
+      "intermediateMarks": "84.0%",
+      "intermediateGroup": "ICS (Physics)",
+      "city": "Lahore",
+      "school": "Govt College for Women, Lahore",
+      "entryTest": "NTS NAT",
+      "entryTestScore": "76/100"
+    },
+    "createdAt": "2026-11-04T19:49:57Z"
+  },
+  {
+    "id": "e9f121fc-aeac-4c7b-b6f5-79bddaedcce8",
+    "source": "career_quiz",
+    "userId": "9d08b6bf-8a3d-4849-8204-61180134cab0",
+    "userName": "ASMA",
+    "userEmail": "asmaafazalaf31@gmail.com",
+    "recommendation": "Software Developer or IT Specialist",
+    "highest_category": "Technology",
+    "top_categories": [
+      "Technology",
+      "Arts"
+    ],
+    "scores": {
+      "Technology": 22,
+      "Business": 11,
+      "Medical": 5,
+      "Arts": 6
+    },
+    "academicProfile": {
+      "intermediateMarks": "84.0%",
+      "intermediateGroup": "ICS (Physics)",
+      "city": "Lahore",
+      "school": "Govt College for Women, Lahore",
+      "entryTest": "NTS NAT",
+      "entryTestScore": "76/100"
+    },
+    "createdAt": "2026-11-04T19:49:57Z"
+  },
+  {
+    "id": "asmt_sup_143",
+    "source": "career_quiz",
+    "userId": "4a0a34a6-685f-42a5-8ba7-29466d5dd33a",
+    "userName": "Shamama Aslam",
+    "userEmail": "sp23-bcs-143@cuilahore.edu.pk",
+    "recommendation": "Software Developer or IT Specialist",
+    "highest_category": "Technology",
+    "top_categories": [
+      "Technology",
+      "Business"
+    ],
+    "scores": {
+      "Technology": 26,
+      "Business": 12,
+      "Medical": 3,
+      "Arts": 5
+    },
+    "academicProfile": {
+      "intermediateMarks": "87.5%",
+      "intermediateGroup": "Pre-Engineering",
+      "city": "Lahore",
+      "school": "COMSATS University Lahore Campus",
+      "entryTest": "NTS NAT",
+      "entryTestScore": "82/100"
+    },
+    "createdAt": "2026-11-04T18:45:00Z"
+  },
+  {
+    "id": "asmt_sup_114",
+    "source": "career_quiz",
+    "userId": "4a714d42-d9a5-451a-9aef-b3f0c0d5d186",
+    "userName": "Sadia Iqbal",
+    "userEmail": "sp23-bcs-114@cuilahore.edu.pk",
+    "recommendation": "Software Developer or IT Specialist",
+    "highest_category": "Technology",
+    "top_categories": [
+      "Technology",
+      "Business"
+    ],
+    "scores": {
+      "Technology": 28,
+      "Business": 11,
+      "Medical": 2,
+      "Arts": 4
+    },
+    "academicProfile": {
+      "intermediateMarks": "92.0%",
+      "intermediateGroup": "Pre-Engineering",
+      "city": "Lahore",
+      "school": "COMSATS University Lahore Campus",
+      "entryTest": "NTS NAT",
+      "entryTestScore": "85/100"
+    },
+    "createdAt": "2026-11-04T18:30:00Z"
+  },
+  {
+    "id": "0f7f11f0-cadc-4cc3-a034-2d27678a9da2",
+    "source": "career_quiz",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "userName": "Annaya Khan",
+    "userEmail": "annaya45@gmail.com",
+    "recommendation": "Business Analyst, Marketer, or Entrepreneur",
+    "highest_category": "Business",
+    "top_categories": [
+      "Business",
+      "Arts"
+    ],
+    "scores": {
+      "Business": 23,
+      "Arts": 9,
+      "Technology": 6,
+      "Medical": 4
+    },
+    "academicProfile": {
+      "intermediateMarks": "82.5%",
+      "intermediateGroup": "I.Com",
+      "city": "Lahore",
+      "school": "Punjab College of Commerce, Lahore",
+      "entryTest": "NTS NAT-I.Com",
+      "entryTestScore": "74/100"
+    },
+    "createdAt": "2026-08-27T09:07:28Z"
+  },
+  {
+    "id": "328bb335-e83d-49a5-b0d6-8439ad9b7b72",
+    "source": "career_quiz",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "userName": "Annaya Khan",
+    "userEmail": "annaya45@gmail.com",
+    "recommendation": "Business Analyst, Marketer, or Entrepreneur",
+    "highest_category": "Business",
+    "top_categories": [
+      "Business",
+      "Technology"
+    ],
+    "scores": {
+      "Business": 22,
+      "Technology": 12,
+      "Arts": 8,
+      "Medical": 3
+    },
+    "academicProfile": {
+      "intermediateMarks": "82.5%",
+      "intermediateGroup": "I.Com",
+      "city": "Lahore",
+      "school": "Punjab College of Commerce, Lahore",
+      "entryTest": "NTS NAT-I.Com",
+      "entryTestScore": "74/100"
+    },
+    "createdAt": "2026-08-27T09:07:28Z"
+  },
+  {
+    "id": "83fcd059-f35f-44c9-b249-de04f40d5800",
+    "source": "career_quiz",
+    "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+    "userName": "Sadia Iqbal",
+    "userEmail": "iqbalsadia808@gmail.com",
+    "recommendation": "Business Analyst, Marketer, or Entrepreneur",
+    "highest_category": "Business",
+    "top_categories": [
+      "Business",
+      "Technology"
+    ],
+    "scores": {
+      "Business": 20,
+      "Technology": 14,
+      "Arts": 8,
+      "Medical": 4
+    },
+    "academicProfile": {
+      "intermediateMarks": "91.4%",
+      "intermediateGroup": "Pre-Engineering",
+      "city": "Lahore",
+      "school": "Punjab Group of Colleges, Lahore",
+      "entryTest": "NUST NET",
+      "entryTestScore": "158/200"
+    },
+    "createdAt": "2026-09-07T06:41:26Z"
+  },
+  {
+    "id": "ee8e6a55-18db-4608-82dd-7154396bb7ab",
+    "source": "career_quiz",
+    "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+    "userName": "Sadia Iqbal",
+    "userEmail": "iqbalsadia808@gmail.com",
+    "recommendation": "Business Analyst, Marketer, or Entrepreneur",
+    "highest_category": "Business",
+    "top_categories": [
+      "Business",
+      "Arts"
+    ],
+    "scores": {
+      "Business": 21,
+      "Arts": 9,
+      "Technology": 11,
+      "Medical": 3
+    },
+    "academicProfile": {
+      "intermediateMarks": "91.4%",
+      "intermediateGroup": "Pre-Engineering",
+      "city": "Lahore",
+      "school": "Punjab Group of Colleges, Lahore",
+      "entryTest": "NUST NET",
+      "entryTestScore": "158/200"
+    },
+    "createdAt": "2026-09-07T06:43:18Z"
+  },
+  {
+    "id": "3bf7d072-e783-4054-8b5e-bdf91e9ee9c7",
+    "source": "career_quiz",
+    "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+    "userName": "Sadia Iqbal",
+    "userEmail": "iqbalsadia808@gmail.com",
+    "recommendation": "Business Analyst, Marketer, or Entrepreneur",
+    "highest_category": "Business",
+    "top_categories": [
+      "Business",
+      "Technology"
+    ],
+    "scores": {
+      "Business": 22,
+      "Technology": 13,
+      "Arts": 7,
+      "Medical": 2
+    },
+    "academicProfile": {
+      "intermediateMarks": "91.4%",
+      "intermediateGroup": "Pre-Engineering",
+      "city": "Lahore",
+      "school": "Punjab Group of Colleges, Lahore",
+      "entryTest": "NUST NET",
+      "entryTestScore": "158/200"
+    },
+    "createdAt": "2026-09-09T05:28:08Z"
+  },
+  {
+    "id": "asmt_sup_eman",
+    "source": "career_quiz",
+    "userId": "41919106-b533-4a89-98f0-0a8cb3b78d37",
+    "userName": "Eman",
+    "userEmail": "e4303588@gmail.com",
+    "recommendation": "Business Analyst, Marketer, or Entrepreneur",
+    "highest_category": "Business",
+    "top_categories": [
+      "Business",
+      "Arts"
+    ],
+    "scores": {
+      "Business": 24,
+      "Arts": 10,
+      "Technology": 8,
+      "Medical": 4
+    },
+    "academicProfile": {
+      "intermediateMarks": "83.0%",
+      "intermediateGroup": "I.Com",
+      "city": "Faisalabad",
+      "school": "Govt College of Commerce, Faisalabad",
+      "entryTest": "NTS NAT",
+      "entryTestScore": "72/100"
+    },
+    "createdAt": "2026-11-04T16:15:00Z"
+  },
+  {
+    "id": "asmt_sup_dania",
+    "source": "career_quiz",
+    "userId": "f93d5804-b24b-4a59-989d-a766a57e0c89",
+    "userName": "Dania Aslam",
+    "userEmail": "d63018553@gmail.com",
+    "recommendation": "MBBS / Medical Doctor or Healthcare Professional",
+    "highest_category": "Medical",
+    "top_categories": [
+      "Medical",
+      "Technology"
+    ],
+    "scores": {
+      "Medical": 26,
+      "Technology": 6,
+      "Business": 5,
+      "Arts": 3
+    },
+    "academicProfile": {
+      "intermediateMarks": "89.2%",
+      "intermediateGroup": "Pre-Medical",
+      "city": "Lahore",
+      "school": "Kinnaird College for Women, Lahore",
+      "entryTest": "MDCAT",
+      "entryTestScore": "172/200"
+    },
+    "createdAt": "2026-11-04T15:30:00Z"
+  },
+  {
+    "id": "asmt_sup_asma_afzal",
+    "source": "career_quiz",
+    "userId": "318ce83f-def7-4ac4-8e43-40a7d2885e58",
+    "userName": "Asma Afzal",
+    "userEmail": "asmaafzalaf31@gmail.com",
+    "recommendation": "Pharmacist or Biotechnology Researcher",
+    "highest_category": "Medical",
+    "top_categories": [
+      "Medical",
+      "Business"
+    ],
+    "scores": {
+      "Medical": 24,
+      "Business": 8,
+      "Technology": 7,
+      "Arts": 4
+    },
+    "academicProfile": {
+      "intermediateMarks": "86.0%",
+      "intermediateGroup": "Pre-Medical",
+      "city": "Lahore",
+      "school": "Govt Islamia College for Women, Cooper Road Lahore",
+      "entryTest": "MDCAT",
+      "entryTestScore": "164/200"
+    },
+    "createdAt": "2026-11-04T15:10:00Z"
+  },
+  {
+    "id": "asmt_sup_shamama_arts",
+    "source": "career_quiz",
+    "userId": "8204948e-6587-4ad9-bcd1-b40a87d4c21f",
+    "userName": "Shamama",
+    "userEmail": "shamamaslam.cui@gmail.com",
+    "recommendation": "Graphic Designer, Media Producer, or Content Creator",
+    "highest_category": "Arts",
+    "top_categories": [
+      "Arts",
+      "Technology"
+    ],
+    "scores": {
+      "Arts": 23,
+      "Technology": 12,
+      "Business": 7,
+      "Medical": 3
+    },
+    "academicProfile": {
+      "intermediateMarks": "80.4%",
+      "intermediateGroup": "FA General Science",
+      "city": "Lahore",
+      "school": "National College of Arts (Preparatory), Lahore",
+      "entryTest": "NCA Aptitude Test",
+      "entryTestScore": "78/100"
+    },
+    "createdAt": "2026-11-04T14:50:00Z"
+  }
+]

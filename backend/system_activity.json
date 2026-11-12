@@ -1,0 +1,576 @@
+[
+  {
+    "id": "act_8001",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "c8850537-241b-4a54-bdf2-8b92d8d18092",
+      "userName": "Shamama Aslam",
+      "email": "shamamaaslam377@gmail.com",
+      "career": "Software Developer or IT Specialist",
+      "matchedField": "Technology",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-08T08:35:05Z"
+  },
+  {
+    "id": "act_5001",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com",
+      "career": "Software Developer or IT Specialist",
+      "matchedField": "Technology",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-05T07:30:56Z"
+  },
+  {
+    "id": "act_5002",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com",
+      "career": "Software Developer or IT Specialist",
+      "matchedField": "Technology",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-05T07:30:22Z"
+  },
+  {
+    "id": "act_5003",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com",
+      "career": "Software Developer or IT Specialist",
+      "matchedField": "Technology",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-05T07:25:44Z"
+  },
+  {
+    "id": "act_4001",
+    "type": "user_registered",
+    "details": {
+      "userId": "c8850537-241b-4a54-bdf2-8b92d8d18092",
+      "userName": "Shamama Aslam",
+      "email": "shamamaaslam377@gmail.com"
+    },
+    "createdAt": "2026-11-04T21:28:04Z"
+  },
+  {
+    "id": "act_4002",
+    "type": "user_registered",
+    "details": {
+      "userId": "318ce83f-def7-4ac4-8e43-40a7d2885e58",
+      "userName": "Asma Afzal",
+      "email": "asmaafzalaf31@gmail.com"
+    },
+    "createdAt": "2026-11-04T14:08:46Z"
+  },
+  {
+    "id": "act_4003",
+    "type": "user_registered",
+    "details": {
+      "userId": "9d08b6bf-8a3d-4849-8204-61180134cab0",
+      "userName": "ASMA",
+      "email": "asmaafazalaf31@gmail.com"
+    },
+    "createdAt": "2026-11-04T14:07:49Z"
+  },
+  {
+    "id": "act_4004",
+    "type": "user_registered",
+    "details": {
+      "userId": "4a0a34a6-685f-42a5-8ba7-29466d5dd33a",
+      "userName": "Shamama Aslam",
+      "email": "sp23-bcs-143@cuilahore.edu.pk"
+    },
+    "createdAt": "2026-11-04T13:59:21Z"
+  },
+  {
+    "id": "act_4005",
+    "type": "user_registered",
+    "details": {
+      "userId": "8204948e-6587-4ad9-bcd1-b40a87d4c21f",
+      "userName": "Shamama",
+      "email": "shamamaslam.cui@gmail.com"
+    },
+    "createdAt": "2026-11-04T12:20:41Z"
+  },
+  {
+    "id": "act_4006",
+    "type": "user_registered",
+    "details": {
+      "userId": "d7990368-a3ee-492d-816c-d108754f9b03",
+      "userName": "Shamama Aslam",
+      "email": "shamamaaslam.cui@gmail.com"
+    },
+    "createdAt": "2026-11-04T05:41:04Z"
+  },
+  {
+    "id": "act_4007",
+    "type": "user_registered",
+    "details": {
+      "userId": "f93d5804-b24b-4a59-989d-a766a57e0c89",
+      "userName": "Dania Aslam",
+      "email": "d63018553@gmail.com"
+    },
+    "createdAt": "2026-11-04T05:32:42Z"
+  },
+  {
+    "id": "act_4008",
+    "type": "user_login",
+    "details": {
+      "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com"
+    },
+    "createdAt": "2026-11-04T18:35:00Z"
+  },
+  {
+    "id": "act_4009",
+    "type": "user_login",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+      "userName": "Annaya Khan",
+      "email": "annaya45@gmail.com"
+    },
+    "createdAt": "2026-11-04T18:40:00Z"
+  },
+  {
+    "id": "act_4010",
+    "type": "user_login",
+    "details": {
+      "userId": "9d08b6bf-8a3d-4849-8204-61180134cab0",
+      "userName": "ASMA",
+      "email": "asmaafazalaf31@gmail.com"
+    },
+    "createdAt": "2026-11-04T19:00:00Z"
+  },
+  {
+    "id": "act_4011",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "9d08b6bf-8a3d-4849-8204-61180134cab0",
+      "userName": "ASMA",
+      "email": "asmaafazalaf31@gmail.com",
+      "career": "Software Developer or IT Specialist",
+      "matchedField": "Technology",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-04T19:49:57Z"
+  },
+  {
+    "id": "act_4012",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "9d08b6bf-8a3d-4849-8204-61180134cab0",
+      "userName": "ASMA",
+      "email": "asmaafazalaf31@gmail.com",
+      "career": "Software Developer or IT Specialist",
+      "matchedField": "Technology",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-04T19:49:57Z"
+  },
+  {
+    "id": "act_4013",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "4a0a34a6-685f-42a5-8ba7-29466d5dd33a",
+      "userName": "Shamama Aslam",
+      "email": "sp23-bcs-143@cuilahore.edu.pk",
+      "career": "Software Developer or IT Specialist",
+      "matchedField": "Technology",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-04T18:45:00Z"
+  },
+  {
+    "id": "act_4014",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "4a714d42-d9a5-451a-9aef-b3f0c0d5d186",
+      "userName": "Sadia Iqbal",
+      "email": "sp23-bcs-114@cuilahore.edu.pk",
+      "career": "Software Developer or IT Specialist",
+      "matchedField": "Technology",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-04T18:30:00Z"
+  },
+  {
+    "id": "act_4015",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+      "userName": "Annaya Khan",
+      "email": "annaya45@gmail.com",
+      "query": "Best CS universities?"
+    },
+    "createdAt": "2026-11-04T18:42:10Z"
+  },
+  {
+    "id": "act_4016",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com",
+      "query": "Can I do Software Engineering after Pre-Medical?"
+    },
+    "createdAt": "2026-11-04T18:50:22Z"
+  },
+  {
+    "id": "act_4017",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "9d08b6bf-8a3d-4849-8204-61180134cab0",
+      "userName": "ASMA",
+      "email": "asmaafazalaf31@gmail.com",
+      "query": "How can I apply for PEEF scholarship?"
+    },
+    "createdAt": "2026-11-04T19:05:40Z"
+  },
+  {
+    "id": "act_4018",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "4a0a34a6-685f-42a5-8ba7-29466d5dd33a",
+      "userName": "Shamama Aslam",
+      "email": "sp23-bcs-143@cuilahore.edu.pk",
+      "query": "COMSATS Lahore BSCS fee structure and merit?"
+    },
+    "createdAt": "2026-11-04T19:22:15Z"
+  },
+  {
+    "id": "act_4019",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "f93d5804-b24b-4a59-989d-a766a57e0c89",
+      "userName": "Dania Aslam",
+      "email": "d63018553@gmail.com",
+      "query": "How does the AI career quiz calculate recommended field?"
+    },
+    "createdAt": "2026-11-04T19:40:00Z"
+  },
+  {
+    "id": "act_4020",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": null,
+      "userName": "Visitor",
+      "email": null,
+      "query": "Need-Based financial assistance in Lahore?"
+    },
+    "createdAt": "2026-11-04T20:00:10Z"
+  },
+  {
+    "id": "act_4021",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+      "userName": "Annaya Khan",
+      "email": "annaya45@gmail.com",
+      "query": "What is the merit formula for FAST University?"
+    },
+    "createdAt": "2026-11-04T20:15:30Z"
+  },
+  {
+    "id": "act_4022",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com",
+      "query": "Government scholarships in Pakistan?"
+    },
+    "createdAt": "2026-11-04T20:30:45Z"
+  },
+  {
+    "id": "act_3001",
+    "type": "user_registered",
+    "details": {
+      "userId": "41919106-b533-4a89-98f0-0a8cb3b78d37",
+      "userName": "Eman",
+      "email": "e4303588@gmail.com"
+    },
+    "createdAt": "2026-11-03T21:07:19Z"
+  },
+  {
+    "id": "act_3002",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "41919106-b533-4a89-98f0-0a8cb3b78d37",
+      "userName": "Eman",
+      "email": "e4303588@gmail.com",
+      "career": "Business Analyst, Marketer, or Entrepreneur",
+      "matchedField": "Business",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-03T21:30:00Z"
+  },
+  {
+    "id": "act_3003",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "f93d5804-b24b-4a59-989d-a766a57e0c89",
+      "userName": "Dania Aslam",
+      "email": "d63018553@gmail.com",
+      "career": "MBBS / Medical Doctor or Healthcare Professional",
+      "matchedField": "Medical",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-03T21:45:00Z"
+  },
+  {
+    "id": "act_3004",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "318ce83f-def7-4ac4-8e43-40a7d2885e58",
+      "userName": "Asma Afzal",
+      "email": "asmaafzalaf31@gmail.com",
+      "career": "Pharmacist or Biotechnology Researcher",
+      "matchedField": "Medical",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-03T22:00:00Z"
+  },
+  {
+    "id": "act_3005",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "9d08b6bf-8a3d-4849-8204-61180134cab0",
+      "userName": "ASMA",
+      "email": "asmaafazalaf31@gmail.com",
+      "query": "What is the scope of AI versus SE?"
+    },
+    "createdAt": "2026-11-03T22:15:00Z"
+  },
+  {
+    "id": "act_3006",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": null,
+      "userName": "Visitor",
+      "email": null,
+      "query": "How do I take the career quiz?"
+    },
+    "createdAt": "2026-11-03T22:30:00Z"
+  },
+  {
+    "id": "act_2001",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "8204948e-6587-4ad9-bcd1-b40a87d4c21f",
+      "userName": "Shamama",
+      "email": "shamamaslam.cui@gmail.com",
+      "career": "Graphic Designer, Media Producer, or Content Creator",
+      "matchedField": "Arts",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-11-02T14:50:00Z"
+  },
+  {
+    "id": "act_2002",
+    "type": "user_login",
+    "details": {
+      "userId": "c8850537-241b-4a54-bdf2-8b92d8d18092",
+      "userName": "Shamama Aslam",
+      "email": "shamamaaslam377@gmail.com"
+    },
+    "createdAt": "2026-11-02T15:10:00Z"
+  },
+  {
+    "id": "act_2003",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "f93d5804-b24b-4a59-989d-a766a57e0c89",
+      "userName": "Dania Aslam",
+      "email": "d63018553@gmail.com",
+      "query": "What are the entry test dates for NUST and FAST?"
+    },
+    "createdAt": "2026-11-02T16:00:00Z"
+  },
+  {
+    "id": "act_2004",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "c8850537-241b-4a54-bdf2-8b92d8d18092",
+      "userName": "Shamama Aslam",
+      "email": "shamamaaslam377@gmail.com",
+      "query": "How to prepare for university entry tests?"
+    },
+    "createdAt": "2026-11-02T16:30:00Z"
+  },
+  {
+    "id": "act_hist_reg_01",
+    "type": "user_registered",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+      "userName": "Annaya Khan",
+      "email": "annaya45@gmail.com"
+    },
+    "createdAt": "2026-08-27T05:36:58Z"
+  },
+  {
+    "id": "act_hist_reg_02",
+    "type": "user_registered",
+    "details": {
+      "userId": "4a714d42-d9a5-451a-9aef-b3f0c0d5d186",
+      "userName": "Sadia Iqbal",
+      "email": "sp23-bcs-114@cuilahore.edu.pk"
+    },
+    "createdAt": "2026-09-07T05:40:46Z"
+  },
+  {
+    "id": "act_hist_reg_03",
+    "type": "user_registered",
+    "details": {
+      "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com"
+    },
+    "createdAt": "2026-09-07T06:39:07Z"
+  },
+  {
+    "id": "act_hist_asmt_01",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+      "userName": "Annaya Khan",
+      "email": "annaya45@gmail.com",
+      "career": "Business Analyst, Marketer, or Entrepreneur",
+      "matchedField": "Business",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-08-27T09:07:28Z"
+  },
+  {
+    "id": "act_hist_asmt_02",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+      "userName": "Annaya Khan",
+      "email": "annaya45@gmail.com",
+      "career": "Business Analyst, Marketer, or Entrepreneur",
+      "matchedField": "Business",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-08-27T09:07:28Z"
+  },
+  {
+    "id": "act_hist_asmt_03",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com",
+      "career": "Business Analyst, Marketer, or Entrepreneur",
+      "matchedField": "Business",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-09-07T06:41:26Z"
+  },
+  {
+    "id": "act_hist_asmt_04",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com",
+      "career": "Business Analyst, Marketer, or Entrepreneur",
+      "matchedField": "Business",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-09-07T06:43:18Z"
+  },
+  {
+    "id": "act_hist_asmt_05",
+    "type": "assessment_completed",
+    "details": {
+      "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com",
+      "career": "Business Analyst, Marketer, or Entrepreneur",
+      "matchedField": "Business",
+      "source": "career_quiz"
+    },
+    "createdAt": "2026-09-09T05:28:08Z"
+  },
+  {
+    "id": "act_hist_chat_01",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+      "userName": "Annaya Khan",
+      "email": "annaya45@gmail.com",
+      "query": "Difference between BS CS and BS IT?"
+    },
+    "createdAt": "2026-08-27T09:15:00Z"
+  },
+  {
+    "id": "act_hist_chat_02",
+    "type": "chatbot_interaction",
+    "details": {
+      "userId": "41919106-b533-4a89-98f0-0a8cb3b78d37",
+      "userName": "Eman",
+      "email": "e4303588@gmail.com",
+      "query": "Universities offering BS Business Analytics and FinTech?"
+    },
+    "createdAt": "2026-09-09T06:00:00Z"
+  },
+  {
+    "id": "act_hist_login_01",
+    "type": "user_login",
+    "details": {
+      "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+      "userName": "Annaya Khan",
+      "email": "annaya45@gmail.com"
+    },
+    "createdAt": "2026-08-27T08:00:00Z"
+  },
+  {
+    "id": "act_hist_login_02",
+    "type": "user_login",
+    "details": {
+      "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com"
+    },
+    "createdAt": "2026-09-07T06:40:00Z"
+  },
+  {
+    "id": "act_hist_login_03",
+    "type": "user_login",
+    "details": {
+      "userId": "4a714d42-d9a5-451a-9aef-b3f0c0d5d186",
+      "userName": "Sadia Iqbal",
+      "email": "sp23-bcs-114@cuilahore.edu.pk"
+    },
+    "createdAt": "2026-09-07T05:50:00Z"
+  },
+  {
+    "id": "act_hist_login_04",
+    "type": "user_login",
+    "details": {
+      "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+      "userName": "Sadia Iqbal",
+      "email": "iqbalsadia808@gmail.com"
+    },
+    "createdAt": "2026-09-09T05:20:00Z"
+  },
+  {
+    "id": "act_hist_admin_01",
+    "type": "admin_catalog_sync",
+    "details": {
+      "userName": "Administrator",
+      "action": "Synchronized institutional university catalog and scholarship listings"
+    },
+    "createdAt": "2026-09-01T10:00:00Z"
+  }
+]

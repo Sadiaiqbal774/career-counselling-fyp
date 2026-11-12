@@ -1,0 +1,38 @@
+[
+  {
+    "id": "engineering",
+    "field": "Engineering",
+    "description": "Minimum 60% marks in FSc Pre-Engineering, ICS (Physics, Math) or equivalent qualification for PEC recognized engineering degrees.",
+    "minimumMarks": 60
+  },
+  {
+    "id": "business-commerce",
+    "field": "Business & Commerce",
+    "description": "Minimum 50% marks in Intermediate (FA, FSc, I.Com, ICS) or equivalent for BBA, BS Accounting & Finance, and Commerce programs.",
+    "minimumMarks": 50
+  },
+  {
+    "id": "medicine-health-sciences",
+    "field": "Medicine & Health Sciences",
+    "description": "Minimum 60% marks in FSc Pre-Medical or equivalent (PMDC criteria for MBBS/BDS/PharmD/Allied Health Sciences).",
+    "minimumMarks": 60
+  },
+  {
+    "id": "law",
+    "field": "Law",
+    "description": "Minimum 50% marks in Intermediate (any stream) and passing Law Admission Test (LAT) as mandated by Pakistan Bar Council.",
+    "minimumMarks": 50
+  },
+  {
+    "id": "natural-applied-sciences",
+    "field": "Natural & Applied Sciences",
+    "description": "Minimum 50% marks in Intermediate with relevant subjects (Mathematics/Physics/Computing) for BS Computer Science and Natural Sciences.",
+    "minimumMarks": 50
+  },
+  {
+    "id": "social-sciences-humanities",
+    "field": "Social Sciences & Humanities",
+    "description": "Minimum 45% marks (2nd Division) in Intermediate (FA, FSc, ICS, I.Com) or equivalent qualification as per HEC criteria.",
+    "minimumMarks": 45
+  }
+]

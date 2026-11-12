@@ -1,0 +1,65 @@
+[
+  {
+    "id": "greeting",
+    "keyword": "hello, hi, hey, salam, assalam, good morning, good afternoon, good evening",
+    "response": "Hi! I'm the CareerGuide assistant. Ask me about your quiz results, universities, scholarships, or your profile.",
+    "link": "",
+    "linkLabel": ""
+  },
+  {
+    "id": "post-quiz-help",
+    "keyword": "after quiz, quiz done, completed quiz, took quiz, already gave quiz, already done, what next, next step",
+    "response": "Great job! Your assessment results are saved. You do not need to take the quiz again. You can view your recommended universities or browse eligible scholarships.",
+    "link": "/university-recommender",
+    "linkLabel": "Open University Recommender"
+  },
+  {
+    "id": "scholarship-help",
+    "keyword": "scholarship, scholarships, funding, financial aid, fee concession, merit scholarship, need based, scholarship test",
+    "response": "Browse the Scholarship Finder to explore merit-based and need-based scholarships. Your saved profile marks and quiz results are used to calculate eligibility — no additional quiz is required.",
+    "link": "/scholarships",
+    "linkLabel": "Open Scholarship Finder"
+  },
+  {
+    "id": "results-help",
+    "keyword": "result, results, my score, view results, career recommendation, assessment result",
+    "response": "Your career assessment results and tailored field recommendations are ready to review anytime on the Results page.",
+    "link": "/result",
+    "linkLabel": "View Your Results"
+  },
+  {
+    "id": "quiz-help",
+    "keyword": "take quiz, start quiz, take test, career test, career quiz, retake quiz, new quiz",
+    "response": "The career assessment evaluates your academic background and interests to predict your best-fitting career field and university paths.",
+    "link": "/quiz",
+    "linkLabel": "Open Career Quiz"
+  },
+  {
+    "id": "university-help",
+    "keyword": "university, universities, admission, admissions, merit, college, colleges, degree program",
+    "response": "Use the University Recommender to see universities and degree programs matched to your marks and career field across Pakistan.",
+    "link": "/university-recommender",
+    "linkLabel": "Open University Recommender"
+  },
+  {
+    "id": "profile-help",
+    "keyword": "profile, account, my information, update marks, matric, inter, fsc",
+    "response": "You can update your personal details, intermediate marks, and entry test scores from your Profile. Your recommendations adapt to changes automatically.",
+    "link": "/profile",
+    "linkLabel": "Open your profile"
+  },
+  {
+    "id": "contact-help",
+    "keyword": "help, support, contact, admin, complaint",
+    "response": "For any questions or institutional guidance, please reach out to your career counselling office or system administrator.",
+    "link": "",
+    "linkLabel": ""
+  },
+  {
+    "id": "default",
+    "keyword": "",
+    "response": "I can help you with your assessment results, university recommendations, scholarships, or your profile. What would you like to know?",
+    "link": "",
+    "linkLabel": ""
+  }
+]

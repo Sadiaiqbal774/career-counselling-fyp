@@ -1,0 +1,128 @@
+[
+  {
+    "id": "chat_1730790100001",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "userName": "Annaya Khan",
+    "userEmail": "annaya45@gmail.com",
+    "message": "Best CS universities?",
+    "response": "Based on academic ranking, faculty quality, and industry placement in Pakistan, the top universities for BS Computer Science are: 1. FAST-NUCES (Islamabad, Lahore, Karachi), 2. NUST (SEECS Islamabad), 3. COMSATS University Islamabad (Lahore & Islamabad campuses), 4. LUMS, 5. ITU Lahore. You can use our University Finder to check your eligibility based on your intermediate marks.",
+    "createdAt": "2026-11-04T18:42:10Z"
+  },
+  {
+    "id": "chat_1730790200002",
+    "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+    "userName": "Sadia Iqbal",
+    "userEmail": "iqbalsadia808@gmail.com",
+    "message": "Can I do Software Engineering or Computer Science after FSc Pre-Medical?",
+    "response": "Yes! Under updated HEC policy, students with FSc Pre-Medical are eligible to apply for BS Computer Science, Software Engineering, and Artificial Intelligence programs. Most leading universities (such as FAST, NUST, COMSATS, and PUCIT) offer an entry bridge course in additional mathematics during the first year of studies.",
+    "createdAt": "2026-11-04T18:50:22Z"
+  },
+  {
+    "id": "chat_1730790300003",
+    "userId": "9d08b6bf-8a3d-4849-8204-61180134cab0",
+    "userName": "ASMA",
+    "userEmail": "asmaafazalaf31@gmail.com",
+    "message": "How can I apply for PEEF scholarship?",
+    "response": "The Punjab Educational Endowment Fund (PEEF) Master's and Undergraduate scholarship requires: 1. Minimum 60% marks in intermediate exams, 2. Monthly family income equal to or less than PKR 60,000, 3. Domicile of Punjab. Applications can be submitted through the PEEF portal or your university's Financial Aid Office upon admission.",
+    "createdAt": "2026-11-04T19:05:40Z"
+  },
+  {
+    "id": "chat_1730790400004",
+    "userId": "4a0a34a6-685f-42a5-8ba7-29466d5dd33a",
+    "userName": "Shamama Aslam",
+    "userEmail": "sp23-bcs-143@cuilahore.edu.pk",
+    "message": "What is the fee structure and merit for COMSATS Lahore BSCS?",
+    "response": "For COMSATS University Islamabad (Lahore Campus), the BSCS closing merit typically ranges between 84% - 87% aggregate. The aggregate formula is 50% NTS-NAT + 40% Intermediate + 10% Matric. Tuition fee is approximately PKR 125,000 - 135,000 per semester.",
+    "createdAt": "2026-11-04T19:22:15Z"
+  },
+  {
+    "id": "chat_1730790500005",
+    "userId": "f93d5804-b24b-4a59-989d-a766a57e0c89",
+    "userName": "Dania Aslam",
+    "userEmail": "d63018553@gmail.com",
+    "message": "How does the AI career quiz calculate my recommended field?",
+    "response": "Our AI Career Quiz evaluates four core aptitude dimensions: Technology & Engineering, Medical & Life Sciences, Business & FinTech, and Arts & Humanities. Machine learning classifiers analyze your subject interest profile, mathematical reasoning, and career goals to compute alignment scores and match accredited Pakistani universities.",
+    "createdAt": "2026-11-04T19:40:00Z"
+  },
+  {
+    "id": "chat_1730790600006",
+    "userId": null,
+    "userName": "Visitor",
+    "userEmail": null,
+    "message": "Which universities in Lahore offer Need-Based financial assistance?",
+    "response": "In Lahore, several leading institutions offer robust Need-Based assistance: 1. LUMS NOP (100% full-ride tuition & living stipend), 2. FAST-NUCES (Financial Aid committee awards fee waivers), 3. COMSATS (HEC Need Based & campus scholarships), 4. ITU (Merit & Need aid), 5. Punjab University (HEC and Ehsaas scholarships).",
+    "createdAt": "2026-11-04T20:00:10Z"
+  },
+  {
+    "id": "chat_1730790700007",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "userName": "Annaya Khan",
+    "userEmail": "annaya45@gmail.com",
+    "message": "What is the merit formula for FAST University?",
+    "response": "For FAST-NUCES computing programs (BS CS, SE, AI, DS): On FAST Entry Test basis: 50% FAST Entry Test score + 50% Intermediate (Part-1 or overall). On NTS-NAT basis: 50% NAT score + 50% Intermediate.",
+    "createdAt": "2026-11-04T20:15:30Z"
+  },
+  {
+    "id": "chat_1730790800008",
+    "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+    "userName": "Sadia Iqbal",
+    "userEmail": "iqbalsadia808@gmail.com",
+    "message": "Are there government scholarships for university students in Pakistan?",
+    "response": "Yes! Major government scholarships in Pakistan include: 1. HEC Need-Based Scholarships (covers full tuition + monthly stipend), 2. PEEF Special Quota and Outreach Scholarships, 3. Ehsaas Undergraduate Scholarship Program, 4. Chief Minister Merit Scholarship (CMMS), 5. ICT R&D Fund National Grassroots ICT Research Initiative.",
+    "createdAt": "2026-11-04T20:30:45Z"
+  },
+  {
+    "id": "chat_1730790900009",
+    "userId": "9d08b6bf-8a3d-4849-8204-61180134cab0",
+    "userName": "ASMA",
+    "userEmail": "asmaafazalaf31@gmail.com",
+    "message": "What is the scope of Artificial Intelligence versus Software Engineering?",
+    "response": "Both BS Software Engineering and BS AI offer strong industry demand. BS SE focuses broadly on full-stack architecture, software testing, systems design, and enterprise application life cycles. BS AI specializes in machine learning models, deep learning, computer vision, data science, and neural networks. Both offer high starting packages in local tech hubs and remote international roles.",
+    "createdAt": "2026-11-04T20:45:00Z"
+  },
+  {
+    "id": "chat_1730791000010",
+    "userId": null,
+    "userName": "Visitor",
+    "userEmail": null,
+    "message": "How do I take the career quiz?",
+    "response": "Taking the Career Assessment is simple: click 'Career Quiz' in the navigation bar, sign in with your email, and answer the 16 targeted aptitude questions covering analytical problem-solving, science, business scenarios, and creative interests. Your personalized report will display instantly.",
+    "createdAt": "2026-11-04T21:00:15Z"
+  },
+  {
+    "id": "chat_1730791100011",
+    "userId": "f93d5804-b24b-4a59-989d-a766a57e0c89",
+    "userName": "Dania Aslam",
+    "userEmail": "d63018553@gmail.com",
+    "message": "What are the entry test dates for NUST and FAST?",
+    "response": "NUST conducts the National Entry Test (NET) in 4 series: NET-1 (Dec/Jan), NET-2 (Feb/Mar), NET-3 (Apr/May), and NET-4 (Jun/Jul). FAST-NUCES conducts its entrance test during July each year for fall admissions. Registration typically opens in May/June.",
+    "createdAt": "2026-11-04T21:15:30Z"
+  },
+  {
+    "id": "chat_1730791200012",
+    "userId": "c8850537-241b-4a54-bdf2-8b92d8d18092",
+    "userName": "Shamama Aslam",
+    "userEmail": "shamamaaslam377@gmail.com",
+    "message": "How to prepare for university entry tests?",
+    "response": "Top recommendations for ECAT, NET, and FAST test preparation: 1. Thoroughly master your FSc textbooks for Mathematics and Physics, 2. Practice past papers with strict time constraints, 3. Focus heavily on speed mathematics and analytical reasoning shortcuts, 4. Dedicate at least 4-6 weeks to structured mock testing.",
+    "createdAt": "2026-11-04T21:35:10Z"
+  },
+  {
+    "id": "chat_1730791300013",
+    "userId": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "userName": "Annaya Khan",
+    "userEmail": "annaya45@gmail.com",
+    "message": "What is the difference between BS CS and BS IT?",
+    "response": "BS Computer Science emphasizes mathematical modeling, data structures, algorithms, operating systems, and software engineering. BS Information Technology focuses more on network administration, IT infrastructure, cloud services, cybersecurity implementation, and enterprise systems deployment.",
+    "createdAt": "2026-11-04T21:50:00Z"
+  },
+  {
+    "id": "chat_1730791400014",
+    "userId": "41919106-b533-4a89-98f0-0a8cb3b78d37",
+    "userName": "Eman",
+    "userEmail": "e4303588@gmail.com",
+    "message": "Which universities offer top degrees in Business Analytics and FinTech?",
+    "response": "Leading Pakistani universities offering BS Business Analytics and FinTech include: 1. LUMS (Suleman Dawood School of Business), 2. FAST-NUCES (School of Management Sciences), 3. IBA Karachi, 4. COMSATS (Department of Management Sciences), 5. NUST (NBS Islamabad).",
+    "createdAt": "2026-11-04T22:05:00Z"
+  }
+]
