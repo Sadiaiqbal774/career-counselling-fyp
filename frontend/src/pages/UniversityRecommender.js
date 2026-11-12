@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import supabase from "../lib/supabase";
 import { readUserProfile, readUserQuizData } from "../data/userData";
 import { isItemBookmarked, toggleItemBookmark } from "../data/bookmarkData";
+import { formatApplyUrl } from "./ScholarshipFinder";
 
 const API_URL = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000').trim().replace(/\/+$/, '');
 
@@ -541,7 +542,7 @@ function ScholarshipCard({ scholarship, index, yourMerit, isSaved, onToggleBookm
 
       <div className="uni-links" style={{ marginTop: "14px", paddingTop: "10px", borderTop: "1px solid var(--border)" }}>
         {scholarship.link ? (
-          <a href={scholarship.link} target="_blank" rel="noreferrer" className="uni-link primary">
+          <a href={formatApplyUrl(scholarship.link || scholarship.source_url, scholarship.name)} target="_blank" rel="noopener noreferrer" className="uni-link primary">
             Apply Now →
           </a>
         ) : (

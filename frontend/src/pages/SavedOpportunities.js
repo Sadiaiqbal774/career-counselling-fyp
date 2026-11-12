@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { getBookmarks, toggleItemBookmark } from '../data/bookmarkData';
+import { formatApplyUrl } from './ScholarshipFinder';
 import './SavedOpportunities.css';
 
 function SavedOpportunities() {
@@ -229,7 +230,7 @@ function SavedOpportunities() {
                   <div className="saved-card-footer">
                     {(sch.link || sch.source_url) ? (
                       <a
-                        href={sch.link || sch.source_url}
+                        href={formatApplyUrl(sch.link || sch.source_url, sch.name)}
                         target="_blank"
                         rel="noreferrer"
                         className="saved-card-apply-btn saved-card-apply-btn--sch"

@@ -353,6 +353,24 @@ def load_universities_with_programs():
     return universities
 
 
+def normalize_scholarship_url(raw_url, name="", provider=""):
+    raw = str(raw_url or "").strip()
+    raw = re.sub(r"\(.*?\)", "", raw).strip().strip("\"'")
+    if ";" in raw:
+        raw = raw.split(";")[0].strip()
+    if " / " in raw:
+        raw = raw.split(" / ")[0].strip()
+    raw = raw.rstrip(".,;)")
+    if raw.startswith("http://") or raw.startswith("https://"):
+        return raw
+    if raw and "." in raw and " " not in raw:
+        return f"https://{raw.lstrip('/')}"
+    clean_name = str(name or "scholarship").strip()
+    clean_prov = str(provider or "").strip()
+    query = f"{clean_name} {clean_prov} scholarship application".strip()
+    return "https://www.google.com/search?q=" + "+".join(query.split())
+
+
 def load_scholarships_df():
     records = load_admin_records("scholarships") or []
     rows = []
@@ -2240,7 +2258,7 @@ def predict():
                 "provinces": str(row["provinces"] or "National"),
                 "coverage": str(row.get("coverage") or "") if pd.notna(row.get("coverage")) else "",
                 "eligibility_raw": str(row.get("eligibility_raw") or "") if pd.notna(row.get("eligibility_raw")) else "",
-                "link": str(row["source_url"] or ""),
+                "link": normalize_scholarship_url(row["source_url"], row["name"], row["provider"]),
             }
 
         is_international = (
@@ -2331,27 +2349,33 @@ def predict():
 def get_scholarships():
     try:
         records = load_admin_records("scholarships") or []
-        scholarships = [
-            {
-                "name": record.get("name", ""),
-                "provider": record.get("provider", ""),
+        scholarships = []
+        for record in records:
+            name = (record.get("name") or "").strip()
+            provider = (record.get("provider") or "").strip()
+            if not name or (name == "Scholarship Name" and provider == "University (Provider)"):
+                continue
+            link = normalize_scholarship_url(record.get("source_url"), name, provider)
+            scholarships.append({
+                "id": record.get("id"),
+                "name": name,
+                "provider": provider,
                 "provinces": record.get("provinces", ""),
                 "basis": record.get("basis", ""),
                 "min_percentage": record.get("min_merit_pct") or None,
                 "field": record.get("provider_type") or record.get("basis") or "General",
                 "coverage": record.get("coverage", ""),
                 "eligibility_raw": record.get("eligibility_raw", ""),
-                "link": record.get("source_url", ""),
-            }
-            for record in records
-        ]
+                "link": link,
+                "source_url": link,
+            })
 
         return jsonify(scholarships)
 
     except Exception as e:
         return jsonify({
             "error": str(e)
-        })
+        }), 500
 
 
 @app.errorhandler(404)

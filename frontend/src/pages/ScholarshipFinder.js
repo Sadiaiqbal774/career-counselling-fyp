@@ -7,6 +7,26 @@ import { isItemBookmarked, toggleItemBookmark } from "../data/bookmarkData";
 
 const API_URL = (process.env.REACT_APP_API_URL || "http://127.0.0.1:5000").trim().replace(/\/+$/, '');
 
+export function formatApplyUrl(url, scholarshipName = "") {
+  if (!url || typeof url !== "string") {
+    return scholarshipName
+      ? `https://www.google.com/search?q=${encodeURIComponent(scholarshipName + " scholarship application")}`
+      : "#";
+  }
+  let trimmed = url.trim().replace(/^['"]+|['"]+$/g, "");
+  trimmed = trimmed.replace(/\(.*?\)/g, "").trim();
+  if (trimmed.includes(";")) trimmed = trimmed.split(";")[0].trim();
+  if (trimmed.includes(" / ")) trimmed = trimmed.split(" / ")[0].trim();
+  trimmed = trimmed.replace(/[.,;)]+$/, "");
+
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(trimmed)) {
+    return `https://${trimmed.replace(/^\/+/, "")}`;
+  }
+  return `https://www.google.com/search?q=${encodeURIComponent((scholarshipName || trimmed) + " scholarship application")}`;
+}
+
+
 function scholarshipEligibility(scholarship, marks) {
   const minPercentage = scholarship.min_percentage;
   if (minPercentage === null || minPercentage === undefined || minPercentage === "") return "unknown";
@@ -42,6 +62,8 @@ function ScholarshipFinder() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [scholarships, setScholarships] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [search, setSearch] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
   const [marks, setMarks] = useState(null);
@@ -50,11 +72,34 @@ function ScholarshipFinder() {
   const [quizScores, setQuizScores] = useState({});
   const [bookmarkTick, setBookmarkTick] = useState(0);
 
-  useEffect(() => {
+  const fetchScholarships = () => {
+    setLoading(true);
+    setFetchError(null);
     fetch(`${API_URL}/scholarships`)
-      .then((res) => res.json())
-      .then((data) => setScholarships(data))
-      .catch((err) => console.log("Error fetching scholarships:", err));
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setScholarships(data);
+        } else if (data && Array.isArray(data.records)) {
+          setScholarships(data.records);
+        } else if (data && data.error) {
+          throw new Error(data.error);
+        } else {
+          setScholarships([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching scholarships:", err);
+        setFetchError("Unable to fetch scholarships from backend. Please verify your connection.");
+      })
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchScholarships();
   }, []);
 
   useEffect(() => {
@@ -173,7 +218,13 @@ function ScholarshipFinder() {
           <strong>Field:</strong> {scholarship.field}
         </div>
         <div style={{ display: "flex", gap: "10px", marginTop: "auto", alignItems: "center" }}>
-          <a href={scholarship.link} target="_blank" rel="noreferrer" className="scholarship-apply-btn" style={{ flex: 1, marginTop: 0, textAlign: "center" }}>
+          <a
+            href={formatApplyUrl(scholarship.link || scholarship.source_url, scholarship.name)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="scholarship-apply-btn"
+            style={{ flex: 1, marginTop: 0, textAlign: "center" }}
+          >
             Apply Now
           </a>
           <button
@@ -323,8 +374,28 @@ function ScholarshipFinder() {
         </label>
       </div>
 
-      <div style={gridStyle}>{filteredScholarships.map((s, i) => renderCard(s, i))}</div>
-      {filteredScholarships.length === 0 && <p style={{ marginTop: "24px" }}>No scholarships match your filter criteria.</p>}
+      {loading && (
+        <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--muted, #6d4c41)", fontSize: "16px" }}>
+          <div style={{ display: "inline-block", width: "28px", height: "28px", border: "3px solid #e0d0bf", borderTopColor: "#c17b3f", borderRadius: "50%", animation: "spin 1s linear infinite", marginBottom: "12px" }}></div>
+          <div>Loading scholarships...</div>
+        </div>
+      )}
+
+      {fetchError && !loading && (
+        <div style={{ background: "#fbe6e3", border: "1px solid #f2c0bc", color: "#a52b22", padding: "14px 18px", borderRadius: "10px", marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+          <span>{fetchError}</span>
+          <button type="button" onClick={fetchScholarships} style={{ background: "#a52b22", color: "#fff", border: "none", borderRadius: "6px", padding: "6px 14px", cursor: "pointer", fontWeight: 600 }}>
+            Retry
+          </button>
+        </div>
+      )}
+
+      {!loading && !fetchError && (
+        <>
+          <div style={gridStyle}>{filteredScholarships.map((s, i) => renderCard(s, s.id || i))}</div>
+          {filteredScholarships.length === 0 && <p style={{ marginTop: "24px" }}>No scholarships match your filter criteria.</p>}
+        </>
+      )}
     </div>
   );
 }
