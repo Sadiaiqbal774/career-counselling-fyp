@@ -144,8 +144,8 @@ def is_user_logged_in(user_id, email, last_sign_in_at=None):
     if presence:
         if not presence.get("logged_in"):
             return False
-        # Active only if a live heartbeat was received within the last 90 seconds
-        if now - presence.get("last_seen", 0) < 90:
+        # Active only if a live heartbeat was received within the last 180 seconds
+        if now - presence.get("last_seen", 0) < 180:
             return True
         return False
     # No presence entry means the user is not actively on the website

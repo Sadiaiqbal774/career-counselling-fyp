@@ -52,9 +52,6 @@ function shouldPingActiveUser(user) {
     if ((window.location.pathname || '').startsWith('/admin')) {
       return false;
     }
-    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
-      return false;
-    }
   }
   return true;
 }
@@ -119,20 +116,12 @@ export function AuthProvider({ children }) {
       } catch (_) {}
     };
 
-    // Heartbeat every 30 seconds as long as student is actively viewing the web
+    // Heartbeat every 20 seconds as long as student is logged in
     const interval = setInterval(() => {
       if (shouldPingActiveUser(currentUser)) {
         pingStatus('active');
       }
-    }, 30000);
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        pingStatus('passive');
-      } else if (shouldPingActiveUser(currentUser)) {
-        pingStatus('active');
-      }
-    };
+    }, 20000);
 
     const handleUnload = () => {
       if (currentUser?.id || currentUser?.email) {
@@ -149,12 +138,10 @@ export function AuthProvider({ children }) {
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleUnload);
 
     return () => {
       clearInterval(interval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleUnload);
     };
   }, [currentUser?.id, currentUser?.email]);

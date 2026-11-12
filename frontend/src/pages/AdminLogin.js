@@ -84,7 +84,7 @@ function AdminLogin() {
         </div>
         <p className="eyebrow">ADMIN ACCESS</p>
         <h1 className="admin-login-title">Admin <span className="admin-nowrap">Sign in</span></h1>
-        <p className="admin-login-desc">Use the configured admin username and verified Supabase administrator password.</p>
+        <p className="admin-login-desc">Enter your admin username and password to access the administration console.</p>
         <form className="admin-form" onSubmit={handleSubmit}>
           <div className="admin-field">
             <label htmlFor="admin-username">Admin username</label>
