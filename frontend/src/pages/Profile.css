@@ -78,71 +78,6 @@
 .profile-eyebrow { color: var(--accent, #7c5d42); text-transform: uppercase; letter-spacing: .12em; font-size: .7rem; font-weight: 700; }
 .profile-muted { color: var(--muted, #aaa); }
 
-/* Actions Dropdown */
-.profile-actions-wrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.profile-actions-trigger {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid #d9c7b5;
-  background: #fff;
-  color: #5a3e29;
-  font-size: 1.2rem;
-  line-height: 1;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition: all .15s ease;
-}
-
-.profile-actions-trigger:hover {
-  background: #f2e7dc;
-  border-color: #c17b3f;
-}
-
-.profile-actions-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 6px;
-  background: #ffffff;
-  border: 1px solid #d9c7b5;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(43, 33, 24, 0.15);
-  min-width: 190px;
-  z-index: 1000;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.profile-actions-dropdown button {
-  width: 100%;
-  padding: 10px 14px;
-  border: 0;
-  border-bottom: 1px solid #f0e6dc;
-  background: transparent;
-  color: #2b1b0e;
-  font-size: 0.85rem;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-  transition: background .15s;
-}
-
-.profile-actions-dropdown button:last-child {
-  border-bottom: 0;
-}
-
-.profile-actions-dropdown button:hover {
-  background: #fdf5ee;
-  color: #c17b3f;
-}
-
 /* Info Modal & Popover */
 .profile-info-button {
   width: 20px;
@@ -474,43 +409,6 @@ html.dark-mode .profile-back-button:hover,
 html.dark .profile-back-button:hover,
 :root[data-theme="dark"] .profile-back-button:hover {
   background: #2f231d !important;
-}
-
-html.dark-mode .profile-actions-trigger,
-html.dark .profile-actions-trigger,
-:root[data-theme="dark"] .profile-actions-trigger {
-  background: #231b17;
-  color: #f7efe7;
-  border-color: #4a382c;
-}
-
-html.dark-mode .profile-actions-trigger:hover,
-html.dark .profile-actions-trigger:hover,
-:root[data-theme="dark"] .profile-actions-trigger:hover {
-  background: #33261f;
-  border-color: #c17b3f;
-}
-
-html.dark-mode .profile-actions-dropdown,
-html.dark .profile-actions-dropdown,
-:root[data-theme="dark"] .profile-actions-dropdown {
-  background: #231b17;
-  border-color: #4a382c;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-}
-
-html.dark-mode .profile-actions-dropdown button,
-html.dark .profile-actions-dropdown button,
-:root[data-theme="dark"] .profile-actions-dropdown button {
-  color: #f7efe7;
-  border-bottom-color: #3d2f26;
-}
-
-html.dark-mode .profile-actions-dropdown button:hover,
-html.dark .profile-actions-dropdown button:hover,
-:root[data-theme="dark"] .profile-actions-dropdown button:hover {
-  background: #33261f;
-  color: #d4a373;
 }
 
 html.dark-mode .profile-modal-card,

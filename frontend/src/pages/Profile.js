@@ -48,7 +48,6 @@ function Profile() {
 
   const [errorMessage, setErrorMessage] = useState('');
   const [showScoreInfo, setShowScoreInfo] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
     try {
@@ -302,56 +301,6 @@ function Profile() {
     }
   };
 
-  const handleExportProfile = () => {
-    setShowMenu(false);
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(profile, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `profile_${profile.fullName || 'student'}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-    toast.success('Profile exported as JSON file.');
-  };
-
-  const handleResetProfile = () => {
-    setShowMenu(false);
-    if (window.confirm('Reset all fields to defaults? This will clear saved profile data.')) {
-      const resetState = {
-        ...EMPTY_PROFILE,
-        fullName: currentUser?.name || '',
-        email: currentUser?.email || '',
-      };
-      setProfile(resetState);
-      if (currentUser?.id) {
-        saveUserProfile(currentUser.id, resetState);
-        try {
-          localStorage.setItem(profileStorageKey(currentUser.id), JSON.stringify(resetState));
-        } catch {}
-      }
-      toast.success('Profile fields reset to defaults.');
-    }
-  };
-
-  const handleClearForm = () => {
-    setShowMenu(false);
-    if (window.confirm('Clear all input fields in the profile form?')) {
-      const clearedState = {
-        ...EMPTY_PROFILE,
-        fullName: currentUser?.name || '',
-        email: currentUser?.email || '',
-      };
-      setProfile(clearedState);
-      if (currentUser?.id) {
-        saveUserProfile(currentUser.id, clearedState);
-        try {
-          localStorage.setItem(profileStorageKey(currentUser.id), JSON.stringify(clearedState));
-        } catch {}
-      }
-      toast.success('Profile form cleared.');
-    }
-  };
-
   const field = (label, name, type = 'text', placeholder = '', required = false) => (
     <label className="profile-field" htmlFor={`profile-${name}`}>
       <span>{label}{required && <span className="profile-required">*</span>}</span>
@@ -428,24 +377,6 @@ function Profile() {
             <div>
               <strong>{completion}% complete</strong>
               <small>{profile.entryTest === 'None' ? 'No entry test required' : profile.entryTestScore ? 'Entry test score added' : 'Add entry test score'}</small>
-            </div>
-            <div className="profile-actions-wrapper">
-              <button
-                type="button"
-                className="profile-actions-trigger"
-                onClick={() => setShowMenu((prev) => !prev)}
-                aria-label="Profile actions"
-                title="Profile actions"
-              >
-                ⋮
-              </button>
-              {showMenu && (
-                <div className="profile-actions-dropdown">
-                  <button type="button" onClick={handleExportProfile}>Export profile (JSON)</button>
-                  <button type="button" onClick={handleResetProfile}>Reset to default</button>
-                  <button type="button" onClick={handleClearForm}>Clear form</button>
-                </div>
-              )}
             </div>
           </div>
         </header>
