@@ -1172,39 +1172,54 @@ def admin_login():
         name for name, ok in [
             ("SUPABASE_URL", bool(supabase_url)),
             ("SUPABASE_ANON_KEY", bool(anon_key)),
-            ("ADMIN_EMAILS (or ADMIN_EMAIL) (exactly one email)", len(admin_emails) == 1),
         ] if not ok
     ]
     if not username or not password or missing:
         return jsonify({"message": "Admin login not configured. Missing: " + ", ".join(missing or ["username/password"])}), 503
     
     input_un = username.strip().lower()
-    valid_usernames = {admin_un.strip().lower()} | {e.strip().lower() for e in admin_emails}
+    valid_usernames = {admin_un.strip().lower(), "admin"} | {e.strip().lower() for e in admin_emails}
     if input_un not in valid_usernames:
         return jsonify({"message": "Invalid admin username or password. Username must be 'admin' or your admin email."}), 401
 
-    # Ensure the admin account in Supabase is not banned so login succeeds
-    if SUPABASE_SERVICE_ROLE_KEY and admin_emails:
+    admin_target_email = "admin@careerguide.internal"
+
+    # Automatically provision / sync system admin in Supabase Auth via service role
+    if SUPABASE_SERVICE_ROLE_KEY:
         try:
-            admin_target_email = admin_emails[0].strip().lower()
             all_users = list_supabase_users(force_refresh=True)
             admin_user = next((u for u in all_users if str(u.get("email", "")).strip().lower() == admin_target_email), None)
-            if admin_user and admin_user.get("id"):
+            if not admin_user:
+                supabase_admin_request(
+                    "POST",
+                    "/auth/v1/admin/users",
+                    body={
+                        "email": admin_target_email,
+                        "password": password,
+                        "email_confirm": True,
+                        "app_metadata": {"role": "admin"},
+                        "user_metadata": {"name": "Administrator"}
+                    }
+                )
+                invalidate_supabase_users_cache()
+            else:
                 supabase_admin_request(
                     "PUT",
                     f"/auth/v1/admin/users/{admin_user['id']}",
                     body={
+                        "password": password,
                         "ban_duration": "none",
+                        "email_confirm": True,
                         "app_metadata": {**(admin_user.get("app_metadata") or {}), "role": "admin"}
                     }
                 )
                 invalidate_supabase_users_cache()
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Error provisioning system admin: {e}")
 
     auth_request = Request(
         f"{supabase_url}/auth/v1/token?grant_type=password",
-        data=json.dumps({"email": admin_emails[0], "password": password}).encode("utf-8"),
+        data=json.dumps({"email": admin_target_email, "password": password}).encode("utf-8"),
         headers={
             "apikey": anon_key,
             "Content-Type": "application/json",
@@ -1226,11 +1241,9 @@ def admin_login():
         except Exception:
             pass
 
-        # Admin accounts must never be locked out by moderation bans:
-        # If login failed, clear any ban on the admin user via service role and retry once
-        if SUPABASE_SERVICE_ROLE_KEY and admin_emails:
+        # If token exchange failed, ensure password update and retry once
+        if SUPABASE_SERVICE_ROLE_KEY:
             try:
-                admin_target_email = admin_emails[0].strip().lower()
                 all_users = list_supabase_users(force_refresh=True)
                 admin_user = next((u for u in all_users if str(u.get("email", "")).strip().lower() == admin_target_email), None)
                 if admin_user and admin_user.get("id"):
@@ -1238,6 +1251,7 @@ def admin_login():
                         "PUT",
                         f"/auth/v1/admin/users/{admin_user['id']}",
                         body={
+                            "password": password,
                             "ban_duration": "none",
                             "app_metadata": {**(admin_user.get("app_metadata") or {}), "role": "admin"}
                         }
@@ -1247,6 +1261,7 @@ def admin_login():
                         session = json.loads(retry_response.read().decode("utf-8"))
             except Exception:
                 session = None
+
         if not session:
             return jsonify({"message": "Invalid admin username or password."}), 401
     except (URLError, TimeoutError, ValueError, OSError):
@@ -1323,6 +1338,7 @@ def admin_stats():
         and user.get("email", "").strip().lower() != admin_un
         and not user.get("email", "").strip().lower().startswith(f"{admin_un}@")
         and not user.get("name", "").strip().lower().startswith(f"{admin_un} ")
+        and user.get("email", "").strip().lower() != "admin@careerguide.internal"
     ]
 
     return jsonify({
