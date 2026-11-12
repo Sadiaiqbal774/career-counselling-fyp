@@ -1187,9 +1187,9 @@ def admin_login():
     if SUPABASE_SERVICE_ROLE_KEY and admin_emails:
         try:
             admin_target_email = admin_emails[0].strip().lower()
-            all_users = get_all_supabase_users()
+            all_users = list_supabase_users(force_refresh=True)
             admin_user = next((u for u in all_users if str(u.get("email", "")).strip().lower() == admin_target_email), None)
-            if admin_user and admin_user.get("id") and admin_user.get("banned_until"):
+            if admin_user and admin_user.get("id"):
                 supabase_admin_request(
                     "PUT",
                     f"/auth/v1/admin/users/{admin_user['id']}",
@@ -1231,7 +1231,7 @@ def admin_login():
         if SUPABASE_SERVICE_ROLE_KEY and admin_emails:
             try:
                 admin_target_email = admin_emails[0].strip().lower()
-                all_users = get_all_supabase_users()
+                all_users = list_supabase_users(force_refresh=True)
                 admin_user = next((u for u in all_users if str(u.get("email", "")).strip().lower() == admin_target_email), None)
                 if admin_user and admin_user.get("id"):
                     supabase_admin_request(
