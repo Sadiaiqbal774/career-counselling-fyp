@@ -4212,9 +4212,9 @@ function AdminDashboard() {
                 <p style={{ margin: '0 0 18px 0', fontSize: '0.82rem', color: '#b91c1c', fontWeight: 600 }}>
                   Warning: This action is permanent and cannot be undone.
                 </p>
-                <div className="admin-modal-actions">
-                  <button type="button" className="secondary-button" onClick={() => setDeleteTarget(null)}>Cancel</button>
-                  <button type="button" className="admin-action-btn-danger" onClick={confirmDelete}>Confirm Delete</button>
+                <div className="admin-modal-actions admin-modal-actions--equal">
+                  <button type="button" className="secondary-button admin-delete-modal-btn admin-delete-modal-btn--cancel" onClick={() => setDeleteTarget(null)}>Cancel</button>
+                  <button type="button" className="admin-action-btn-danger admin-delete-modal-btn admin-delete-modal-btn--confirm" onClick={confirmDelete}>Delete</button>
                 </div>
               </div>
             </div>
