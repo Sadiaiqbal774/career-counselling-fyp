@@ -44,6 +44,7 @@ test('renders profile management without previous recommendation history', () =>
     </MemoryRouter>
   );
 
+  expect(localStorage.getItem('careerRecommendationHistory')).toBeNull();
   expect(screen.getByText(/Profile management/i)).toBeInTheDocument();
   expect(screen.getByLabelText(/Full name/i)).toBeInTheDocument();
   expect(screen.getByLabelText(/Preferred city/i)).toBeInTheDocument();

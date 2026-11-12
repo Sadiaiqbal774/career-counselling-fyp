@@ -107,6 +107,10 @@ function Profile() {
 
 
   useEffect(() => {
+    try {
+      localStorage.removeItem('careerRecommendationHistory');
+    } catch {}
+
     let cancelled = false;
     async function loadProfileData() {
       if (!currentUser?.id) return;

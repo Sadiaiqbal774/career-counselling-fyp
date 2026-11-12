@@ -9,7 +9,6 @@ export const storageKeys = {
   scores: 'careerQuizScores',
   topCategories: 'careerQuizTopCategories',
   profile: 'careerUserProfile',
-  recommendationHistory: 'careerRecommendationHistory',
 };
 
 export const userStorageKey = (key, userId) => `${key}:${userId || 'guest'}`;
@@ -176,5 +175,4 @@ export function getTopCategories(scores, amount = 2) {
 export function getHighestCategory(scores) {
   return Object.entries(scores).sort((first, second) => second[1] - first[1])[0]?.[0] ?? 'Technology';
 }
-
 
