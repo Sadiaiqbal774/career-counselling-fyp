@@ -739,7 +739,7 @@ def sanitize_supabase_user(user):
         "name": meta_name or "Student",
         "email": email,
         "authProvider": "google" if provider == "google" else "local",
-        "blocked": bool(user.get("banned_until")),
+        "blocked": bool(user.get("banned_until") or (user.get("user_metadata") or {}).get("is_blocked")),
         "createdAt": user.get("created_at"),
         "emailConfirmed": bool(user.get("email_confirmed_at")),
         "lastSignInAt": last_sign_in,
@@ -1183,6 +1183,25 @@ def admin_login():
     if input_un not in valid_usernames:
         return jsonify({"message": "Invalid admin username or password. Username must be 'admin' or your admin email."}), 401
 
+    # Ensure the admin account in Supabase is not banned so login succeeds
+    if SUPABASE_SERVICE_ROLE_KEY and admin_emails:
+        try:
+            admin_target_email = admin_emails[0].strip().lower()
+            all_users = get_all_supabase_users()
+            admin_user = next((u for u in all_users if str(u.get("email", "")).strip().lower() == admin_target_email), None)
+            if admin_user and admin_user.get("id") and admin_user.get("banned_until"):
+                supabase_admin_request(
+                    "PUT",
+                    f"/auth/v1/admin/users/{admin_user['id']}",
+                    body={
+                        "ban_duration": "none",
+                        "app_metadata": {**(admin_user.get("app_metadata") or {}), "role": "admin"}
+                    }
+                )
+                invalidate_supabase_users_cache()
+        except Exception:
+            pass
+
     auth_request = Request(
         f"{supabase_url}/auth/v1/token?grant_type=password",
         data=json.dumps({"email": admin_emails[0], "password": password}).encode("utf-8"),
@@ -1207,11 +1226,9 @@ def admin_login():
         except Exception:
             pass
 
-        # Admin accounts must never be bannable:
-        # In the admin login flow, do not check the banned status. If an admin account was
-        # banned as a result of normal user moderation, immediately clear the ban via the service
-        # role and complete login. Only verify credentials and server-controlled role === "admin".
-        if "banned" in err_body.lower() and SUPABASE_SERVICE_ROLE_KEY:
+        # Admin accounts must never be locked out by moderation bans:
+        # If login failed, clear any ban on the admin user via service role and retry once
+        if SUPABASE_SERVICE_ROLE_KEY and admin_emails:
             try:
                 admin_target_email = admin_emails[0].strip().lower()
                 all_users = get_all_supabase_users()
@@ -1363,12 +1380,20 @@ def admin_update_user(user_id):
         if "blocked" in payload:
             will_block = bool(payload["blocked"])
 
+        user_meta = {**(current.get("user_metadata") or {}), "name": name}
+        if will_block is not None:
+            user_meta["is_blocked"] = will_block
+
         update_body = {
             "email": email,
-            "user_metadata": {**(current.get("user_metadata") or {}), "name": name},
+            "user_metadata": user_meta,
         }
+        is_underlying_admin_email = bool(email and email.strip().lower() in [e.strip().lower() for e in admin_email_allowlist()])
         if will_block is not None:
-            update_body["ban_duration"] = "876000h" if will_block else "none"
+            if is_underlying_admin_email:
+                update_body["ban_duration"] = "none"
+            else:
+                update_body["ban_duration"] = "876000h" if will_block else "none"
 
         updated = supabase_admin_request("PUT", f"/auth/v1/admin/users/{user_id}", body=update_body)
         invalidate_supabase_users_cache()
