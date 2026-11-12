@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import useQuizScores from '../hooks/useQuizScores';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import supabase from '../lib/supabase';
-import { readUserQuizData } from '../data/userData';
+
 import { exportElementToPdf } from '../utils/pdfExport';
 import {
   careerRecommendations,
@@ -45,27 +46,58 @@ function Result() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [isExporting, setIsExporting] = useState(false);
-  const storedScores = readUserQuizData(currentUser?.id).scores || readUserQuizData('guest').scores;
-  const scoreKey = JSON.stringify(storedScores);
 
+  // Start with whatever is in localStorage (works for same device)
+  const { scores: storedScores, loading: loadingScores } = useQuizScores(currentUser);
+
+  // Cross-device fix: if no localStorage scores but user is signed in,
+  // fetch their latest quiz scores from Supabase quiz_scores table.
   useEffect(() => {
-    if (!currentUser?.id || !storedScores) return;
+    if (localScores || !currentUser?.id) return;
+    let cancelled = false;
+    setLoadingScores(true);
+    supabase
+      .from('quiz_scores')
+      .select('scores, top_categories')
+      .eq('user_id', currentUser.id)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (!error && data?.scores) {
+          // Restore to localStorage so other pages (SpecificQuiz) can read it
+          localStorage.setItem(
+            userStorageKey(storageKeys.scores, currentUser.id),
+            JSON.stringify(data.scores),
+          );
+          if (data.top_categories) {
+            localStorage.setItem(
+              userStorageKey(storageKeys.topCategories, currentUser.id),
+              JSON.stringify(data.top_categories),
+            );
+          }
+          setStoredScores(data.scores);
+        }
+        setLoadingScores(false);
+      });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id]);
 
-    const highestCategory = getHighestCategory(storedScores);
-    const topCategories = getTopCategories(storedScores);
-    const recommendation = careerRecommendations[highestCategory];
+  
 
-    supabase.from('recommendations').insert({
-      user_id: currentUser.id,
-      recommendation,
-      highest_category: highestCategory,
-      top_categories: topCategories,
-      scores: storedScores,
-    }).then(({ error }) => {
-      if (error) console.error('Unable to save recommendation history.', error);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser?.id, scoreKey]);
+
+
+  if (loadingScores) {
+    return (
+      <div className="result-page">
+        <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
+          <p style={{ color: 'var(--muted)', fontSize: '1rem' }}>Loading your results…</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!storedScores) {
     return (

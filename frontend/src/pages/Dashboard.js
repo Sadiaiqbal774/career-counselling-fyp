@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getEmptyScores } from '../data/quizData';
-import { getProfileCompletion, readUserProfile, readUserQuizData } from '../data/userData';
+import { getProfileCompletion, readUserProfile } from '../data/userData';
+import useQuizScores from '../hooks/useQuizScores';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -14,28 +15,7 @@ function Dashboard() {
   const profile = useMemo(() => readUserProfile(currentUser?.id), [currentUser?.id]);
   const profileCompletion = getProfileCompletion(profile);
 
-  // Stored scores with fallback to guest
-  const storedScores = useMemo(() => {
-    try {
-      const userData = readUserQuizData(currentUser?.id);
-      if (userData && userData.scores) return userData.scores;
-      const guestData = readUserQuizData('guest');
-      return guestData ? guestData.scores : null;
-    } catch {
-      return null;
-    }
-  }, [currentUser?.id]);
-
-  const storedTopCategories = useMemo(() => {
-    try {
-      const userData = readUserQuizData(currentUser?.id);
-      if (userData && userData.topCategories) return userData.topCategories;
-      const guestData = readUserQuizData('guest');
-      return guestData ? guestData.topCategories : null;
-    } catch {
-      return null;
-    }
-  }, [currentUser?.id]);
+  const { scores: storedScores, topCategories: storedTopCategories, loading: loadingScores } = useQuizScores(currentUser);
 
   const hasQuizResults = Boolean(storedScores);
   const scoreValues = storedScores ? Object.values(storedScores).map((v) => Number(v) || 0) : Object.values(getEmptyScores());

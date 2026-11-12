@@ -46,7 +46,7 @@ function Profile() {
   const [profile, setProfile] = useState(EMPTY_PROFILE);
   const [step, setStep] = useState(1);
   const [profileSaved, setProfileSaved] = useState(false);
-  const [recommendations, setRecommendations] = useState([]);
+
   const [errorMessage, setErrorMessage] = useState('');
   const [showScoreInfo, setShowScoreInfo] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -161,9 +161,8 @@ function Profile() {
       }
 
       try {
-        let [{ data: savedProfile, error: profileError }, { data: savedHistory }] = await Promise.all([
+        let [{ data: savedProfile, error: profileError }] = await Promise.all([
           supabase.from('profiles').select('id, full_name, email, phone, city, academic_level, school, marks, intermediate_marks, intermediate_group, entry_test, entry_test_score, preferred_field, interests, notes, updated_at').eq('id', currentUser.id).maybeSingle(),
-          supabase.from('recommendations').select('*').eq('user_id', currentUser.id).order('saved_at', { ascending: false }).limit(5),
         ]);
         if (profileError && /column|schema cache|does not exist/i.test(profileError.message || '')) {
           const legacyResult = await supabase.from('profiles').select('id, full_name, email, academic_level, school, marks, preferred_field, interests, notes, updated_at').eq('id', currentUser.id).maybeSingle();
@@ -198,9 +197,6 @@ function Profile() {
             interests: savedProfile.interests || '',
             notes: savedProfile.notes || '',
           }));
-        }
-        if (savedHistory) {
-          setRecommendations(savedHistory.map((item) => ({ ...item, highestCategory: item.highest_category, savedAt: item.saved_at })));
         }
       } catch {
         // Local profile remains primary fallback
@@ -718,22 +714,6 @@ function Profile() {
                   </article>
                 ))}
             </div>
-          )}
-        </section>
-
-        <section className="profile-history">
-          <p className="profile-eyebrow">Previous recommendations</p>
-          <h2>Your saved recommendation history</h2>
-          {recommendations.length === 0 ? (
-            <p className="profile-muted">No previous recommendations yet. Complete a quiz to generate your first recommendation.</p>
-          ) : (
-            recommendations.map((item, index) => (
-              <article key={`${item.recommendation}-${item.savedAt || index}`}>
-                <strong>{item.recommendation}</strong>
-                <p>Best match: {item.highestCategory || 'Not available'}</p>
-                <p>Saved: {item.savedAt ? new Date(item.savedAt).toLocaleString() : 'Recently'}</p>
-              </article>
-            ))
           )}
         </section>
 

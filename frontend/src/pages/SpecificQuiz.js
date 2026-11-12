@@ -74,6 +74,7 @@ function SpecificQuiz() {
           user_id: currentUser.id,
           scores: updatedScores,
           top_categories: storedTopCategories,
+          updated_at: new Date().toISOString(),
         });
       }
       navigate('/result');

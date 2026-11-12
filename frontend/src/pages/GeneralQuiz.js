@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import supabase from '../lib/supabase';
 import {
   answerScores,
   generalQuestions,
@@ -64,6 +65,15 @@ function GeneralQuiz() {
       const topCategories = getTopCategories(updatedScores);
       localStorage.setItem(userStorageKey(storageKeys.scores, currentUser?.id), JSON.stringify(updatedScores));
       localStorage.setItem(userStorageKey(storageKeys.topCategories, currentUser?.id), JSON.stringify(topCategories));
+      // Also persist to Supabase so scores survive across devices
+      if (currentUser?.id) {
+        void supabase.from('quiz_scores').upsert({
+          user_id: currentUser.id,
+          scores: updatedScores,
+          top_categories: topCategories,
+          updated_at: new Date().toISOString(),
+        });
+      }
       navigate('/specific-quiz');
       return;
     }
