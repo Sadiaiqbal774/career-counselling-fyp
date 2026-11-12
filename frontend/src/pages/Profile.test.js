@@ -20,22 +20,13 @@ jest.mock('../lib/supabase', () => ({
         select: () => query,
         eq: () => query,
         maybeSingle: () => Promise.resolve({ data: null, error: null }),
-        order: () => query,
-        limit: () => Promise.resolve({
-          data: table === 'recommendations' ? [{
-            recommendation: 'Software Developer or IT Specialist',
-            highest_category: 'Technology',
-            saved_at: '2026-08-23T10:00:00.000Z',
-          }] : [],
-          error: null,
-        }),
       };
       return query;
     },
   },
 }));
 
-test('renders profile management and recommendation history sections', async () => {
+test('renders profile management without previous recommendation history', () => {
   localStorage.setItem(
     'careerRecommendationHistory',
     JSON.stringify([
@@ -56,6 +47,6 @@ test('renders profile management and recommendation history sections', async () 
   expect(screen.getByText(/Profile management/i)).toBeInTheDocument();
   expect(screen.getByLabelText(/Full name/i)).toBeInTheDocument();
   expect(screen.getByLabelText(/Preferred city/i)).toBeInTheDocument();
-  expect(screen.getByRole('heading', { name: /your saved recommendation history/i })).toBeInTheDocument();
-  expect(await screen.findByText(/Software Developer or IT Specialist/i)).toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /recommendation history/i })).not.toBeInTheDocument();
+  expect(screen.queryByText(/Software Developer or IT Specialist/i)).not.toBeInTheDocument();
 });

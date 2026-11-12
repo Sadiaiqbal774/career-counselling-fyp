@@ -4,7 +4,7 @@
 .profile-identity, .profile-completion, .profile-panel__heading { display: flex; align-items: center; gap: 14px; }
 .profile-avatar { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 50%; background: #7c5d42; color: #fff8f0; font-weight: 700; font-size: 1.1rem; }
 .profile-identity h1 { margin: 0 0 3px; font-size: 1.2rem; color: #2b1b0e; }
-.profile-identity p, .profile-panel__heading p, .profile-history p { margin: 0; color: #7a5f4f; font-size: .85rem; }
+.profile-identity p, .profile-panel__heading p { margin: 0; color: #7a5f4f; font-size: .85rem; }
 .profile-completion { color: #2b1b0e; }
 .profile-completion strong, .profile-completion small { display: block; }
 .profile-completion small { margin-top: 3px; color: #7a5f4f; }
@@ -78,16 +78,12 @@ html.dark-mode .profile-back-button { border-color: #5a4638; color: #eadfd4; }
 .profile-saved-panel { max-width: 640px; padding: 24px; border: 1px solid #b9dfc4; border-radius: 10px; background: #e8f4eb; color: #28734a; }
 .profile-saved-panel p { margin: 8px 0 0; }
 .profile-saved-panel .profile-save-button { background: #28734a; border-color: #28734a; }
-.profile-history { margin-top: 32px; }
 .profile-eyebrow { color: #7c5d42; text-transform: uppercase; letter-spacing: .12em; font-size: .7rem; }
-.profile-history h2 { color: #2b1b0e; font-size: 1.3rem; }
-.profile-history article { margin-top: 12px; padding: 16px; border: 1px solid rgba(43, 33, 24, .1); border-radius: 9px; background: rgba(255, 248, 240, .94); }
-.profile-history article p { margin-top: 7px; }
 .profile-muted { color: #aaa; }
 html.dark-mode .profile-page { background: transparent; color: #f7efe7; }
-html.dark-mode .profile-panel, html.dark-mode .profile-history article { background: #2a211c; border-color: #4c3b30; }
-html.dark-mode .profile-identity h1, html.dark-mode .profile-panel__heading h2, html.dark-mode .profile-history h2 { color: #f7efe7; }
-html.dark-mode .profile-identity p, html.dark-mode .profile-panel__heading p, html.dark-mode .profile-history p, html.dark-mode .profile-completion small { color: #d9c7b5; }
+html.dark-mode .profile-panel { background: #2a211c; border-color: #4c3b30; }
+html.dark-mode .profile-identity h1, html.dark-mode .profile-panel__heading h2 { color: #f7efe7; }
+html.dark-mode .profile-identity p, html.dark-mode .profile-panel__heading p, html.dark-mode .profile-completion small { color: #d9c7b5; }
 html.dark-mode .profile-field { color: #eadfd4; }
 html.dark-mode .profile-field input, html.dark-mode .profile-field select { background: #211b18; color: #f7efe7; border-color: #5a4638; }
 html.dark-mode .profile-actions-trigger { background: #231b17; color: #f7efe7; border-color: #5a4638; }
@@ -621,4 +617,3 @@ html.dark-mode .profile-account-row {
 html.dark-mode .profile-account-row--danger {
   color: #fca5a5 !important;
 }
-
