@@ -332,6 +332,30 @@ function Dashboard() {
                 </button>
               </div>
             </div>
+
+            {/* Step 5: Saved opportunities */}
+            <div className="cg-step-card">
+              <div className="cg-step-left">
+                <div className="cg-step-iconbox cg-step-iconbox--saved" aria-hidden="true">
+                  <span>⭐</span>
+                </div>
+                <div className="cg-step-copy">
+                  <div className="cg-step-title">Saved opportunities</div>
+                  <div className="cg-step-desc">
+                    Review and track all the universities and scholarships you bookmarked during your research.
+                  </div>
+                </div>
+              </div>
+              <div className="cg-step-buttons">
+                <button
+                  type="button"
+                  className="cg-btn-step-primary"
+                  onClick={() => navigate('/saved')}
+                >
+                  View saved opportunities {savedCount > 0 ? `(${savedCount})` : ''}
+                </button>
+              </div>
+            </div>
           </div>
         </section>
       </div>

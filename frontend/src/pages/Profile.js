@@ -392,8 +392,9 @@ function Profile() {
           <div className="profile-identity">
             <div className="profile-avatar">{(profile.fullName || 'S').charAt(0).toUpperCase()}</div>
             <div>
+              <p className="profile-eyebrow">PROFILE MANAGEMENT</p>
               <h1>{profile.fullName || 'Student name'}</h1>
-              <p>Class of 2026 · {profile.city || 'City not set'}</p>
+              <p>Class of 2026 · {profile.city || 'Quetta'}</p>
             </div>
           </div>
           <div className="profile-completion">
@@ -405,7 +406,7 @@ function Profile() {
               aria-valuemax="100"
               aria-label="Profile completion progress"
             >
-              <svg width="48" height="48" viewBox="0 0 48 48">
+              <svg width="44" height="44" viewBox="0 0 48 48">
                 <circle
                   cx="24"
                   cy="24"
@@ -427,7 +428,7 @@ function Profile() {
             </div>
             <div>
               <strong>{completion}% complete</strong>
-              <small>{profile.entryTest === 'None' ? 'No entry test required' : profile.entryTestScore ? 'Entry test score added' : 'Add entry test score'}</small>
+              <small>Step {step} of 2 · {profile.entryTest === 'None' ? 'No entry test required' : profile.entryTestScore ? 'Entry test score added' : 'Add entry test score'}</small>
             </div>
             <div className="profile-actions-wrapper">
               <button
@@ -450,22 +451,23 @@ function Profile() {
           </div>
         </header>
 
-        <div className="profile-step-indicator">
+        <div className="profile-stepper-wrap">
           <button
             type="button"
-            className={step === 1 ? 'profile-step profile-step--active' : 'profile-step'}
+            className={`profile-stepper-item ${step === 1 ? 'profile-stepper-item--active' : ''}`}
             onClick={() => setStep(1)}
-            style={{ background: 'transparent', border: 0, cursor: 'pointer', padding: '8px 16px', borderRadius: '999px', transition: 'all 0.2s' }}
           >
-            1. Personal information
+            <span className="profile-stepper-num">1</span>
+            <span className="profile-stepper-label">Personal information</span>
           </button>
+          <div className="profile-stepper-line" />
           <button
             type="button"
-            className={step === 2 ? 'profile-step profile-step--active' : 'profile-step'}
+            className={`profile-stepper-item ${step === 2 ? 'profile-stepper-item--active' : ''}`}
             onClick={() => validateStep(1) && setStep(2)}
-            style={{ background: 'transparent', border: 0, cursor: 'pointer', padding: '8px 16px', borderRadius: '999px', transition: 'all 0.2s' }}
           >
-            2. Academic record
+            <span className="profile-stepper-num">2</span>
+            <span className="profile-stepper-label">Academic record</span>
           </button>
         </div>
 
@@ -506,7 +508,7 @@ function Profile() {
                   </label>
                   {field('School / College', 'school', 'text', 'Your school or college', true)}
                 </div>
-                <button type="button" className="profile-save-button" onClick={goToStep2}>Next</button>
+                <button type="button" className="profile-save-button" onClick={goToStep2}>Next: Academic record</button>
               </section>
             )}
 
