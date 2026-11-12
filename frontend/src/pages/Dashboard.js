@@ -15,7 +15,7 @@ function Dashboard() {
   const profile = useMemo(() => readUserProfile(currentUser?.id), [currentUser?.id]);
   const profileCompletion = getProfileCompletion(profile);
 
-  const { scores: storedScores, topCategories: storedTopCategories, loading: loadingScores } = useQuizScores(currentUser);
+  const { scores: storedScores, topCategories: storedTopCategories } = useQuizScores(currentUser);
 
   const hasQuizResults = Boolean(storedScores);
   const scoreValues = storedScores ? Object.values(storedScores).map((v) => Number(v) || 0) : Object.values(getEmptyScores());

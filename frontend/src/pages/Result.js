@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import useQuizScores from '../hooks/useQuizScores';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import supabase from '../lib/supabase';
 
 import { exportElementToPdf } from '../utils/pdfExport';
 import {
@@ -47,47 +46,8 @@ function Result() {
   const { currentUser } = useAuth();
   const [isExporting, setIsExporting] = useState(false);
 
-  // Start with whatever is in localStorage (works for same device)
+  // Start with whatever is in localStorage (works for same device) or Supabase via hook
   const { scores: storedScores, loading: loadingScores } = useQuizScores(currentUser);
-
-  // Cross-device fix: if no localStorage scores but user is signed in,
-  // fetch their latest quiz scores from Supabase quiz_scores table.
-  useEffect(() => {
-    if (localScores || !currentUser?.id) return;
-    let cancelled = false;
-    setLoadingScores(true);
-    supabase
-      .from('quiz_scores')
-      .select('scores, top_categories')
-      .eq('user_id', currentUser.id)
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (!error && data?.scores) {
-          // Restore to localStorage so other pages (SpecificQuiz) can read it
-          localStorage.setItem(
-            userStorageKey(storageKeys.scores, currentUser.id),
-            JSON.stringify(data.scores),
-          );
-          if (data.top_categories) {
-            localStorage.setItem(
-              userStorageKey(storageKeys.topCategories, currentUser.id),
-              JSON.stringify(data.top_categories),
-            );
-          }
-          setStoredScores(data.scores);
-        }
-        setLoadingScores(false);
-      });
-    return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser?.id]);
-
-  
-
-
 
   if (loadingScores) {
     return (
