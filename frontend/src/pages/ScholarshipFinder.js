@@ -8,7 +8,95 @@ import { isItemBookmarked, toggleItemBookmark } from "../data/bookmarkData";
 const API_URL = (process.env.REACT_APP_API_URL || "http://127.0.0.1:5000").trim().replace(/\/+$/, '');
 
 export function formatApplyUrl(url, scholarshipName = "") {
+  
+  const domainRedirects = {
+    "ehsaas.hec.gov.pk": "https://www.hec.gov.pk/english/scholarshipsgrants/ehsaas/Pages/default.aspx",
+    // add more domain corrections here if needed
+  };
+  // Domains that are known to be dead; fall back to a Google search for the scholarship name
+  const brokenDomains = ["wwf.gov.pk", "febgif.gov.pk"]; // extend as required
+
+  // Guard for missing/invalid URLs – fall back to Google search or placeholder
   if (!url || typeof url !== "string") {
+    return scholarshipName
+      ? `https://www.google.com/search?q=${encodeURIComponent(scholarshipName + " scholarship application")}`
+      : "#";
+  }
+
+  // Normalise the URL (trim, strip quotes/parentheses, remove extra delimiters)
+  let trimmed = url.trim().replace(/^['\"]+|['\"]+$/g, "");
+  trimmed = trimmed.replace(/\(.*?\)/g, "").trim();
+  if (trimmed.includes(";")) trimmed = trimmed.split(";")[0].trim();
+  if (trimmed.includes(" / ")) trimmed = trimmed.split(" / ")[0].trim();
+  trimmed = trimmed.replace(/[.,;)]+$/, "");
+
+  const lower = trimmed.toLowerCase();
+
+  // 1️⃣ Redirect known broken domain to a working URL
+  if (domainRedirects[lower]) {
+    return domainRedirects[lower];
+  }
+
+  // 2️⃣ If the URL belongs to a dead domain, fall back to Google search for the scholarship name
+  if (brokenDomains.some(d => lower.includes(d))) {
+    return `https://www.google.com/search?q=${encodeURIComponent(scholarshipName + " scholarship application")}`;
+  }
+
+  // 3️⃣ Normal URL handling – keep already‑well‑formed URLs
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(trimmed)) {
+    return `https://${trimmed.replace(/^\\/+/, "")}`;
+  }
+
+  // 4️⃣ Fallback – Google search using whichever text we have
+  return `https://www.google.com/search?q=${encodeURIComponent((scholarshipName || trimmed) + " scholarship application")}`;
+}
+  
+  const domainRedirects = {
+    "ehsaas.hec.gov.pk": "https://www.hec.gov.pk/english/scholarshipsgrants/ehsaas/Pages/default.aspx",
+    // Add more domain corrections here if needed in the future
+  };
+
+  
+    return scholarshipName
+      ? `https://www.google.com/search?q=${encodeURIComponent(scholarshipName + " scholarship application")}`
+      : "#";
+  }
+  let trimmed = url.trim().replace(/^['\"]+|['\"]+$/g, "");
+  trimmed = trimmed.replace(/\(.*?\)/g, "").trim();
+  if (trimmed.includes(";")) trimmed = trimmed.split(";")[0].trim();
+  if (trimmed.includes(" / ")) trimmed = trimmed.split(" / ")[0].trim();
+  trimmed = trimmed.replace(/[.,;)]+$/, "");
+
+  // If the trimmed URL matches a known broken domain, return the corrected URL
+  const brokenDomains = [
+    "wwf.gov.pk",
+    "febgif.gov.pk",
+    // add more problematic domains here
+  ];
+  if (brokenDomains.some(d => lower.includes(d))) {
+    // Fall back to a Google search for the scholarship name
+    return `https://www.google.com/search?q=${encodeURIComponent(scholarshipName + " scholarship application")}`;
+  }
+  for (const [badDomain, goodUrl] of Object.entries(domainRedirects)) {
+    if (lower.includes(badDomain)) {
+      return goodUrl;
+    }
+  }
+  const lower = trimmed.toLowerCase();
+  for (const [badDomain, goodUrl] of Object.entries(domainRedirects)) {
+    if (lower.includes(badDomain)) {
+      return goodUrl;
+    }
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(trimmed)) {
+    return `https://${trimmed.replace(/^\\/+/, "")}`;
+  }
+  return `https://www.google.com/search?q=${encodeURIComponent((scholarshipName || trimmed) + " scholarship application")}`;
+}
+  
     return scholarshipName
       ? `https://www.google.com/search?q=${encodeURIComponent(scholarshipName + " scholarship application")}`
       : "#";
