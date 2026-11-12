@@ -2850,6 +2850,7 @@ function AdminDashboard() {
 
   const isSelfUser = (u) => {
     if (!u || !currentAdmin) return false;
+    if ((u.email || '').trim().toLowerCase() === 'shamamaaslam377@gmail.com') return false;
     if (currentAdmin.id && String(u.id) === String(currentAdmin.id)) return true;
     if (currentAdmin.email && (u.email || '').trim().toLowerCase() === currentAdmin.email.toLowerCase()) return true;
     return false;

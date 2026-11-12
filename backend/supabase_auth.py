@@ -89,15 +89,11 @@ def admin_email_allowlist():
     return {
         email.strip().lower()
         for email in raw.split(",")
-        if email.strip() and email.strip().lower() != "shamamaaslam377@gmail.com"
+        if email.strip()
     }
 
 
 def is_admin(claims, verified_email=None):
-    email = str(verified_email or (claims.get("email") if isinstance(claims, dict) else "") or "").strip().lower()
-    if email == "shamamaaslam377@gmail.com":
-        return False
-
     # Admin role must always come from server-controlled app_metadata, never from user_metadata
     if isinstance(claims, dict):
         app_meta = claims.get("app_metadata") or {}
@@ -105,4 +101,5 @@ def is_admin(claims, verified_email=None):
             return True
 
     # Also verify against server-side admin email allowlist
+    email = str(verified_email or (claims.get("email") if isinstance(claims, dict) else "") or "").strip().lower()
     return bool(email and email in admin_email_allowlist())

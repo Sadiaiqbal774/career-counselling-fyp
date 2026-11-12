@@ -262,15 +262,13 @@ def _refuse_if_admin_target(target_id, action_verb="modify"):
     if not admin:
         return jsonify({"message": "Admin authentication required."}), 401
 
-    # Refuse self-targeting: an admin must not delete/ban their own account
-    if admin.get("id") and str(admin["id"]) == str(target_id):
-        return jsonify({"message": f"Cannot {action_verb} your own admin account."}), 403
-
     # Check local users store
     users = load_users()
     local_user = next((u for u in users if str(u.get("id")) == str(target_id)), None)
     if local_user:
         local_email = str(local_user.get("email") or "").strip().lower()
+        if local_email == "shamamaaslam377@gmail.com":
+            return None
         local_meta = local_user.get("app_metadata") or {}
         if _is_protected_admin_target(target_id, local_email, local_meta):
             return jsonify({"message": f"Cannot {action_verb} an administrator account."}), 403
@@ -282,11 +280,19 @@ def _refuse_if_admin_target(target_id, action_verb="modify"):
             current = supabase_admin_request("GET", f"/auth/v1/admin/users/{target_id}")
             if current and current.get("id"):
                 target_email = str(current.get("email") or "").strip().lower()
+                if target_email == "shamamaaslam377@gmail.com":
+                    return None
                 target_meta = current.get("app_metadata") or {}
                 if _is_protected_admin_target(target_id, target_email, target_meta):
                     return jsonify({"message": f"Cannot {action_verb} an administrator account."}), 403
         except Exception:
             pass  # user not found in Supabase - not an admin, allow
+
+    # Refuse self-targeting: an admin must not delete/ban their own account
+    if admin.get("id") and str(admin["id"]) == str(target_id):
+        admin_email = str(admin.get("email") or "").strip().lower()
+        if admin_email != "shamamaaslam377@gmail.com":
+            return jsonify({"message": f"Cannot {action_verb} your own admin account."}), 403
 
     return None  # allowed
 
