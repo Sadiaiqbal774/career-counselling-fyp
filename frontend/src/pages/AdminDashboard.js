@@ -1961,26 +1961,38 @@ function EntityForm({ tab, record, onSave, onCancel }) {
     setSubmitted(false);
   }, [tab, record]);
   const update = (key, value) => {
-    setForm((current) => ({ ...current, [key]: value }));
-    setFormError('');
+    setForm((current) => {
+      const next = { ...current, [key]: value };
+      if (isScholarship) {
+        const remaining = getMissingScholarshipFields(next);
+        if (remaining.length === 0) {
+          setFormError('');
+        } else if (submitted) {
+          setFormError(`All fields are required. Please fill in: ${remaining.join(', ')}.`);
+        }
+      } else {
+        setFormError('');
+      }
+      return next;
+    });
   };
 
   const isFilled = (val) => val !== null && val !== undefined && String(val).trim() !== '';
   const isScholarship = tab === 'scholarships';
 
-  const getMissingScholarshipFields = () => {
+  const getMissingScholarshipFields = (formData = form) => {
     if (!isScholarship) return [];
     const missing = [];
-    if (!isFilled(form.name)) missing.push('Name');
-    if (!isFilled(form.provider)) missing.push('Provider');
-    if (!isFilled(form.provinces)) missing.push('Province');
-    if (!isFilled(form.basis)) missing.push('Basis');
-    if (!isFilled(form.providerType)) missing.push('Provider type');
-    if (!isFilled(form.eligibility)) missing.push('Eligibility details');
-    if (!isFilled(form.incomeCap)) missing.push('Income cap (PKR)');
-    if (!isFilled(form.minMerit)) missing.push('Minimum merit %');
-    if (!isFilled(form.coverage)) missing.push('Coverage');
-    if (!isFilled(form.sourceUrl)) missing.push('Source URL');
+    if (!isFilled(formData.name)) missing.push('Name');
+    if (!isFilled(formData.provider)) missing.push('Provider');
+    if (!isFilled(formData.provinces)) missing.push('Province');
+    if (!isFilled(formData.basis)) missing.push('Basis');
+    if (!isFilled(formData.providerType)) missing.push('Provider type');
+    if (!isFilled(formData.eligibility)) missing.push('Eligibility details');
+    if (!isFilled(formData.incomeCap)) missing.push('Income cap (PKR)');
+    if (!isFilled(formData.minMerit)) missing.push('Minimum merit %');
+    if (!isFilled(formData.coverage)) missing.push('Coverage');
+    if (!isFilled(formData.sourceUrl)) missing.push('Source URL');
     return missing;
   };
 
@@ -2060,14 +2072,12 @@ function EntityForm({ tab, record, onSave, onCancel }) {
       <label>Link to page (optional)<select value={form.link} onChange={(event) => update('link', event.target.value)}><option value="">No link</option><option value="/quiz">Career quiz</option><option value="/university-recommender">University Recommender</option><option value="/scholarships">Scholarship Finder</option><option value="/profile">Profile</option><option value="/dashboard">Dashboard</option></select></label>
       {form.link && <label>Link button text<input value={form.linkLabel} onChange={(event) => update('linkLabel', event.target.value)} placeholder="e.g. Open Scholarship Finder" /></label>}
     </>}
-    {isScholarship && !isScholarshipComplete && (
-      <div style={{ color: '#92400e', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', marginBottom: '14px' }}>
-        <strong>Incomplete fields:</strong> All fields are required. Please fill in <strong>{missingScholarshipFields.join(', ')}</strong> before saving.
-      </div>
-    )}
     {formError && (
-      <div style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', marginBottom: '14px' }}>
-        {formError}
+      <div style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style={{ flexShrink: 0 }}>
+          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+        </svg>
+        <span>{formError}</span>
       </div>
     )}
     <div className="admin-button-row">
