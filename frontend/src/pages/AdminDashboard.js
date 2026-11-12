@@ -1996,10 +1996,57 @@ function EntityForm({ tab, record, onSave, onCancel }) {
     return missing;
   };
 
+  // University validation helpers
+  const getMissingUniversityFields = (formData = form) => {
+    if (tab !== 'universities') return [];
+    const missing = [];
+    if (!isFilled(formData.name)) missing.push('Name');
+    if (!isFilled(formData.province)) missing.push('Province');
+    if (!isFilled(formData.website)) missing.push('Website URL');
+    return missing;
+  };
+  const missingUniversityFields = getMissingUniversityFields();
+  const isUniversityComplete = missingUniversityFields.length === 0;
+
+    if (!isScholarship) return [];
+    const missing = [];
+    if (!isFilled(formData.name)) missing.push('Name');
+    if (!isFilled(formData.provider)) missing.push('Provider');
+    if (!isFilled(formData.provinces)) missing.push('Province');
+    if (!isFilled(formData.basis)) missing.push('Basis');
+    if (!isFilled(formData.providerType)) missing.push('Provider type');
+    if (!isFilled(formData.eligibility)) missing.push('Eligibility details');
+    if (!isFilled(formData.incomeCap)) missing.push('Income cap (PKR)');
+    if (!isFilled(formData.minMerit)) missing.push('Minimum merit %');
+    if (!isFilled(formData.coverage)) missing.push('Coverage');
+    if (!isFilled(formData.sourceUrl)) missing.push('Source URL');
+    return missing;
+  };
+
   const missingScholarshipFields = getMissingScholarshipFields();
   const isScholarshipComplete = !isScholarship || missingScholarshipFields.length === 0;
 
-  const handleScholarshipCheck = (event) => {
+  const handleSaveCheck = (event) => {
+    if (isScholarship) {
+      setSubmitted(true);
+      const missing = getMissingScholarshipFields();
+      if (missing.length > 0) {
+        if (event) { event.preventDefault(); event.stopPropagation(); }
+        setFormError(`All fields are required. Please fill in: ${missing.join(', ')}.`);
+        return false;
+      }
+    } else if (tab === 'universities') {
+      setSubmitted(true);
+      const missing = getMissingUniversityFields();
+      if (missing.length > 0) {
+        if (event) { event.preventDefault(); event.stopPropagation(); }
+        setFormError(`All fields are required. Please fill in: ${missing.join(', ')}.`);
+        return false;
+      }
+    }
+    return true;
+  };
+
     if (isScholarship) {
       setSubmitted(true);
       const missing = getMissingScholarshipFields();
@@ -2017,7 +2064,7 @@ function EntityForm({ tab, record, onSave, onCancel }) {
 
   const submit = (event) => {
     event.preventDefault();
-    if (!handleScholarshipCheck(event)) {
+    if (!handleSaveCheck(event)) {
       return;
     }
     setFormError('');
@@ -2084,8 +2131,8 @@ function EntityForm({ tab, record, onSave, onCancel }) {
       <button
         className="primary-button"
         type="submit"
-        disabled={isScholarship && !isScholarshipComplete}
-        style={isScholarship && !isScholarshipComplete ? { opacity: 0.55, cursor: 'not-allowed' } : undefined}
+        disabled={ (isScholarship && !isScholarshipComplete) || (tab === 'universities' && !isUniversityComplete) }
+        style={ (isScholarship && !isScholarshipComplete) || (tab === 'universities' && !isUniversityComplete) ? { opacity: 0.55, cursor: 'not-allowed' } : undefined}
         onClick={handleScholarshipCheck}
       >
         {tab === 'scholarships' ? (record ? 'Save Scholarship' : 'Add Scholarship') : (record ? `Update ${getResourceSingular(tab)}` : `Add ${getResourceSingular(tab)}`)}

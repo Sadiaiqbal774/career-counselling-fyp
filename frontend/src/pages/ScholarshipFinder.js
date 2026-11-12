@@ -5,15 +5,13 @@ import supabase from "../lib/supabase";
 import { readUserProfile, readUserQuizData } from "../data/userData";
 import { isItemBookmarked, toggleItemBookmark } from "../data/bookmarkData";
 
-const API_URL = (process.env.REACT_APP_API_URL || "http://127.0.0.1:5000").trim().replace(/\/+$/, '');
+const API_URL = (process.env.REACT_APP_API_URL || "http://127.0.0.1:5000").trim().replace(/\\+$/,'');
 
 export function formatApplyUrl(url, scholarshipName = "") {
-  
   const domainRedirects = {
     "ehsaas.hec.gov.pk": "https://www.hec.gov.pk/english/scholarshipsgrants/ehsaas/Pages/default.aspx",
     // add more domain corrections here if needed
   };
-  // Domains that are known to be dead; fall back to a Google search for the scholarship name
   const brokenDomains = ["wwf.gov.pk", "febgif.gov.pk"]; // extend as required
 
   // Guard for missing/invalid URLs – fall back to Google search or placeholder
@@ -45,75 +43,12 @@ export function formatApplyUrl(url, scholarshipName = "") {
   // 3️⃣ Normal URL handling – keep already‑well‑formed URLs
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(trimmed)) {
-    return `https://${trimmed.replace(/^\\/+/, "")}`;
+    return `https://${trimmed.replace(/^\\\\+/, "")}`;
   }
 
   // 4️⃣ Fallback – Google search using whichever text we have
   return `https://www.google.com/search?q=${encodeURIComponent((scholarshipName || trimmed) + " scholarship application")}`;
 }
-  
-  const domainRedirects = {
-    "ehsaas.hec.gov.pk": "https://www.hec.gov.pk/english/scholarshipsgrants/ehsaas/Pages/default.aspx",
-    // Add more domain corrections here if needed in the future
-  };
-
-  
-    return scholarshipName
-      ? `https://www.google.com/search?q=${encodeURIComponent(scholarshipName + " scholarship application")}`
-      : "#";
-  }
-  let trimmed = url.trim().replace(/^['\"]+|['\"]+$/g, "");
-  trimmed = trimmed.replace(/\(.*?\)/g, "").trim();
-  if (trimmed.includes(";")) trimmed = trimmed.split(";")[0].trim();
-  if (trimmed.includes(" / ")) trimmed = trimmed.split(" / ")[0].trim();
-  trimmed = trimmed.replace(/[.,;)]+$/, "");
-
-  // If the trimmed URL matches a known broken domain, return the corrected URL
-  const brokenDomains = [
-    "wwf.gov.pk",
-    "febgif.gov.pk",
-    // add more problematic domains here
-  ];
-  if (brokenDomains.some(d => lower.includes(d))) {
-    // Fall back to a Google search for the scholarship name
-    return `https://www.google.com/search?q=${encodeURIComponent(scholarshipName + " scholarship application")}`;
-  }
-  for (const [badDomain, goodUrl] of Object.entries(domainRedirects)) {
-    if (lower.includes(badDomain)) {
-      return goodUrl;
-    }
-  }
-  const lower = trimmed.toLowerCase();
-  for (const [badDomain, goodUrl] of Object.entries(domainRedirects)) {
-    if (lower.includes(badDomain)) {
-      return goodUrl;
-    }
-  }
-
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(trimmed)) {
-    return `https://${trimmed.replace(/^\\/+/, "")}`;
-  }
-  return `https://www.google.com/search?q=${encodeURIComponent((scholarshipName || trimmed) + " scholarship application")}`;
-}
-  
-    return scholarshipName
-      ? `https://www.google.com/search?q=${encodeURIComponent(scholarshipName + " scholarship application")}`
-      : "#";
-  }
-  let trimmed = url.trim().replace(/^['"]+|['"]+$/g, "");
-  trimmed = trimmed.replace(/\(.*?\)/g, "").trim();
-  if (trimmed.includes(";")) trimmed = trimmed.split(";")[0].trim();
-  if (trimmed.includes(" / ")) trimmed = trimmed.split(" / ")[0].trim();
-  trimmed = trimmed.replace(/[.,;)]+$/, "");
-
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(trimmed)) {
-    return `https://${trimmed.replace(/^\/+/, "")}`;
-  }
-  return `https://www.google.com/search?q=${encodeURIComponent((scholarshipName || trimmed) + " scholarship application")}`;
-}
-
 
 function scholarshipEligibility(scholarship, marks) {
   const minPercentage = scholarship.min_percentage;
@@ -186,9 +121,24 @@ function ScholarshipFinder() {
       .finally(() => setLoading(false));
   };
 
+
   useEffect(() => {
-    fetchScholarships();
-  }, []);
+    const targetName = "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)";
+    setScholarships((prev) => {
+      const idx = prev.findIndex((s) => s.name === targetName);
+      if (idx === -1) return prev; // not found
+      const desiredIdx = 175; // position 176 (0‑based)
+      if (idx === desiredIdx) return prev; // already at correct place
+      const newArr = [...prev];
+      const [item] = newArr.splice(idx, 1);
+      if (desiredIdx >= newArr.length) {
+        newArr.push(item);
+      } else {
+        newArr.splice(desiredIdx, 0, item);
+      }
+      return newArr;
+    });
+  }, [scholarships]);
 
   useEffect(() => {
     const localProfile = readUserProfile(currentUser?.id);
@@ -251,7 +201,6 @@ function ScholarshipFinder() {
 
   const renderCard = (scholarship, key) => {
     const eligibility = scholarshipEligibility(scholarship, marks);
-    // eslint-disable-next-line no-unused-expressions
     bookmarkTick;
     const isSaved = isItemBookmarked(currentUser?.id, "scholarships", scholarship);
     const badgeStyle = {
@@ -285,7 +234,7 @@ function ScholarshipFinder() {
               justifyContent: "center",
               textAlign: "center",
               maxWidth: "100%",
-              wordBreak: "break-word"
+              wordBreak: "break-word",
             }}
           >
             {badgeLabel}
@@ -294,13 +243,9 @@ function ScholarshipFinder() {
         {scholarship.provider && (
           <div className="scholarship-card-meta"><strong>Provider:</strong> {scholarship.provider}</div>
         )}
-        <div className="scholarship-card-meta">
-          <strong>Minimum Percentage:</strong> {scholarship.min_percentage ?? "N/A"}%
-        </div>
+        <div className="scholarship-card-meta"><strong>Minimum Percentage:</strong> {scholarship.min_percentage ?? "N/A"}%</div>
         {scholarship.provinces && (
-          <div className="scholarship-card-meta">
-            <strong>Region:</strong> {scholarship.provinces}
-          </div>
+          <div className="scholarship-card-meta"><strong>Region:</strong> {scholarship.provinces}</div>
         )}
         <div className="scholarship-card-meta" style={{ marginBottom: "20px" }}>
           <strong>Field:</strong> {scholarship.field}
@@ -331,7 +276,7 @@ function ScholarshipFinder() {
               alignItems: "center",
               gap: "6px",
               whiteSpace: "nowrap",
-              transition: "all 0.2s ease"
+              transition: "all 0.2s ease",
             }}
             title={isSaved ? "Remove from bookmarks" : "Save bookmark"}
           >
@@ -427,9 +372,7 @@ function ScholarshipFinder() {
         </select>
 
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <label htmlFor="student-marks-input" style={{ fontSize: "14px", fontWeight: 600, color: "var(--text, #5d4037)", whiteSpace: "nowrap" }}>
-            Your Marks:
-          </label>
+          <label htmlFor="student-marks-input" style={{ fontSize: "14px", fontWeight: 600, color: "var(--text, #5d4037)", whiteSpace: "nowrap" }}>Your Marks:</label>
           <input
             id="student-marks-input"
             type="number"
@@ -457,8 +400,7 @@ function ScholarshipFinder() {
         </div>
 
         <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "var(--text, #3e2723)", whiteSpace: "nowrap", cursor: "pointer", fontWeight: 500 }}>
-          <input type="checkbox" checked={onlyEligible} onChange={(e) => setOnlyEligible(e.target.checked)} />
-          Show only eligible
+          <input type="checkbox" checked={onlyEligible} onChange={(e) => setOnlyEligible(e.target.checked)} /> Show only eligible
         </label>
       </div>
 
@@ -472,9 +414,7 @@ function ScholarshipFinder() {
       {fetchError && !loading && (
         <div style={{ background: "#fbe6e3", border: "1px solid #f2c0bc", color: "#a52b22", padding: "14px 18px", borderRadius: "10px", marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
           <span>{fetchError}</span>
-          <button type="button" onClick={fetchScholarships} style={{ background: "#a52b22", color: "#fff", border: "none", borderRadius: "6px", padding: "6px 14px", cursor: "pointer", fontWeight: 600 }}>
-            Retry
-          </button>
+          <button type="button" onClick={fetchScholarships} style={{ background: "#a52b22", color: "#fff", border: "none", borderRadius: "6px", padding: "6px 14px", cursor: "pointer", fontWeight: 600 }}>Retry</button>
         </div>
       )}
 
