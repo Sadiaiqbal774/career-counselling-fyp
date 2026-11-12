@@ -996,6 +996,14 @@ html.dark-mode .admin-app {
   border-color: var(--bronze-deep);
 }
 
+.admin-main .primary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed !important;
+  pointer-events: auto !important;
+  filter: grayscale(25%);
+  box-shadow: none;
+}
+
 .admin-main .secondary-button {
   background: var(--paper);
   color: var(--ink);

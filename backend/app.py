@@ -1636,6 +1636,35 @@ def admin_resource(resource):
         base_records.append(record)
         save_universities(base_records)
         record["programs"] = []
+    elif resource == "scholarships":
+        required_fields = [
+            ("name", "Name"),
+            ("provider", "Provider"),
+            ("provinces", "Province"),
+            ("basis", "Basis"),
+            ("provider_type", "Provider type"),
+            ("eligibility_raw", "Eligibility details"),
+            ("income_cap_pkr", "Income cap"),
+            ("min_merit_pct", "Minimum merit %"),
+            ("coverage", "Coverage"),
+            ("source_url", "Source URL"),
+        ]
+        empty_fields = [label for key, label in required_fields if str(payload.get(key, "")).strip() == ""]
+        if empty_fields:
+            return jsonify({
+                "message": f"All fields are required. Please fill in: {', '.join(empty_fields)}."
+            }), 400
+        columns = []
+        for r in records:
+            for key in r:
+                if key != "id" and key not in columns:
+                    columns.append(key)
+        for key in payload:
+            if key != "id" and key not in columns:
+                columns.append(key)
+        record = {column: str(payload.get(column, "")).strip() for column in columns}
+        records.append({"id": str(len(records)), **record})
+        save_admin_records(resource, records)
     elif resource in admin_json_resources:
         record = {"id": secrets.token_hex(8), **payload}
         records.append(record)
@@ -1692,6 +1721,32 @@ def admin_update_resource(resource, record_id):
         records[record_index] = {"id": record_id, **{field: str(payload.get(field, "Public" if field == "sector" else "")) for field in fields}}
         save_universities(records)
         records[record_index]["programs"] = load_universities_with_programs()[record_index].get("programs", [])
+    elif resource == "scholarships":
+        required_fields = [
+            ("name", "Name"),
+            ("provider", "Provider"),
+            ("provinces", "Province"),
+            ("basis", "Basis"),
+            ("provider_type", "Provider type"),
+            ("eligibility_raw", "Eligibility details"),
+            ("income_cap_pkr", "Income cap"),
+            ("min_merit_pct", "Minimum merit %"),
+            ("coverage", "Coverage"),
+            ("source_url", "Source URL"),
+        ]
+        empty_fields = [label for key, label in required_fields if str(payload.get(key, "")).strip() == ""]
+        if empty_fields:
+            return jsonify({
+                "message": f"All fields are required. Please fill in: {', '.join(empty_fields)}."
+            }), 400
+        columns = []
+        for r in records:
+            for key in r:
+                if key != "id" and key not in columns:
+                    columns.append(key)
+        updated = {column: str(payload.get(column, "")).strip() for column in columns}
+        records[record_index] = {"id": record_id, **updated}
+        save_admin_records(resource, records)
     elif resource in admin_json_resources:
         records[record_index] = {"id": record_id, **{key: value for key, value in payload.items() if key != "id"}}
         save_json_records(resource, records)

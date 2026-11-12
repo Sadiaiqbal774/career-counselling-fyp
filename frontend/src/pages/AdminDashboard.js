@@ -1946,21 +1946,84 @@ function MonitoringSummary({ tab, records }) {
 
 function formValues(tab, record) {
   if (tab === 'universities') return { name: record?.University || record?.name || '', city: record?.City || record?.city || '', province: record?.Province || record?.province || '', sector: record?.Sector || record?.sector || '', website: record?.Website || record?.website || record?.website_url || record?.url || '' };
-  if (tab === 'scholarships') return { name: record?.name || '', provider: record?.provider || '', provinces: record?.provinces || '', basis: record?.basis || 'Merit', providerType: record?.provider_type || '', eligibility: record?.eligibility_raw || '', incomeCap: record?.income_cap_pkr || '', minMerit: record?.min_merit_pct || '', coverage: record?.coverage || '', sourceUrl: record?.source_url || '' };
+  if (tab === 'scholarships') return { name: record?.name || '', provider: record?.provider || '', provinces: record?.provinces || '', basis: record?.basis ? scholarshipBasisLabel(record.basis) : '', providerType: record?.provider_type || '', eligibility: record?.eligibility_raw || '', incomeCap: (record?.income_cap_pkr !== null && record?.income_cap_pkr !== undefined) ? String(record.income_cap_pkr) : '', minMerit: (record?.min_merit_pct !== null && record?.min_merit_pct !== undefined) ? String(record.min_merit_pct) : '', coverage: record?.coverage || '', sourceUrl: record?.source_url || '' };
   if (tab === 'chatbot-responses') return { keyword: record?.keyword || '', response: record?.response || '', link: record?.link || '', linkLabel: record?.linkLabel || '' };
   return { field: record?.field || '', description: record?.description || '', minimumMarks: (record?.minimumMarks !== undefined && record?.minimumMarks !== null && record?.minimumMarks !== '') ? record.minimumMarks : '' };
 }
 
 function EntityForm({ tab, record, onSave, onCancel }) {
   const [form, setForm] = useState(() => formValues(tab, record));
-  useEffect(() => setForm(formValues(tab, record)), [tab, record]);
-  const update = (key, value) => setForm((current) => ({ ...current, [key]: value }));
+  const [formError, setFormError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  useEffect(() => {
+    setForm(formValues(tab, record));
+    setFormError('');
+    setSubmitted(false);
+  }, [tab, record]);
+  const update = (key, value) => {
+    setForm((current) => ({ ...current, [key]: value }));
+    setFormError('');
+  };
+
+  const isFilled = (val) => val !== null && val !== undefined && String(val).trim() !== '';
+  const isScholarship = tab === 'scholarships';
+
+  const getMissingScholarshipFields = () => {
+    if (!isScholarship) return [];
+    const missing = [];
+    if (!isFilled(form.name)) missing.push('Name');
+    if (!isFilled(form.provider)) missing.push('Provider');
+    if (!isFilled(form.provinces)) missing.push('Province');
+    if (!isFilled(form.basis)) missing.push('Basis');
+    if (!isFilled(form.providerType)) missing.push('Provider type');
+    if (!isFilled(form.eligibility)) missing.push('Eligibility details');
+    if (!isFilled(form.incomeCap)) missing.push('Income cap (PKR)');
+    if (!isFilled(form.minMerit)) missing.push('Minimum merit %');
+    if (!isFilled(form.coverage)) missing.push('Coverage');
+    if (!isFilled(form.sourceUrl)) missing.push('Source URL');
+    return missing;
+  };
+
+  const missingScholarshipFields = getMissingScholarshipFields();
+  const isScholarshipComplete = !isScholarship || missingScholarshipFields.length === 0;
+
+  const handleScholarshipCheck = (event) => {
+    if (isScholarship) {
+      setSubmitted(true);
+      const missing = getMissingScholarshipFields();
+      if (missing.length > 0) {
+        if (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        setFormError(`All fields are required. Please fill in: ${missing.join(', ')}.`);
+        return false;
+      }
+    }
+    return true;
+  };
+
   const submit = (event) => {
     event.preventDefault();
+    if (!handleScholarshipCheck(event)) {
+      return;
+    }
+    setFormError('');
     const data = tab === 'universities'
       ? { name: form.name, city: form.city, province: form.province, sector: form.sector, website_url: normalizeUrl(form.website) }
       : tab === 'scholarships'
-        ? { name: form.name, provider: form.provider, provinces: form.provinces, basis: form.basis, provider_type: form.providerType, eligibility_raw: form.eligibility, income_cap_pkr: form.incomeCap, min_merit_pct: form.minMerit, coverage: form.coverage, source_url: normalizeUrl(form.sourceUrl) }
+        ? {
+            name: form.name.trim(),
+            provider: form.provider.trim(),
+            provinces: form.provinces.trim(),
+            basis: form.basis.trim(),
+            provider_type: form.providerType.trim(),
+            eligibility_raw: form.eligibility.trim(),
+            income_cap_pkr: form.incomeCap,
+            min_merit_pct: form.minMerit,
+            coverage: form.coverage.trim(),
+            source_url: normalizeUrl(form.sourceUrl.trim()),
+          }
         : tab === 'chatbot-responses'
           ? { keyword: form.keyword, response: form.response, link: form.link, linkLabel: form.linkLabel }
           : { field: form.field, description: form.description, minimumMarks: Number(form.minimumMarks) || 0 };
@@ -1975,16 +2038,16 @@ function EntityForm({ tab, record, onSave, onCancel }) {
       <label>Website URL<span className="admin-field-help">e.g. university.edu.pk (https:// is added automatically if omitted)</span><input type="text" value={form.website} onChange={(event) => update('website', event.target.value)} onBlur={(event) => update('website', normalizeUrl(event.target.value))} placeholder="https://university.edu.pk" /></label>
     </>}
     {tab === 'scholarships' && <>
-      <label>Name<input value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="e.g. HEC Undergraduate Scholarship" required /></label>
-      <label>Provider<input value={form.provider} onChange={(event) => update('provider', event.target.value)} placeholder="The organisation offering the scholarship" /></label>
-      <label>Province<select value={form.provinces} onChange={(event) => update('provinces', event.target.value)}><option value="">Select province or region</option>{['All Pakistan', 'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Azad Jammu & Kashmir', 'Gilgit-Baltistan'].map((province) => <option key={province}>{province}</option>)}{form.provinces && !['All Pakistan', 'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Azad Jammu & Kashmir', 'Gilgit-Baltistan'].includes(form.provinces) && <option>{form.provinces}</option>}</select></label>
-      <label>Basis<select value={form.basis} onChange={(event) => update('basis', event.target.value)}><option>Merit</option><option>Need</option><option>Need + Merit</option></select></label>
-      <label>Provider type<select value={form.providerType} onChange={(event) => update('providerType', event.target.value)}><option value="">Select provider type</option><option>Government</option><option>Private</option><option>International</option></select></label>
-      <label>Eligibility details<span className="admin-field-help">What students must meet to qualify.</span><textarea value={form.eligibility} onChange={(event) => update('eligibility', event.target.value)} placeholder="e.g. Household income below PKR 60,000 and at least 70% marks" /></label>
-      <label>Income cap (PKR)<span className="admin-field-help">Maximum household income. Leave blank if there is no limit.</span><input type="number" min="0" value={form.incomeCap || ''} onChange={(event) => update('incomeCap', clampNonNegative(event.target.value))} placeholder="e.g. 60000" /></label>
-      <label>Minimum merit %<span className="admin-field-help">Minimum marks or merit percentage. Leave blank if not required.</span><input type="number" min="0" max="100" value={form.minMerit || ''} onChange={(event) => update('minMerit', clampNonNegative(event.target.value))} placeholder="e.g. 70" /></label>
-      <label>Coverage<span className="admin-field-help">What the scholarship pays for, such as tuition, stipend, or books.</span><textarea value={form.coverage} onChange={(event) => update('coverage', event.target.value)} placeholder="e.g. Full tuition fee and monthly stipend" /></label>
-      <label>Source URL<span className="admin-field-help">Official webpage where students can verify or apply. https:// is added automatically.</span><input type="text" value={form.sourceUrl} onChange={(event) => update('sourceUrl', event.target.value)} onBlur={(event) => update('sourceUrl', normalizeUrl(event.target.value))} placeholder="https://official-website.gov.pk/scholarship" /></label>
+      <label>Name <span style={{ color: '#dc2626' }}>*</span><input style={submitted && !isFilled(form.name) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="e.g. HEC Undergraduate Scholarship" required /></label>
+      <label>Provider <span style={{ color: '#dc2626' }}>*</span><input style={submitted && !isFilled(form.provider) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.provider} onChange={(event) => update('provider', event.target.value)} placeholder="The organisation offering the scholarship" required /></label>
+      <label>Province <span style={{ color: '#dc2626' }}>*</span><select style={submitted && !isFilled(form.provinces) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.provinces} onChange={(event) => update('provinces', event.target.value)} required><option value="">Select province or region</option>{['All Pakistan', 'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Azad Jammu & Kashmir', 'Gilgit-Baltistan'].map((province) => <option key={province} value={province}>{province}</option>)}{form.provinces && !['All Pakistan', 'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Azad Jammu & Kashmir', 'Gilgit-Baltistan'].includes(form.provinces) && <option value={form.provinces}>{form.provinces}</option>}</select></label>
+      <label>Basis <span style={{ color: '#dc2626' }}>*</span><select style={submitted && !isFilled(form.basis) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.basis} onChange={(event) => update('basis', event.target.value)} required><option value="">Select basis</option><option value="Merit">Merit</option><option value="Need">Need</option><option value="Need + Merit">Need + Merit</option></select></label>
+      <label>Provider type <span style={{ color: '#dc2626' }}>*</span><select style={submitted && !isFilled(form.providerType) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.providerType} onChange={(event) => update('providerType', event.target.value)} required><option value="">Select provider type</option><option value="Government">Government</option><option value="Private">Private</option><option value="International">International</option>{form.providerType && !['Government', 'Private', 'International'].includes(form.providerType) && <option value={form.providerType}>{form.providerType}</option>}</select></label>
+      <label>Eligibility details <span style={{ color: '#dc2626' }}>*</span><span className="admin-field-help">What students must meet to qualify.</span><textarea style={submitted && !isFilled(form.eligibility) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.eligibility} onChange={(event) => update('eligibility', event.target.value)} placeholder="e.g. Household income below PKR 60,000 and at least 70% marks" required /></label>
+      <label>Income cap (PKR) <span style={{ color: '#dc2626' }}>*</span><span className="admin-field-help">Maximum household income. Enter 0 if no limit.</span><input style={submitted && !isFilled(form.incomeCap) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} type="number" min="0" value={form.incomeCap !== undefined && form.incomeCap !== null ? form.incomeCap : ''} onChange={(event) => update('incomeCap', clampNonNegative(event.target.value))} placeholder="e.g. 60000" required /></label>
+      <label>Minimum merit % <span style={{ color: '#dc2626' }}>*</span><span className="admin-field-help">Minimum marks or merit percentage. Enter 0 if not required.</span><input style={submitted && !isFilled(form.minMerit) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} type="number" min="0" max="100" value={form.minMerit !== undefined && form.minMerit !== null ? form.minMerit : ''} onChange={(event) => update('minMerit', clampNonNegative(event.target.value))} placeholder="e.g. 70" required /></label>
+      <label>Coverage <span style={{ color: '#dc2626' }}>*</span><span className="admin-field-help">What the scholarship pays for, such as tuition, stipend, or books.</span><textarea style={submitted && !isFilled(form.coverage) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.coverage} onChange={(event) => update('coverage', event.target.value)} placeholder="e.g. Full tuition fee and monthly stipend" required /></label>
+      <label>Source URL <span style={{ color: '#dc2626' }}>*</span><span className="admin-field-help">Official webpage where students can verify or apply. https:// is added automatically.</span><input style={submitted && !isFilled(form.sourceUrl) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} type="text" value={form.sourceUrl} onChange={(event) => update('sourceUrl', event.target.value)} onBlur={(event) => update('sourceUrl', normalizeUrl(event.target.value))} placeholder="https://official-website.gov.pk/scholarship" required /></label>
     </>}
     {tab === 'eligibility' && <>
       <label>Field / category name<input value={form.field} onChange={(event) => update('field', event.target.value)} placeholder="e.g. Computer Science" required /></label>
@@ -1997,7 +2060,27 @@ function EntityForm({ tab, record, onSave, onCancel }) {
       <label>Link to page (optional)<select value={form.link} onChange={(event) => update('link', event.target.value)}><option value="">No link</option><option value="/quiz">Career quiz</option><option value="/university-recommender">University Recommender</option><option value="/scholarships">Scholarship Finder</option><option value="/profile">Profile</option><option value="/dashboard">Dashboard</option></select></label>
       {form.link && <label>Link button text<input value={form.linkLabel} onChange={(event) => update('linkLabel', event.target.value)} placeholder="e.g. Open Scholarship Finder" /></label>}
     </>}
-    <div className="admin-button-row"><button className="primary-button" type="submit">{record ? `Update ${getResourceSingular(tab)}` : `Add ${getResourceSingular(tab)}`}</button></div>
+    {isScholarship && !isScholarshipComplete && (
+      <div style={{ color: '#92400e', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', marginBottom: '14px' }}>
+        <strong>Incomplete fields:</strong> All fields are required. Please fill in <strong>{missingScholarshipFields.join(', ')}</strong> before saving.
+      </div>
+    )}
+    {formError && (
+      <div style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', marginBottom: '14px' }}>
+        {formError}
+      </div>
+    )}
+    <div className="admin-button-row">
+      <button
+        className="primary-button"
+        type="submit"
+        disabled={isScholarship && !isScholarshipComplete}
+        style={isScholarship && !isScholarshipComplete ? { opacity: 0.55, cursor: 'not-allowed' } : undefined}
+        onClick={handleScholarshipCheck}
+      >
+        {tab === 'scholarships' ? (record ? 'Save Scholarship' : 'Add Scholarship') : (record ? `Update ${getResourceSingular(tab)}` : `Add ${getResourceSingular(tab)}`)}
+      </button>
+    </div>
   </form>;
 }
 
@@ -2770,15 +2853,29 @@ function AdminDashboard() {
   const saveRecord = async (data) => {
     const wasEditing = Boolean(editingRecord);
     const itemLabel = getResourceSingular(activeResource);
+    const editingId = editingRecord ? editingRecord.id : null;
+    const tempId = editingId || `temp_${Date.now()}`;
+    const previousRecords = [...records];
+
+    // Optimistically update records immediately for instant response
+    if (!wasEditing) {
+      setRecords((prev) => [{ id: tempId, ...data }, ...prev]);
+    } else {
+      setRecords((prev) => prev.map((r) => (String(r.id) === String(editingId) ? { ...r, ...data } : r)));
+    }
+    setEditingRecord(null);
+    setResourceView('list');
+    setFormResetKey((key) => key + 1);
+    setNotice(`${itemLabel} ${wasEditing ? 'updated' : 'added'} successfully.`);
+
     try {
-      const path = editingRecord ? `/api/admin/${activeResource}/${editingRecord.id}` : `/api/admin/${activeResource}`;
-      await api(path, { method: editingRecord ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      await load(activeResource);
-      setEditingRecord(null);
-      setResourceView('list');
-      setFormResetKey((key) => key + 1);
-      setNotice(`${itemLabel} ${wasEditing ? 'updated' : 'added'} successfully.`);
+      const path = wasEditing ? `/api/admin/${activeResource}/${editingId}` : `/api/admin/${activeResource}`;
+      const res = await api(path, { method: wasEditing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      if (res && res.record && res.record.id) {
+        setRecords((prev) => prev.map((r) => (String(r.id) === String(tempId) ? { ...r, ...res.record } : r)));
+      }
     } catch (saveError) {
+      setRecords(previousRecords);
       setError(saveError.message);
     }
   };
@@ -2813,9 +2910,16 @@ function AdminDashboard() {
       } else if (target.type === 'record') {
         const record = target.payload;
         const itemLabel = getResourceSingular(activeResource);
-        await api(`/api/admin/${activeResource}/${record.id}`, { method: 'DELETE' });
-        await load(activeResource);
+        const previousRecords = [...records];
+        // Optimistically delete immediately so the user doesn't wait
+        setRecords((prev) => prev.filter((r) => String(r.id) !== String(record.id)));
         setNotice(`${itemLabel} deleted successfully.`);
+        try {
+          await api(`/api/admin/${activeResource}/${record.id}`, { method: 'DELETE' });
+        } catch (deleteError) {
+          setRecords(previousRecords);
+          setError(deleteError.message);
+        }
       } else if (target.type === 'program') {
         const program = target.payload;
         if (!editingRecord) return;
