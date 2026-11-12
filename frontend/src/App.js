@@ -39,7 +39,7 @@ function Header() {
   return (
     <header className="app-navbar">
       <div className="app-navbar__inner">
-        <CareerGuideLogo onClick={() => navigate('/')} className="app-navbar__brand" />
+        <CareerGuideLogo className="app-navbar__brand" />
         <button
           type="button"
           className="app-navbar__menu-toggle"

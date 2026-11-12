@@ -122,9 +122,9 @@ function ScholarshipFinder() {
     bookmarkTick;
     const isSaved = isItemBookmarked(currentUser?.id, "scholarships", scholarship);
     const badgeStyle = {
-      eligible: { background: "#e3f3e8", color: "#28734a" },
-      "not-eligible": { background: "#fbe6e3", color: "#a52b22" },
-      unknown: { background: "#f0e2d4", color: "#7a5f4f" },
+      eligible: { background: "#e3f3e8", color: "#28734a", border: "1px solid #b9dfc4" },
+      "not-eligible": { background: "#fbe6e3", color: "#a52b22", border: "1px solid #f2c0bc" },
+      unknown: { background: "#f3ede6", color: "#8a5f1c", border: "1px solid #e2d2c1" },
     }[eligibility];
     const badgeLabel = {
       eligible: "You are eligible",
@@ -134,9 +134,27 @@ function ScholarshipFinder() {
 
     return (
       <div key={key} className="scholarship-card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "12px" }}>
-          <h2 className="scholarship-card-title">{scholarship.name}</h2>
-          <span style={{ ...badgeStyle, padding: "5px 10px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px 12px", marginBottom: "12px", flexWrap: "wrap" }}>
+          <h2 className="scholarship-card-title" style={{ flex: "1 1 180px", minWidth: 0, margin: 0, wordBreak: "break-word" }}>
+            {scholarship.name}
+          </h2>
+          <span
+            className="scholarship-card-badge"
+            style={{
+              ...badgeStyle,
+              padding: "4px 10px",
+              borderRadius: "999px",
+              fontSize: "12px",
+              fontWeight: 700,
+              lineHeight: 1.3,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              maxWidth: "100%",
+              wordBreak: "break-word"
+            }}
+          >
             {badgeLabel}
           </span>
         </div>
@@ -164,9 +182,9 @@ function ScholarshipFinder() {
             style={{
               padding: "11px 16px",
               borderRadius: "8px",
-              border: isSaved ? "1.5px solid #b8863a" : "1.5px solid #d7ccc8",
-              background: isSaved ? "#faf1de" : "#ffffff",
-              color: isSaved ? "#8a5f1c" : "#5d4037",
+              border: isSaved ? "1.5px solid var(--accent, #b8863a)" : "1.5px solid var(--border, #d7ccc8)",
+              background: isSaved ? "rgba(193, 123, 63, 0.15)" : "var(--surface, #ffffff)",
+              color: isSaved ? "var(--accent, #8a5f1c)" : "var(--text, #5d4037)",
               fontWeight: 600,
               fontSize: "14px",
               cursor: "pointer",
@@ -176,7 +194,7 @@ function ScholarshipFinder() {
               whiteSpace: "nowrap",
               transition: "all 0.2s ease"
             }}
-            title={isSaved ? "Remove from saved opportunities in profile" : "Save to Profile"}
+            title={isSaved ? "Remove from bookmarks" : "Save bookmark"}
           >
             <span style={{ fontSize: "16px", color: isSaved ? "#b8863a" : "inherit" }}>{isSaved ? "★" : "☆"}</span>
             <span>{isSaved ? "Saved" : "Save"}</span>
@@ -202,7 +220,6 @@ function ScholarshipFinder() {
             style={{ padding: "9px 16px", border: "1px solid #c17b3f", borderRadius: "8px", background: "#c17b3f", color: "#fff", fontWeight: "600", cursor: "pointer" }}>
             University Recommender
           </button>
-          <button type="button" onClick={() => navigate("/profile")} className="scholarship-nav-btn">Saved in Profile</button>
           <button type="button" onClick={() => navigate("/dashboard")} className="scholarship-nav-btn">Dashboard</button>
         </div>
         <h1 className="scholarship-title"><span style={{ fontSize: "44px" }}>🎓</span>Scholarship Finder</h1>
@@ -211,12 +228,12 @@ function ScholarshipFinder() {
 
       {recommendedScholarships.length > 0 && (
         <div style={{ marginBottom: "40px" }}>
-          <h2 style={{ fontFamily: "Georgia, serif", fontSize: "20px", marginBottom: "6px", color: "#3e2723" }}>Recommended for You</h2>
-          <p style={{ fontSize: "14px", color: "#6d4c41", marginBottom: "18px" }}>
+          <h2 style={{ fontFamily: "Georgia, serif", fontSize: "20px", marginBottom: "6px", color: "var(--text, #3e2723)" }}>Recommended for You</h2>
+          <p style={{ fontSize: "14px", color: "var(--muted, #6d4c41)", marginBottom: "18px" }}>
             Based on your {userProfile?.intermediateGroup ? `${userProfile.intermediateGroup} background` : "quiz results and interests"}.
           </p>
           <div style={gridStyle}>{recommendedScholarships.map((s, i) => renderCard(s, `rec-${i}`))}</div>
-          <hr style={{ margin: "36px 0", borderColor: "#d7ccc8" }} />
+          <hr style={{ margin: "36px 0", borderColor: "var(--border, #d7ccc8)" }} />
         </div>
       )}
 
@@ -227,10 +244,10 @@ function ScholarshipFinder() {
         gap: "12px",
         marginBottom: "24px",
         flexWrap: "wrap",
-        background: "#ffffff",
+        background: "var(--surface, #ffffff)",
         padding: "16px 20px",
         borderRadius: "14px",
-        border: "1px solid #e0d0bf",
+        border: "1px solid var(--border, #e0d0bf)",
         boxShadow: "0 2px 8px rgba(62, 39, 35, 0.05)"
       }}>
         <input
@@ -249,9 +266,9 @@ function ScholarshipFinder() {
           style={{
             padding: "10px 14px",
             borderRadius: "8px",
-            border: "1.5px solid #d7ccc8",
-            background: "#fff",
-            color: "#3e2723",
+            border: "1.5px solid var(--border, #d7ccc8)",
+            background: "var(--surface, #fff)",
+            color: "var(--text, #3e2723)",
             fontSize: "14px",
             fontWeight: 500,
             cursor: "pointer"
@@ -270,7 +287,7 @@ function ScholarshipFinder() {
         </select>
 
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <label htmlFor="student-marks-input" style={{ fontSize: "14px", fontWeight: 600, color: "#5d4037", whiteSpace: "nowrap" }}>
+          <label htmlFor="student-marks-input" style={{ fontSize: "14px", fontWeight: 600, color: "var(--text, #5d4037)", whiteSpace: "nowrap" }}>
             Your Marks:
           </label>
           <input
@@ -288,16 +305,18 @@ function ScholarshipFinder() {
               width: "72px",
               padding: "9px 8px",
               borderRadius: "8px",
-              border: "1.5px solid #d7ccc8",
+              border: "1.5px solid var(--border, #d7ccc8)",
+              background: "var(--surface, #fff)",
+              color: "var(--text, #3e2723)",
               fontSize: "14px",
               fontWeight: 600,
               textAlign: "center"
             }}
           />
-          <span style={{ fontSize: "14px", fontWeight: 600, color: "#5d4037" }}>%</span>
+          <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--text, #5d4037)" }}>%</span>
         </div>
 
-        <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#3e2723", whiteSpace: "nowrap", cursor: "pointer", fontWeight: 500 }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "var(--text, #3e2723)", whiteSpace: "nowrap", cursor: "pointer", fontWeight: 500 }}>
           <input type="checkbox" checked={onlyEligible} onChange={(e) => setOnlyEligible(e.target.checked)} />
           Show only eligible
         </label>

@@ -6,7 +6,6 @@ import { useAuth } from '../context/AuthContext';
 import supabase from '../lib/supabase';
 import interestExamples from '../data/interestExamples.json';
 import { getProfileCompletion, saveUserProfile, readUserProfile } from '../data/userData';
-import { getBookmarks, toggleItemBookmark } from '../data/bookmarkData';
 import './Profile.css';
 
 const EMPTY_PROFILE = {
@@ -50,8 +49,6 @@ function Profile() {
   const [errorMessage, setErrorMessage] = useState('');
   const [showScoreInfo, setShowScoreInfo] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [bookmarks, setBookmarks] = useState({ universities: [], scholarships: [] });
-  const [savedTab, setSavedTab] = useState('all');
 
   useEffect(() => {
     try {
@@ -91,19 +88,6 @@ function Profile() {
     }
   };
 
-  const loadBookmarks = () => {
-    setBookmarks(getBookmarks(currentUser?.id));
-  };
-
-  useEffect(() => {
-    loadBookmarks();
-  }, [currentUser?.id]);
-
-  const handleRemoveBookmark = (type, item) => {
-    toggleItemBookmark(currentUser?.id, type, item);
-    loadBookmarks();
-    toast.success('Removed from saved opportunities');
-  };
 
 
   useEffect(() => {
@@ -593,133 +577,6 @@ function Profile() {
           </form>
         )}
         {errorMessage && <p className="profile-feedback profile-feedback--error">{errorMessage}</p>}
-
-        <section className="profile-saved-section">
-          <div className="profile-saved-header">
-            <div>
-              <p className="profile-eyebrow">Saved bookmarks</p>
-              <h2>Saved Opportunities</h2>
-              <p className="profile-saved-subtitle">
-                Keep track of universities and scholarships you bookmarked while exploring options.
-              </p>
-            </div>
-            <div className="profile-saved-tabs">
-              <button
-                type="button"
-                className={`profile-saved-tab ${savedTab === 'all' ? 'profile-saved-tab--active' : ''}`}
-                onClick={() => setSavedTab('all')}
-              >
-                All ({bookmarks.universities.length + bookmarks.scholarships.length})
-              </button>
-              <button
-                type="button"
-                className={`profile-saved-tab ${savedTab === 'universities' ? 'profile-saved-tab--active' : ''}`}
-                onClick={() => setSavedTab('universities')}
-              >
-                Universities ({bookmarks.universities.length})
-              </button>
-              <button
-                type="button"
-                className={`profile-saved-tab ${savedTab === 'scholarships' ? 'profile-saved-tab--active' : ''}`}
-                onClick={() => setSavedTab('scholarships')}
-              >
-                Scholarships ({bookmarks.scholarships.length})
-              </button>
-            </div>
-          </div>
-
-          {bookmarks.universities.length === 0 && bookmarks.scholarships.length === 0 ? (
-            <div className="profile-saved-empty">
-              <div className="profile-saved-empty-icon">⭐</div>
-              <p><strong>No saved opportunities yet</strong></p>
-              <p className="profile-muted">
-                Explore universities and scholarships to bookmark opportunities you want to apply to later.
-              </p>
-              <div className="profile-saved-empty-actions">
-                <button
-                  type="button"
-                  onClick={() => navigate('/university-recommender')}
-                  className="profile-saved-btn profile-saved-btn--primary"
-                >
-                  Explore Universities
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate('/scholarships')}
-                  className="profile-saved-btn profile-saved-btn--secondary"
-                >
-                  Find Scholarships
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="profile-saved-grid">
-              {(savedTab === 'all' || savedTab === 'universities') &&
-                bookmarks.universities.map((uni, idx) => (
-                  <article key={`saved-uni-${uni.id || uni.University || uni.name || idx}`} className="profile-saved-card">
-                    <div className="profile-saved-card__badge">🏛️ University</div>
-                    <h3 className="profile-saved-card__title">{uni.University || uni.name}</h3>
-                    {uni.Program && <p className="profile-saved-card__detail"><strong>Program:</strong> {uni.Program}</p>}
-                    {uni.City && <p className="profile-saved-card__detail"><strong>Location:</strong> {uni.City}</p>}
-                    {uni.Merit && <p className="profile-saved-card__detail"><strong>Merit:</strong> {uni.Merit}% required</p>}
-                    {uni.requirements && <p className="profile-saved-card__subdetail">{uni.requirements}</p>}
-                    <div className="profile-saved-card__actions">
-                      {(uni.link || uni.website_url || uni.website) && (
-                        <a
-                          href={uni.link || uni.website_url || uni.website}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="profile-saved-card__link"
-                        >
-                          Visit / Apply →
-                        </a>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveBookmark('universities', uni)}
-                        className="profile-saved-card__remove"
-                        title="Remove bookmark"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </article>
-                ))}
-
-              {(savedTab === 'all' || savedTab === 'scholarships') &&
-                bookmarks.scholarships.map((sch, idx) => (
-                  <article key={`saved-sch-${sch.id || sch.name || idx}`} className="profile-saved-card">
-                    <div className="profile-saved-card__badge profile-saved-card__badge--scholarship">🎓 Scholarship</div>
-                    <h3 className="profile-saved-card__title">{sch.name}</h3>
-                    {sch.provider && <p className="profile-saved-card__detail"><strong>Provider:</strong> {sch.provider}</p>}
-                    {sch.field && <p className="profile-saved-card__detail"><strong>Category:</strong> {sch.field}</p>}
-                    {sch.min_percentage && <p className="profile-saved-card__detail"><strong>Min Merit:</strong> {sch.min_percentage}%</p>}
-                    {sch.provinces && <p className="profile-saved-card__subdetail">Region: {sch.provinces}</p>}
-                    <div className="profile-saved-card__actions">
-                      {(sch.link || sch.source_url) && (
-                        <a
-                          href={sch.link || sch.source_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="profile-saved-card__link"
-                        >
-                          Apply Now →
-                        </a>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveBookmark('scholarships', sch)}
-                        className="profile-saved-card__remove"
-                        title="Remove bookmark"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </article>
-                ))}
-            </div>
-          )}
-        </section>
 
         {/* ========================================================
             DISPLAY SETTINGS

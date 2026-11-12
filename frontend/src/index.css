@@ -125,43 +125,108 @@ button {
   transform: translateX(-2px);
 }
 
+html.dark,
+html.dark-mode,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html.dark .page-shell,
+html.dark .auth-screen,
+html.dark .settings-page,
 html.dark-mode .page-shell,
 html.dark-mode .auth-screen,
-html.dark-mode .settings-page {
+html.dark-mode .settings-page,
+:root[data-theme="dark"] .page-shell,
+:root[data-theme="dark"] .auth-screen,
+:root[data-theme="dark"] .settings-page {
   background: var(--bg);
 }
 
+html.dark .card,
+html.dark .auth-card,
+html.dark .auth-hero,
+html.dark .settings-section,
 html.dark-mode .card,
 html.dark-mode .auth-card,
 html.dark-mode .auth-hero,
-html.dark-mode .settings-section {
+html.dark-mode .settings-section,
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .auth-card,
+:root[data-theme="dark"] .auth-hero,
+:root[data-theme="dark"] .settings-section {
   background: var(--surface);
   color: var(--text);
   border-color: var(--border);
 }
 
-html.dark-mode h1,
-html.dark-mode h2,
+html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6,
+html.dark-mode h1, html.dark-mode h2, html.dark-mode h3, html.dark-mode h4, html.dark-mode h5, html.dark-mode h6,
+:root[data-theme="dark"] h1, :root[data-theme="dark"] h2, :root[data-theme="dark"] h3, :root[data-theme="dark"] h4, :root[data-theme="dark"] h5, :root[data-theme="dark"] h6 {
+  color: var(--text, #f7efe7);
+}
+
+html.dark p,
+html.dark label,
+html.dark span,
+html.dark .settings-row,
 html.dark-mode p,
 html.dark-mode label,
 html.dark-mode span,
-html.dark-mode .settings-row {
+html.dark-mode .settings-row,
+:root[data-theme="dark"] p,
+:root[data-theme="dark"] label,
+:root[data-theme="dark"] span,
+:root[data-theme="dark"] .settings-row {
   color: inherit;
 }
 
+html.dark input,
+html.dark textarea,
+html.dark select,
+html.dark .settings-select-row select,
 html.dark-mode input,
 html.dark-mode textarea,
 html.dark-mode select,
-html.dark-mode .settings-select-row select {
+html.dark-mode .settings-select-row select,
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] .settings-select-row select {
   background: var(--surface);
   color: var(--text);
   border-color: var(--border);
 }
 
+html.dark .settings-section__heading p,
+html.dark .settings-section small,
+html.dark .settings-header p:last-child,
 html.dark-mode .settings-section__heading p,
 html.dark-mode .settings-section small,
-html.dark-mode .settings-header p:last-child {
+html.dark-mode .settings-header p:last-child,
+:root[data-theme="dark"] .settings-section__heading p,
+:root[data-theme="dark"] .settings-section small,
+:root[data-theme="dark"] .settings-header p:last-child {
   color: var(--muted);
+}
+
+/* Ensure any hardcoded dark text styles switch to high contrast in dark mode */
+html.dark [style*="#3e2723"],
+html.dark-mode [style*="#3e2723"],
+:root[data-theme="dark"] [style*="#3e2723"],
+html.dark [style*="#2b1b0e"],
+html.dark-mode [style*="#2b1b0e"],
+:root[data-theme="dark"] [style*="#2b1b0e"],
+html.dark [style*="#5d4037"],
+html.dark-mode [style*="#5d4037"],
+:root[data-theme="dark"] [style*="#5d4037"],
+html.dark [style*="#5a3e29"],
+html.dark-mode [style*="#5a3e29"],
+:root[data-theme="dark"] [style*="#5a3e29"],
+html.dark [style*="#7a5f4f"],
+html.dark-mode [style*="#7a5f4f"],
+:root[data-theme="dark"] [style*="#7a5f4f"] {
+  color: var(--text, #f7efe7) !important;
 }
 
 /* ==========================================================================
@@ -478,6 +543,8 @@ html.dark-mode .eyebrow {
   min-height: 260px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  word-break: break-word;
 }
 
 .scholarship-card-title {
@@ -485,6 +552,12 @@ html.dark-mode .eyebrow {
   font-size: 22px;
   line-height: 1.4;
   margin: 0;
+  word-break: break-word;
+}
+
+.scholarship-card-badge {
+  max-width: 100%;
+  word-break: break-word;
 }
 
 .scholarship-card-meta {
@@ -521,55 +594,77 @@ html.dark-mode .eyebrow {
 }
 
 /* Dark Mode for Scholarship Finder */
-html.dark-mode .scholarship-page {
+html.dark .scholarship-page,
+html.dark-mode .scholarship-page,
+:root[data-theme="dark"] .scholarship-page {
   background: #171412;
   color: #f7efe7;
 }
 
-html.dark-mode .scholarship-header {
+html.dark .scholarship-header,
+html.dark-mode .scholarship-header,
+:root[data-theme="dark"] .scholarship-header {
   border-bottom-color: #3d2f26;
 }
 
-html.dark-mode .scholarship-title {
+html.dark .scholarship-title,
+html.dark-mode .scholarship-title,
+:root[data-theme="dark"] .scholarship-title {
   color: #f7efe7;
 }
 
-html.dark-mode .scholarship-subtitle {
+html.dark .scholarship-subtitle,
+html.dark-mode .scholarship-subtitle,
+:root[data-theme="dark"] .scholarship-subtitle {
   color: #cbb9a8;
 }
 
-html.dark-mode .scholarship-search-input {
+html.dark .scholarship-search-input,
+html.dark-mode .scholarship-search-input,
+:root[data-theme="dark"] .scholarship-search-input {
   background: #231b17;
   color: #f7efe7;
   border-color: #3d2f26;
 }
 
-html.dark-mode .scholarship-card {
+html.dark .scholarship-card,
+html.dark-mode .scholarship-card,
+:root[data-theme="dark"] .scholarship-card {
   background: #231b17;
   border-color: #3d2f26;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
-html.dark-mode .scholarship-card-title {
+html.dark .scholarship-card-title,
+html.dark-mode .scholarship-card-title,
+:root[data-theme="dark"] .scholarship-card-title {
   color: #f7efe7;
 }
 
-html.dark-mode .scholarship-card-meta {
+html.dark .scholarship-card-meta,
+html.dark-mode .scholarship-card-meta,
+:root[data-theme="dark"] .scholarship-card-meta {
   color: #cbb9a8;
 }
 
-html.dark-mode .scholarship-nav-btn {
+html.dark .scholarship-nav-btn,
+html.dark-mode .scholarship-nav-btn,
+:root[data-theme="dark"] .scholarship-nav-btn {
   background: #231b17;
   color: #f7efe7;
   border-color: #3d2f26;
 }
 
-html.dark-mode .scholarship-apply-btn {
+html.dark .scholarship-apply-btn,
+html.dark-mode .scholarship-apply-btn,
+:root[data-theme="dark"] .scholarship-apply-btn {
   background: #c17b3f;
   color: #ffffff;
 }
 
-html.dark-mode .scholarship-apply-btn:hover {
+html.dark .scholarship-apply-btn:hover,
+html.dark-mode .scholarship-apply-btn:hover,
+:root[data-theme="dark"] .scholarship-apply-btn:hover {
   background: #b06b32;
 }
 
