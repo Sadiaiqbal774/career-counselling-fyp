@@ -4212,9 +4212,64 @@ function AdminDashboard() {
                 <p style={{ margin: '0 0 18px 0', fontSize: '0.82rem', color: '#b91c1c', fontWeight: 600 }}>
                   Warning: This action is permanent and cannot be undone.
                 </p>
-                <div className="admin-modal-actions admin-modal-actions--equal">
-                  <button type="button" className="secondary-button admin-delete-modal-btn admin-delete-modal-btn--cancel" onClick={() => setDeleteTarget(null)}>Cancel</button>
-                  <button type="button" className="admin-action-btn-danger admin-delete-modal-btn admin-delete-modal-btn--confirm" onClick={confirmDelete}>Delete</button>
+                <div className="admin-modal-actions admin-modal-actions--equal" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '22px' }}>
+                  <button
+                    type="button"
+                    className="admin-danger-dialog-btn admin-danger-dialog-btn--cancel"
+                    style={{
+                      flex: '1 1 0',
+                      minWidth: '120px',
+                      maxWidth: '170px',
+                      height: '42px',
+                      padding: '0 16px',
+                      fontSize: '0.92rem',
+                      fontWeight: 600,
+                      borderRadius: '9px',
+                      border: '1px solid var(--line, #d1d5db)',
+                      background: 'var(--paper, #ffffff)',
+                      color: 'var(--ink, #1f2937)',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxSizing: 'border-box',
+                      textAlign: 'center',
+                      lineHeight: 1,
+                      margin: 0,
+                    }}
+                    onClick={() => setDeleteTarget(null)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-danger-dialog-btn admin-danger-dialog-btn--delete"
+                    style={{
+                      flex: '1 1 0',
+                      minWidth: '120px',
+                      maxWidth: '170px',
+                      height: '42px',
+                      padding: '0 16px',
+                      fontSize: '0.92rem',
+                      fontWeight: 600,
+                      borderRadius: '9px',
+                      border: '1px solid #dc2626',
+                      background: '#dc2626',
+                      color: '#ffffff',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxSizing: 'border-box',
+                      textAlign: 'center',
+                      lineHeight: 1,
+                      margin: 0,
+                      boxShadow: '0 2px 6px rgba(220, 38, 38, 0.25)',
+                    }}
+                    onClick={confirmDelete}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             </div>
