@@ -1308,15 +1308,54 @@ def set_password():
     return jsonify({"message": "Password updated successfully."}), 200
 
 
+def get_authenticated_supabase_user():
+    access_token = get_bearer_token()
+    if not access_token:
+        return None, None
+
+    try:
+        claims = verify_access_token(access_token)
+        require_verified_email(claims, access_token)
+    except SupabaseAuthError:
+        return None, None
+
+    user_id = str(claims.get("sub") or "").strip()
+    email = str(claims.get("email") or "").strip().lower()
+    if not user_id or not email:
+        return None, None
+    return {"id": user_id, "email": email}, access_token
+
+
 @app.route("/api/auth/delete-account", methods=["DELETE"])
 def delete_account():
-    user, token = get_authenticated_user()
+    supabase_user, _access_token = get_authenticated_supabase_user()
 
+    if supabase_user:
+        if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+            return jsonify({"message": "Account deletion is not configured on the server."}), 503
+
+        try:
+            supabase_admin_request(
+                "DELETE",
+                f"/auth/v1/admin/users/{supabase_user['id']}",
+            )
+            for resource, column in (("profiles", "id"), ("quiz_scores", "user_id")):
+                try:
+                    supabase_admin_request(
+                        "DELETE",
+                        f"/rest/v1/{resource}",
+                        params={column: f"eq.{supabase_user['id']}"},
+                    )
+                except Exception:
+                    pass
+            invalidate_supabase_users_cache()
+            return jsonify({"message": "Account deleted successfully."}), 200
+        except Exception as error:
+            return jsonify({"message": str(error)}), 500
+
+    user, token = get_authenticated_user()
     if not user:
-        return jsonify({
-            "message":
-            "Unauthorized."
-        }), 401
+        return jsonify({"message": "Unauthorized."}), 401
 
     users = load_users()
 

@@ -28,6 +28,8 @@ This project deploys across two free services (no credit card required for eithe
 
 ### Database / Auth
 - **Platform**: Supabase (already configured)
+- In Supabase Dashboard → Authentication → Settings, enable **Confirm email**. The application
+  requires this setting so password accounts cannot sign in before clicking the verification link.
 - Free-tier projects pause after 7 days of inactivity — visit the Supabase dashboard to resume before a demo if it's been quiet a while.
 - Run `frontend/server/sql/profile-management.sql` in the Supabase SQL editor. This creates the
   `recovery_questions` table used by the backend for salted recovery-answer hashes and one-time
