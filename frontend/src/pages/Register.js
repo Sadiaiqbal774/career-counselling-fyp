@@ -105,40 +105,17 @@ function Register() {
           </div>
 
           {verificationStep ? (
-            <form onSubmit={handleVerifyCode} className="auth-form">
-              <label className="auth-field">
-                <span>Email verification code</span>
-                <input
-                  type="text"
-                  value={verificationCode}
-                  onChange={(event) => setVerificationCode(event.target.value)}
-                  placeholder="Enter the code from your email"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  minLength="6"
-                  required
-                />
-              </label>
-
-              {errorMessage ? <p className="auth-error">{errorMessage}</p> : null}
-              <button className="auth-primary-button" type="submit" disabled={isVerifying}>
-                {isVerifying ? 'Verifying...' : 'Verify email'}
-              </button>
+            <div className="verification-complete">
+              <p className="muted-text">
+                Account created. Check your email ({verificationEmail}) and verify your address. After verification you can sign in.
+              </p>
               <button
-                type="button"
-                className="auth-secondary-button"
-                onClick={async () => {
-                  try {
-                    await resendVerification(verificationEmail);
-                    setErrorMessage('A new verification email has been sent.');
-                  } catch (error) {
-                    setErrorMessage(error.message || 'Unable to resend verification email.');
-                  }
-                }}
+                className="auth-primary-button"
+                onClick={() => navigate('/login', { replace: true })}
               >
-                Resend verification email
+                Sign In
               </button>
-            </form>
+            </div>
           ) : (
           <form onSubmit={handleSubmit} className="auth-form">
             <label className="auth-field">
