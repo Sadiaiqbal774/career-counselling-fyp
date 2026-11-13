@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 
 function Login() {
-  const { login, initialized, isAuthenticated } = useAuth();
+  const { login, initialized, isAuthenticated, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState('');
@@ -92,6 +92,20 @@ function Login() {
 
             <button className="auth-primary-button" type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Signing in...' : 'Sign in'}
+            </button>
+
+            <button
+              type="button"
+              className="auth-google-button"
+              onClick={async () => {
+                try {
+                  await signInWithGoogle();
+                } catch (err) {
+                  setErrorMessage(err?.message || 'Unable to start Google sign in.');
+                }
+              }}
+            >
+              Continue with Google
             </button>
           </form>
 

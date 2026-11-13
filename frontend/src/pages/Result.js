@@ -29,7 +29,7 @@ function Result() {
       <section className="card result-card">
         <p className="eyebrow">Your Result</p>
         <h1>{recommendation}</h1>
-        <p className="muted-text">
+        <p className="muted-text result-emphasis" style={{ fontWeight: 700, fontSize: '1.125rem' }}>
           Based on your highest score, your strongest career fit is in the {highestCategory} field.
         </p>
 

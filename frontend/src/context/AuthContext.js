@@ -1,76 +1,40 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { initFirebase, firebaseAvailable } from '../firebase';
-
-const USERS_STORAGE_KEY = 'careerAppUsers';
-const SESSION_STORAGE_KEY = 'careerAppSession';
+import supabase from '../lib/supabase';
 
 const AuthContext = createContext(null);
 
-function createFallbackId() {
-  return `user_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function safeJsonParse(value, fallback) {
-  try {
-    return JSON.parse(value) ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email);
 }
 
-async function hashPassword(password) {
-  const browserCrypto = typeof window !== 'undefined' ? window.crypto : undefined;
-
-  if (!browserCrypto?.subtle) {
-    let hash = 0;
-    for (let index = 0; index < password.length; index += 1) {
-      hash = (hash << 5) - hash + password.charCodeAt(index);
-      hash |= 0;
-    }
-
-    return `fallback_${hash.toString(16)}`;
+function isStrongPassword(password) {
+  if (typeof password !== 'string') {
+    return false;
   }
 
-  const encoded = new TextEncoder().encode(password);
-  const buffer = await browserCrypto.subtle.digest('SHA-256', encoded);
-  const bytes = Array.from(new Uint8Array(buffer));
-  return bytes.map((byte) => byte.toString(16).padStart(2, '0')).join('');
+  return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password);
 }
 
-async function hashSecurityAnswer(answer) {
-  return hashPassword(answer);
-}
+function mapSessionUser(session) {
+  const sessionUser = session?.user;
+  if (!sessionUser) {
+    return null;
+  }
 
-async function createUserRecord({ name, email, password, securityQuestion, securityAnswer }) {
   return {
-    id: typeof window !== 'undefined' && window.crypto?.randomUUID ? window.crypto.randomUUID() : createFallbackId(),
-    name,
-    email,
-    passwordHash: await hashPassword(password),
-    securityQuestion,
-    securityAnswerHash: await hashSecurityAnswer(securityAnswer),
-    authProvider: 'local',
-    createdAt: new Date().toISOString(),
+    id: sessionUser.id,
+    name: sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || 'Student',
+    email: sessionUser.email,
+    token: session?.access_token || null,
+    securityQuestion: sessionUser.user_metadata?.securityQuestion || '',
   };
 }
 
-function getApiUrl() {
-  return process.env.REACT_APP_API_URL || 'http://localhost:4000';
-}
-
-async function readJsonResponse(response) {
-  const body = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const error = new Error(body.message || 'Request failed');
-    error.isBackendError = true;
-    throw error;
+function getResetRedirect() {
+  if (typeof window === 'undefined') {
+    return '/reset-password';
   }
-
-  return body;
+  return `${window.location.origin}/reset-password`;
 }
 
 export function AuthProvider({ children }) {
@@ -78,283 +42,234 @@ export function AuthProvider({ children }) {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    const sessionUser = safeJsonParse(localStorage.getItem(SESSION_STORAGE_KEY), null);
-    if (sessionUser) {
-      setCurrentUser(sessionUser);
-    }
-    setInitialized(true);
-  }, []);
+    let cancelled = false;
 
-  const persistSession = useCallback((user) => {
-    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(user));
-    setCurrentUser(user);
+    async function loadSession() {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (cancelled) return;
+        setCurrentUser(mapSessionUser(data?.session));
+      } finally {
+        if (!cancelled) {
+          setInitialized(true);
+        }
+      }
+    }
+
+    loadSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(mapSessionUser(session));
+      setInitialized(true);
+    });
+
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const register = useCallback(async ({ name, email, password, securityQuestion, securityAnswer }) => {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!isValidEmail(normalizedEmail)) {
-      throw new Error('Please use a valid email address to create your account.');
+      throw new Error('Please use a valid Gmail address (example@gmail.com) to create your account.');
     }
 
     if (!securityQuestion || !securityAnswer) {
       throw new Error('Please choose a security question and provide an answer.');
     }
 
-    try {
-      const apiUrl = getApiUrl();
-      const res = await fetch(`${apiUrl}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+    if (!isStrongPassword(password)) {
+      throw new Error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email: normalizedEmail,
+      password,
+      options: {
+        data: {
           name: name.trim(),
-          email: normalizedEmail,
-          password,
           securityQuestion,
           securityAnswer,
-        }),
-      });
+        },
+      },
+    });
 
-      const body = await readJsonResponse(res);
-      const sessionUser = { id: body.user.id, name: body.user.name, email: body.user.email, token: body.token };
-      persistSession(sessionUser);
-      return sessionUser;
-    } catch (err) {
-      if (err?.isBackendError) {
-        throw err;
-      }
+    if (error) throw error;
 
-      const users = safeJsonParse(localStorage.getItem(USERS_STORAGE_KEY), []);
+    const sessionUser = {
+      id: data.user.id,
+      name: data.user.user_metadata?.name || name.trim(),
+      email: data.user.email,
+      token: data.session?.access_token || null,
+      securityQuestion: data.user.user_metadata?.securityQuestion || '',
+    };
 
-      if (users.some((user) => user.email === normalizedEmail)) {
-        throw new Error('An account with this email already exists.');
-      }
-
-      const record = await createUserRecord({
-        name: name.trim(),
-        email: normalizedEmail,
-        password,
-        securityQuestion,
-        securityAnswer,
-      });
-
-      const nextUsers = [...users, record];
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(nextUsers));
-
-      const sessionUser = {
-        id: record.id,
-        name: record.name,
-        email: record.email,
-      };
-
-      persistSession(sessionUser);
-      return sessionUser;
-    }
-  }, [persistSession]);
+    setCurrentUser(sessionUser);
+    return sessionUser;
+  }, []);
 
   const login = useCallback(async ({ email, password }) => {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!isValidEmail(normalizedEmail)) {
-      throw new Error('Please enter a valid email address.');
+      throw new Error('Please enter a valid Gmail address (example@gmail.com).');
     }
 
-    try {
-      const apiUrl = getApiUrl();
-      const res = await fetch(`${apiUrl}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: normalizedEmail, password }),
-      });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    });
 
-      const body = await readJsonResponse(res);
-      const sessionUser = { id: body.user.id, name: body.user.name, email: body.user.email, token: body.token };
-      persistSession(sessionUser);
-      return sessionUser;
-    } catch (err) {
-      if (err?.isBackendError) {
-        throw err;
-      }
+    if (error) throw error;
 
-      const users = safeJsonParse(localStorage.getItem(USERS_STORAGE_KEY), []);
-      const user = users.find((entry) => entry.email === normalizedEmail);
+    const sessionUser = {
+      id: data.user.id,
+      name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'Student',
+      email: data.user.email,
+      token: data.session?.access_token || null,
+      securityQuestion: data.user.user_metadata?.securityQuestion || '',
+    };
 
-      if (!user) {
-        throw new Error('No account found for that email.');
-      }
+    setCurrentUser(sessionUser);
+    return sessionUser;
+  }, []);
 
-      const passwordHash = await hashPassword(password);
-      if (user.passwordHash !== passwordHash) {
-        throw new Error('Incorrect password.');
-      }
-
-      const sessionUser = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      };
-
-      persistSession(sessionUser);
-      return sessionUser;
-    }
-  }, [persistSession]);
-
-  const logout = useCallback(() => {
-    // Remove session token and local user
-    localStorage.removeItem(SESSION_STORAGE_KEY);
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     setCurrentUser(null);
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
-    if (!firebaseAvailable) {
-      throw new Error('Google authentication is not configured. Add the Firebase environment variables first.');
-    }
-
-    const { auth, googleProvider } = await initFirebase();
-    const { signInWithPopup } = await import('firebase/auth');
-    const result = await signInWithPopup(auth, googleProvider);
-    const firebaseUser = result.user;
-
-    try {
-      const apiUrl = getApiUrl();
-      const res = await fetch(`${apiUrl}/api/auth/google-auth`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: firebaseUser.displayName || 'Google User',
-          email: firebaseUser.email,
-          googleId: firebaseUser.uid,
-          photoURL: firebaseUser.photoURL || null,
-        }),
-      });
-
-      const body = await readJsonResponse(res);
-      const sessionUser = { id: body.user.id, name: body.user.name, email: body.user.email, token: body.token };
-      persistSession(sessionUser);
-      return sessionUser;
-    } catch (error) {
-      const sessionUser = {
-        id: firebaseUser.uid,
-        name: firebaseUser.displayName || 'Google User',
-        email: firebaseUser.email,
-        provider: 'google',
-      };
-
-      persistSession(sessionUser);
-      return sessionUser;
-    }
-  }, [persistSession]);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined,
+      },
+    });
+    if (error) throw error;
+    return null;
+  }, []);
 
   const getSecurityQuestion = useCallback(async (email) => {
     const normalizedEmail = (email || '').trim().toLowerCase();
     if (!isValidEmail(normalizedEmail)) {
-      throw new Error('Please provide a valid email address.');
+      throw new Error('Please provide a valid Gmail address (example@gmail.com).');
     }
 
-    try {
-      const apiUrl = getApiUrl();
-      const res = await fetch(`${apiUrl}/api/auth/security-question`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: normalizedEmail }),
-      });
-
-      const body = await readJsonResponse(res);
-      return body.securityQuestion;
-    } catch (err) {
-      if (err?.isBackendError) {
-        throw err;
-      }
-
-      const users = safeJsonParse(localStorage.getItem(USERS_STORAGE_KEY), []);
-      const user = users.find((u) => u.email === normalizedEmail);
-      if (!user?.securityQuestion) throw new Error('No account found with that email.');
-      return user.securityQuestion;
+    if (currentUser?.email?.toLowerCase() === normalizedEmail) {
+      return currentUser.securityQuestion || 'Use your recovery email link to reset your password.';
     }
-  }, []);
+
+    return 'Use your recovery email link to reset your password.';
+  }, [currentUser]);
 
   const resetPasswordWithSecurityQuestion = useCallback(async ({ email, securityAnswer, password }) => {
     const normalizedEmail = (email || '').trim().toLowerCase();
     if (!isValidEmail(normalizedEmail)) {
-      throw new Error('Please provide a valid email address.');
+      throw new Error('Please provide a valid Gmail address (example@gmail.com).');
     }
 
-    try {
-      const apiUrl = getApiUrl();
-      const res = await fetch(`${apiUrl}/api/auth/reset-password-with-question`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: normalizedEmail, securityAnswer, password }),
-      });
+    if (!isStrongPassword(password)) {
+      throw new Error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+    }
 
-      await readJsonResponse(res);
-      return true;
-    } catch (err) {
-      if (err?.isBackendError) {
-        throw err;
+    if (currentUser?.email?.toLowerCase() === normalizedEmail) {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData?.session) {
+        throw new Error('Please login again before changing password');
       }
 
-      const users = safeJsonParse(localStorage.getItem(USERS_STORAGE_KEY), []);
-      const user = users.find((entry) => entry.email === normalizedEmail);
-
-      if (!user?.securityAnswerHash) {
-        throw new Error('No account found with that email.');
-      }
-
-      const answerHash = await hashSecurityAnswer(securityAnswer);
-      if (user.securityAnswerHash !== answerHash) {
-        throw new Error('The answer does not match our records.');
-      }
-
-      const passwordHash = await hashPassword(password);
-      const updatedUsers = users.map((entry) => {
-        if (entry.email !== normalizedEmail) {
-          return entry;
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) {
+        if ((error.message || '').toLowerCase().includes('auth session missing')) {
+          throw new Error('Please login again before changing password');
         }
-
-        return {
-          ...entry,
-          passwordHash,
-        };
-      });
-
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers));
+        throw error;
+      }
       return true;
     }
-  }, []);
+
+    // securityAnswer is kept for API compatibility with existing pages.
+    void securityAnswer;
+    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+      redirectTo: getResetRedirect(),
+    });
+    if (error) throw error;
+    return {
+      message: 'Password reset email sent. Please open the link in your inbox to finish updating your password.',
+    };
+  }, [currentUser]);
 
   const resetPassword = useCallback(async (payload) => resetPasswordWithSecurityQuestion(payload), [resetPasswordWithSecurityQuestion]);
 
-  const deleteAccount = useCallback(async () => {
-    if (!currentUser || !currentUser.token) {
+  const verifyPassword = useCallback(async (password) => {
+    if (!currentUser?.email) {
       throw new Error('No active session');
     }
 
+    const normalizedEmail = currentUser.email.trim().toLowerCase();
     try {
-      const apiUrl = getApiUrl();
-      const res = await fetch(`${apiUrl}/api/auth/delete-account`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${currentUser.token}`,
-        },
+      const { error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
       });
-
-      const body = await readJsonResponse(res);
-      
-      if (res.ok) {
-        // Clear session on successful deletion
-        localStorage.removeItem(SESSION_STORAGE_KEY);
-        setCurrentUser(null);
-        return body;
+      if (error) {
+        return false;
       }
+      return true;
     } catch (err) {
-      if (err?.isBackendError) {
-        throw err;
-      }
-      throw new Error('Unable to delete account. Please try again later.');
+      throw err;
     }
   }, [currentUser]);
+
+  const changePassword = useCallback(async ({ oldPassword, newPassword }) => {
+    if (!currentUser?.email) {
+      throw new Error('Please login again before changing password');
+    }
+
+    if (!isStrongPassword(newPassword)) {
+      throw new Error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+    }
+
+    const ok = await verifyPassword(oldPassword);
+    if (!ok) {
+      throw new Error('Current password is incorrect.');
+    }
+
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+    if (sessionError || !accessToken) {
+      throw new Error('Please login again before changing password');
+    }
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      if ((error.message || '').toLowerCase().includes('auth session missing')) {
+        throw new Error('Please login again before changing password');
+      }
+      throw error;
+    }
+
+    await supabase.auth.signOut({ scope: 'others' });
+    return true;
+  }, [currentUser, verifyPassword]);
+
+  const deleteAccount = useCallback(async (password) => {
+    if (!currentUser?.email) {
+      throw new Error('No active session');
+    }
+
+    const passwordMatches = await verifyPassword(password);
+    if (!passwordMatches) {
+      throw new Error('Incorrect password. Account deletion was cancelled.');
+    }
+
+    throw new Error('Account deletion requires a secure server-side endpoint (Supabase service role or Edge Function). Configure that endpoint to enable delete account.');
+  }, [currentUser, verifyPassword]);
 
   const value = useMemo(
     () => ({
@@ -368,9 +283,11 @@ export function AuthProvider({ children }) {
       getSecurityQuestion,
       resetPasswordWithSecurityQuestion,
       resetPassword,
+      changePassword,
+      verifyPassword,
       deleteAccount,
     }),
-    [currentUser, initialized, login, logout, register, signInWithGoogle, getSecurityQuestion, resetPasswordWithSecurityQuestion, resetPassword, deleteAccount],
+    [currentUser, initialized, login, logout, register, signInWithGoogle, getSecurityQuestion, resetPasswordWithSecurityQuestion, resetPassword, verifyPassword, deleteAccount, changePassword],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

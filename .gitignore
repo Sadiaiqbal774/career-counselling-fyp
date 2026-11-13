@@ -5,3 +5,7 @@ __pycache__/
 build/
 .vscode/
 *.pyc
+backend/users.json
+career-counselling-fyp-main/
+career-counselling-fyp/
+

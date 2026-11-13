@@ -41,14 +41,20 @@ function ForgotPassword() {
         throw new Error('Passwords do not match.');
       }
 
-      await resetPasswordWithSecurityQuestion({
+      const result = await resetPasswordWithSecurityQuestion({
         email,
         securityAnswer,
         password: newPassword,
       });
 
-      setMessage('Password reset successfully. Redirecting to sign in...');
-      setTimeout(() => window.location.assign('/login'), 1500);
+      if (result === true) {
+        setMessage('Password updated successfully. Redirecting to sign in...');
+        setTimeout(() => window.location.assign('/login'), 1500);
+      } else if (result && result.message) {
+        setMessage(result.message);
+      } else {
+        setMessage('If the answer was correct a reset email has been sent.');
+      }
     } catch (err) {
       setError(err.message || 'Unable to reset password.');
     } finally {

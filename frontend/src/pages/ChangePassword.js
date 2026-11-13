@@ -1,0 +1,106 @@
+import { useState } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import './Auth.css';
+
+function ChangePassword() {
+  const navigate = useNavigate();
+  const { currentUser, initialized, isAuthenticated, changePassword } = useAuth();
+  const [oldPassword, setOldPassword] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (initialized && !isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setMessage('');
+
+    if (!currentUser?.email) {
+      setError('Please login again before changing password');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await changePassword({ oldPassword, newPassword: password });
+      setMessage('Password updated successfully.');
+      setTimeout(() => navigate('/dashboard', { replace: true }), 900);
+    } catch (err) {
+      setError(err.message || 'Unable to change password.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <main className="auth-screen">
+      <section className="auth-shell">
+        <aside className="auth-hero">
+          <div className="auth-brand-row">
+            <div className="auth-brand-mark">CG</div>
+            <div>
+              <div className="auth-brand-name">CareerGuide</div>
+              <div className="auth-brand-subtitle">Change your password</div>
+            </div>
+          </div>
+          <h1>Change your password</h1>
+          <p>Enter your current password and choose a new secure password.</p>
+        </aside>
+
+        <section className="auth-card">
+          <div className="auth-card-header">
+            <p className="eyebrow">Account security</p>
+            <h2>Change password</h2>
+            <p className="muted-text">Answer your question, then set a strong new password.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            <label className="auth-field">
+              <span>Current password</span>
+              <input type="password" value={oldPassword} onChange={(ev) => setOldPassword(ev.target.value)} required />
+            </label>
+
+            <label className="auth-field">
+              <span>New password</span>
+              <input
+                type="password"
+                value={password}
+                onChange={(ev) => setPassword(ev.target.value)}
+                minLength="8"
+                pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
+                title="Use at least 8 characters with uppercase, lowercase, number, and special character."
+                required
+              />
+            </label>
+
+            <label className="auth-field">
+              <span>Confirm password</span>
+              <input type="password" value={confirmPassword} onChange={(ev) => setConfirmPassword(ev.target.value)} required />
+            </label>
+
+            {error ? <p className="auth-error">{error}</p> : null}
+            {message ? <p className="auth-success">{message}</p> : null}
+
+            <button className="auth-primary-button" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Updating...' : 'Update password'}
+            </button>
+          </form>
+        </section>
+      </section>
+    </main>
+  );
+}
+
+export default ChangePassword;

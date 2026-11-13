@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Navigate, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import supabase from '../lib/supabase';
 import './Auth.css';
 
 function ResetPassword() {
@@ -14,12 +15,13 @@ function ResetPassword() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const token = searchParams.get('token');
+  const code = searchParams.get('code');
 
   if (initialized && isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (!token) {
+  if (!token && !code) {
     return (
       <main className="auth-screen">
         <section className="auth-shell">
@@ -32,10 +34,10 @@ function ResetPassword() {
               </div>
             </div>
             <h1>Invalid reset link</h1>
-            <p>The reset link is missing or invalid. Please request a new password reset.</p>
+            <p>The reset link is missing or invalid. Please request a new password reset email.</p>
           </aside>
           <section className="auth-card">
-            <p className="auth-error">No reset code found in link.</p>
+            <p className="auth-error">No Supabase reset code found in link.</p>
           </section>
         </section>
       </main>
@@ -60,16 +62,9 @@ function ResetPassword() {
     setIsSubmitting(true);
 
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || '';
-      const res = await fetch(`${apiUrl}/api/auth/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.message || 'Password reset failed');
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) {
+        throw error;
       }
 
       setMessage('Password reset successfully! Redirecting to login...');

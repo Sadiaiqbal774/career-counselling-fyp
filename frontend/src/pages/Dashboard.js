@@ -1,13 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { currentUser, logout, deleteAccount } = useAuth();
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
-
+  const { currentUser } = useAuth();
   const studentName = currentUser?.name || 'Student';
   const firstName = studentName.split(' ')[0];
   const profileEmail = currentUser?.email || 'No email available';
@@ -42,144 +39,91 @@ function Dashboard() {
     },
   ];
 
-  const actionItems = [
-    { label: 'Conduct quiz', description: 'Start a fresh guidance assessment.', onClick: () => navigate('/general-quiz') },
-    { label: 'University recommender', description: 'See universities that match your profile.', onClick: () => navigate('/university-recommender') },
-    { label: 'Scholarships', description: 'Explore funding and scholarship options.', onClick: () => navigate('/scholarships') },
-  ];
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-
-  const handleDeleteAccount = async () => {
-    if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      return;
-    }
-
-    setIsDeleting(true);
-    setDeleteError('');
-
-    try {
-      await deleteAccount();
-      navigate('/', { replace: true });
-    } catch (error) {
-      setDeleteError(error.message || 'Failed to delete account');
-      setIsDeleting(false);
-    }
-  };
-
   return (
-    <main className="dashboard-screen">
-      <div className="dashboard-shell">
-        <section className="dashboard-hero card">
-          <div className="dashboard-hero-copy">
-            <p className="eyebrow dashboard-eyebrow">Career counselling workspace</p>
-            <h1>Welcome back, {firstName}.</h1>
-            <p className="muted-text dashboard-intro">
-              Your dashboard brings together career match insights, next steps, university suggestions, and account actions in one place.
+    <main className="cg-dashboard">
+      <div className="cg-dashboard__wrap">
+        <section className="cg-dashboard__top">
+          <article className="cg-card cg-dashboard__welcome">
+            <p className="cg-eyebrow">CAREER COUNSELLING WORKSPACE</p>
+            <h1 className="cg-dashboard__welcome-title">Welcome, {firstName}.</h1>
+            <p className="cg-dashboard__welcome-body">
+              Your dashboard brings together career match insights, next steps, and university suggestions in one place.
             </p>
-
-            <div className="dashboard-pills">
-              <span>Career guidance</span>
-              <span>University planning</span>
-              <span>Scholarship support</span>
+            <div className="cg-dashboard__chips">
+              <span className="cg-chip">Career guidance</span>
+              <span className="cg-chip">University planning</span>
+              <span className="cg-chip">Scholarship support</span>
             </div>
-          </div>
+          </article>
 
-          <div className="dashboard-hero-side">
-            <div className="dashboard-profile-card">
-              <div className="dashboard-avatar">{firstName.charAt(0).toUpperCase()}</div>
-              <div>
-                <h2>{studentName}</h2>
-                <p>{profileEmail}</p>
+          <aside className="cg-card cg-dashboard__profile">
+            <div className="cg-dashboard__profile-top">
+              <div className="cg-dashboard__avatar" aria-hidden="true">
+                {firstName.charAt(0).toUpperCase()}
+              </div>
+              <div className="cg-dashboard__profile-id">
+                <div className="cg-dashboard__profile-name">{studentName}</div>
+                <div className="cg-dashboard__profile-email">{profileEmail}</div>
               </div>
             </div>
 
-            <div className="dashboard-progress-card">
-              <div className="dashboard-progress-head">
-                <span>Profile completion</span>
-                <strong>67%</strong>
-              </div>
-              <div className="dashboard-progress-track">
-                <span className="dashboard-progress-bar" />
-              </div>
-              <p>Complete the quiz and explore your recommended universities to refine your plan.</p>
+            <div className="cg-dashboard__completion">
+              <span>Profile completion</span>
+              <span>67%</span>
             </div>
-          </div>
+            <div className="cg-dashboard__progress">
+              <span className="cg-dashboard__progress-fill" />
+            </div>
+            <p className="cg-dashboard__hint">
+              Complete the quiz and explore your recommended universities to refine your plan.
+            </p>
+          </aside>
         </section>
 
-        <section className="dashboard-grid dashboard-metrics-grid">
-          {dashboardMetrics.map((metric) => (
-            <article key={metric.label} className="dashboard-metric-card card">
-              <p>{metric.label}</p>
-              <h3>{metric.value}</h3>
-              <span>{metric.hint}</span>
+        <section className="cg-dashboard__metrics">
+          {dashboardMetrics.map((metric, index) => (
+            <article
+              key={metric.label}
+              className={`cg-card cg-dashboard__metric cg-dashboard__metric--${index}`}
+            >
+              <div className="cg-dashboard__metric-label">{metric.label}</div>
+              <div className="cg-dashboard__metric-value">{metric.value}</div>
+              <div className="cg-dashboard__metric-hint">{metric.hint}</div>
             </article>
           ))}
         </section>
 
-        <section className="dashboard-grid dashboard-main-grid">
-          <div className="dashboard-column">
-            <div className="dashboard-section-header">
-              <div>
-                <p className="eyebrow">Recommended next steps</p>
-                <h2>Continue your guidance journey</h2>
-              </div>
-            </div>
+        <section className="cg-dashboard__steps">
+          <p className="cg-eyebrow cg-center">RECOMMENDED NEXT STEPS</p>
+          <h2 className="cg-dashboard__steps-title">Continue your guidance journey</h2>
 
-            <div className="dashboard-stack">
-              {recommendedPaths.map((item) => (
-                <article key={item.title} className="dashboard-feature-card card">
-                  <div>
-                    <h3>{item.title}</h3>
-                    <p className="muted-text">{item.description}</p>
+          <div className="cg-dashboard__steps-list">
+            {recommendedPaths.map((item) => (
+              <article key={item.title} className="cg-card cg-dashboard__step">
+                <div className="cg-dashboard__step-left">
+                  <div
+                    className={`cg-dashboard__iconbox ${
+                      item.title === 'Career fit analysis'
+                        ? 'cg-dashboard__iconbox--career'
+                        : item.title === 'University shortlist'
+                          ? 'cg-dashboard__iconbox--university'
+                          : 'cg-dashboard__iconbox--scholarship'
+                    }`}
+                    aria-hidden="true"
+                  >
+                    {item.title === 'Career fit analysis' ? '↻' : item.title === 'University shortlist' ? '⌂' : '★'}
                   </div>
-                  <button className="primary-button dashboard-card-button" type="button" onClick={item.onClick}>
-                    {item.action}
-                  </button>
-                </article>
-              ))}
-            </div>
+                  <div>
+                    <div className="cg-dashboard__step-title">{item.title}</div>
+                    <div className="cg-dashboard__step-desc">{item.description}</div>
+                  </div>
+                </div>
+                <button className="cg-btn-primary" type="button" onClick={item.onClick}>
+                  {item.action}
+                </button>
+              </article>
+            ))}
           </div>
-
-          <aside className="dashboard-sidebar">
-            <div className="dashboard-panel card">
-              <div className="dashboard-section-header compact">
-                <p className="eyebrow">Quick actions</p>
-                <h2>Start with one click</h2>
-              </div>
-
-              <div className="dashboard-action-list">
-                {actionItems.map((item) => (
-                  <button key={item.label} className="dashboard-action-item" type="button" onClick={item.onClick}>
-                    <strong>{item.label}</strong>
-                    <span>{item.description}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="dashboard-panel card">
-              <div className="dashboard-section-header compact">
-                <p className="eyebrow">Account</p>
-                <h2>Session controls</h2>
-              </div>
-
-              <div className="dashboard-account-actions">
-                <button className="secondary-button" type="button" onClick={handleLogout}>
-                  Logout
-                </button>
-
-                <button className="secondary-button dashboard-danger-button" type="button" onClick={handleDeleteAccount} disabled={isDeleting}>
-                  {isDeleting ? 'Deleting...' : 'Delete account'}
-                </button>
-              </div>
-
-              {deleteError && <div className="dashboard-error">{deleteError}</div>}
-            </div>
-          </aside>
         </section>
       </div>
     </main>
