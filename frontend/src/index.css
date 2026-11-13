@@ -3366,3 +3366,9 @@ html.dark-mode .app-footer__admin-link {
     opacity: 1;
   }
 }
+/* Dark mode: University Recommender cards */
+html.dark-mode .summary-stats,
+html.dark-mode .career-header {
+  background: linear-gradient(135deg, #38291f 0%, #2a1f18 100%) !important;
+  border-color: #3d2f26 !important;
+}
