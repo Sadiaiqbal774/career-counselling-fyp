@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import supabase from '../lib/supabase';
+import { isStrongPassword } from '../lib/authHelpers';
 import './Auth.css';
 import PasswordField from '../components/PasswordField';
 
@@ -20,37 +21,49 @@ function ResetPassword() {
   const code = searchParams.get('code');
 
   useEffect(() => {
-    const loadRecoverySession = async () => {
-      const recoveryHash = typeof window !== 'undefined'
-        ? window.location.hash.includes('type=recovery')
-        : false;
+    let mounted = true;
 
-      if (!code && !recoveryHash) {
+    // Listen for auth events. Enable the form ONLY on PASSWORD_RECOVERY.
+    // A normal logged-in session (SIGNED_IN, INITIAL_SESSION, etc.) will NOT enable recoveryReady.
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        setRecoveryReady(true);
         setRecoveryChecked(true);
-        return;
       }
+    });
 
+    const initRecovery = async () => {
       if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        if (!mounted) return;
+        if (!exchangeError) {
+          setRecoveryReady(true);
+        } else {
           setRecoveryReady(false);
-          setRecoveryChecked(true);
-          return;
         }
-      }
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        setRecoveryReady(false);
         setRecoveryChecked(true);
         return;
       }
-      setRecoveryReady(Boolean(data.session));
+
+      // Check current session to allow onAuthStateChange to process any implicit flow,
+      // but do NOT enable recoveryReady just because data.session exists.
+      try {
+        await supabase.auth.getSession();
+      } catch (_) {}
+
+      if (!mounted) return;
       setRecoveryChecked(true);
     };
-    loadRecoverySession().catch(() => {
-      setRecoveryReady(false);
-      setRecoveryChecked(true);
-    });
+
+    initRecovery();
+
+    return () => {
+      mounted = false;
+      if (authListener?.subscription?.unsubscribe) {
+        authListener.subscription.unsubscribe();
+      }
+    };
   }, [code]);
 
   if (initialized && recoveryChecked && !recoveryReady) {
@@ -69,7 +82,7 @@ function ResetPassword() {
             <p>The reset link is missing or invalid. Please request a new password reset email.</p>
           </aside>
           <section className="auth-card">
-            <p className="auth-error">No Supabase reset code found in link.</p>
+            <p className="auth-error">Invalid or expired reset link. Please request a new one.</p>
           </section>
         </section>
       </main>
@@ -86,7 +99,7 @@ function ResetPassword() {
       return;
     }
 
-    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password)) {
+    if (!isStrongPassword(password)) {
       setError('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
       return;
     }

@@ -1,16 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import supabase, { ensureSupabaseConfigured, getSupabaseConfigError } from '../lib/supabase';
+import { hasPassword, isStrongPassword } from '../lib/authHelpers';
 
 const AuthContext = createContext(null);
 const API_URL = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000').trim().replace(/\/+$/, '');
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-export function isStrongPassword(password) {
-  return typeof password === 'string'
-    && /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password);
 }
 
 function mapSessionUser(session) {
@@ -28,8 +24,8 @@ function mapSessionUser(session) {
     token: session.access_token,
     provider: user.app_metadata?.provider || user.identities?.[0]?.provider || 'email',
     authProvider: user.app_metadata?.provider || user.identities?.[0]?.provider || 'email',
-    emailConfirmed: true,
-    hasPassword: Boolean(user.app_metadata?.providers?.includes('email')),
+    emailConfirmed: Boolean(user.email_confirmed_at),
+    hasPassword: Boolean(hasPassword(user)),
     isAdmin,
   };
 }
@@ -350,6 +346,23 @@ export function AuthProvider({ children }) {
     await updatePassword(newPassword);
   }, [updatePassword]);
 
+  const setPasswordForGoogleUser = useCallback(async ({ nonce, newPassword }) => {
+    ensureSupabaseConfigured();
+    if (!isStrongPassword(newPassword)) {
+      throw new Error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+    }
+    const { error } = await supabase.auth.updateUser({ password: newPassword, nonce });
+    if (error) throw error;
+
+    await supabase.auth.refreshSession();
+    const { data: refreshedData } = await supabase.auth.getSession();
+    const refreshedUser = refreshedData.session ? mapSessionUser(refreshedData.session) : null;
+    if (refreshedUser) {
+      setCurrentUser(refreshedUser);
+    }
+    await supabase.auth.signOut({ scope: 'others' });
+  }, []);
+
   const deleteAccount = useCallback(async (password) => {
     ensureSupabaseConfigured();
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
@@ -397,6 +410,7 @@ export function AuthProvider({ children }) {
     resetPassword,
     updatePassword,
     changePassword,
+    setPasswordForGoogleUser,
     deleteAccount,
     getAccessToken,
     getRecoveryQuestion,
@@ -419,6 +433,7 @@ export function AuthProvider({ children }) {
     resetPassword,
     updatePassword,
     changePassword,
+    setPasswordForGoogleUser,
     deleteAccount,
     getAccessToken,
     getRecoveryQuestion,
