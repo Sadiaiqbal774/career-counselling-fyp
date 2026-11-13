@@ -164,28 +164,28 @@ export function AuthProvider({ children }) {
       throw new Error('This email is already registered. Please sign in instead.');
     }
 
-    if (!data.session) {
-      if (data.user?.id && recoveryQuestion && recoveryAnswer) {
-        const setupResponse = await fetch(`${API_URL}/api/auth/recovery-question/setup`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: data.user.id,
-            email: normalizedEmail,
-            question: recoveryQuestion,
-            answer: recoveryAnswer,
-          }),
-        });
-        const setupResult = await setupResponse.json().catch(() => ({}));
-        if (!setupResponse.ok) throw new Error(setupResult.message || 'Unable to save recovery details.');
-      }
-      return { requiresEmailVerification: true, email: normalizedEmail };
+    // Save recovery question whether or not a session was created
+    if (data.user?.id && recoveryQuestion && recoveryAnswer) {
+      const setupResponse = await fetch(`${API_URL}/api/auth/recovery-question/setup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: data.user.id,
+          email: normalizedEmail,
+          question: recoveryQuestion,
+          answer: recoveryAnswer,
+        }),
+      });
+      const setupResult = await setupResponse.json().catch(() => ({}));
+      if (!setupResponse.ok) throw new Error(setupResult.message || 'Unable to save recovery details.');
     }
 
-    await supabase.auth.signOut();
-    throw new Error(
-      'Email confirmation is not enabled in Supabase. Enable Confirm email in Supabase Auth settings, then register again.',
-    );
+    // Always sign out after signup so the user must verify email before signing in
+    if (data.session) {
+      await supabase.auth.signOut();
+    }
+
+    return { requiresEmailVerification: true, email: normalizedEmail };
   }, []);
 
   const login = useCallback(async ({ email, password }) => {
