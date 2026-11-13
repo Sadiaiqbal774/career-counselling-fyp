@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+
 import { useAuth } from '../context/AuthContext';
 import PasswordField from '../components/PasswordField';
 import { securityQuestions } from '../data/securityQuestions';
 import './Auth.css';
 
 function Register() {
-  const { register, initialized, isAuthenticated } = useAuth();
+  const { register, resendVerification, initialized, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [name, setName] = useState('');
@@ -18,12 +19,7 @@ function Register() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
-  // Remove unused verification code state
-// const [verificationCode, setVerificationCode] = useState('');
-// // const [isVerifying, setIsVerifying] = useState(false);
-
   const [verificationStep, setVerificationStep] = useState(false);
-  // const [isVerifying, setIsVerifying] = useState(false);
 
   const destination = location.state?.from?.pathname || '/';
 
@@ -47,7 +43,6 @@ function Register() {
       if (result?.requiresEmailVerification) {
         setVerificationEmail(result.email);
         setVerificationStep(true);
-        setErrorMessage('Account created. Check your email and verify your address before signing in.');
       } else {
         navigate(destination, { replace: true });
       }
@@ -58,33 +53,12 @@ function Register() {
     }
   };
 
-  // Removed unused OTP verification handler
-/*
-  const handleVerifyCode = async (event) => {
-    event.preventDefault();
-    setErrorMessage('');
-    setIsVerifying(true);
+  const handleResend = async () => {
     try {
-      const user = await verifySignupCode(verificationEmail, verificationCode);
-      navigate(user?.isAdmin ? '/admin' : '/', { replace: true });
+      await resendVerification(verificationEmail);
+      setErrorMessage('A new verification email has been sent.');
     } catch (error) {
-      setErrorMessage(error.message || 'That verification code is invalid or expired.');
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-*/
- {
-    event.preventDefault();
-    setErrorMessage('');
-    setIsVerifying(true);
-    try {
-      const user = await verifySignupCode(verificationEmail, verificationCode);
-      navigate(user?.isAdmin ? '/admin' : '/', { replace: true });
-    } catch (error) {
-      setErrorMessage(error.message || 'That verification code is invalid or expired.');
-    } finally {
-      setIsVerifying(false);
+      setErrorMessage(error.message || 'Unable to resend verification email.');
     }
   };
 
@@ -115,10 +89,10 @@ function Register() {
         <section className="auth-card">
           <div className="auth-card-header">
             <p className="eyebrow">Start here</p>
-            <h2>{verificationStep ? 'Verify your email' : 'Create account'}</h2>
+            <h2>{verificationStep ? 'Account created' : 'Create account'}</h2>
             <p className="muted-text">
               {verificationStep
-                ? `We sent a verification email to ${verificationEmail}. Click its link to finish, or enter the one-time code below if your email contains a code.`
+                ? `We sent a verification email to ${verificationEmail}.`
                 : 'Set up your profile in a minute with a real, reachable email address. We use secure email verification and recovery links.'}
             </p>
           </div>
@@ -126,98 +100,91 @@ function Register() {
           {verificationStep ? (
             <div className="verification-complete">
               <p className="muted-text">
-                Account created. Check your email ({verificationEmail}) and verify your address. After verification you can sign in.
+                Check your Gmail (and Spam), click the verification link, then sign in.
               </p>
+              {errorMessage ? <p className="muted-text">{errorMessage}</p> : null}
               <button
                 className="auth-primary-button"
+                type="button"
                 onClick={() => navigate('/login', { replace: true })}
               >
                 Sign In
               </button>
-            </div>
-          ) : (
-          <form onSubmit={handleSubmit} className="auth-form">
-            <label className="auth-field">
-              <span>Full name</span>
-              <input
-                type="text"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder="Your name"
-                required
-              />
-            </label>
-
-            <label className="auth-field">
-              <span>Email</span>
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="you@example.com"
-                autoComplete="email"
-                required
-              />
-            </label>
-
-            <label className="auth-field">
-              <span>Password</span>
-              <PasswordField
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Create a password"
-                required
-              />
-            </label>
-
-            <label className="auth-field">
-              <span>Confirm password</span>
-              <PasswordField
-                value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
-                placeholder="Repeat your password"
-                required
-              />
-            </label>
-
-            <label className="auth-field">
-              <span>Recovery question</span>
-              <select value={recoveryQuestion} onChange={(event) => setRecoveryQuestion(event.target.value)} required>
-                <option value="">Choose a recovery question</option>
-                {securityQuestions.map((question) => <option key={question} value={question}>{question}</option>)}
-              </select>
-            </label>
-
-            <label className="auth-field">
-              <span>Recovery answer</span>
-              <input
-                type="text"
-                value={recoveryAnswer}
-                onChange={(event) => setRecoveryAnswer(event.target.value)}
-                placeholder="Your answer"
-                autoComplete="off"
-                required
-              />
-            </label>
-
-            {errorMessage ? <p className="auth-error">{errorMessage}</p> : null}
-            {verificationEmail ? (
-              <button type="button" className="auth-secondary-button" onClick={async () => {
-                try {
-                  await resendVerification(verificationEmail);
-                  setErrorMessage('A new verification email has been sent.');
-                } catch (error) {
-                  setErrorMessage(error.message || 'Unable to resend verification email.');
-                }
-              }}>
+              <button type="button" className="auth-secondary-button" onClick={handleResend}>
                 Resend verification email
               </button>
-            ) : null}
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="auth-form">
+              <label className="auth-field">
+                <span>Full name</span>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Your name"
+                  required
+                />
+              </label>
 
-            <button className="auth-primary-button" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating account...' : 'Create account'}
-            </button>
-          </form>
+              <label className="auth-field">
+                <span>Email</span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  required
+                />
+              </label>
+
+              <label className="auth-field">
+                <span>Password</span>
+                <PasswordField
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="Create a password"
+                  required
+                />
+              </label>
+
+              <label className="auth-field">
+                <span>Confirm password</span>
+                <PasswordField
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  placeholder="Repeat your password"
+                  required
+                />
+              </label>
+
+              <label className="auth-field">
+                <span>Recovery question</span>
+                <select value={recoveryQuestion} onChange={(event) => setRecoveryQuestion(event.target.value)} required>
+                  <option value="">Choose a recovery question</option>
+                  {securityQuestions.map((question) => <option key={question} value={question}>{question}</option>)}
+                </select>
+              </label>
+
+              <label className="auth-field">
+                <span>Recovery answer</span>
+                <input
+                  type="text"
+                  value={recoveryAnswer}
+                  onChange={(event) => setRecoveryAnswer(event.target.value)}
+                  placeholder="Your answer"
+                  autoComplete="off"
+                  required
+                />
+              </label>
+
+              {errorMessage ? <p className="auth-error">{errorMessage}</p> : null}
+
+              <button className="auth-primary-button" type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Creating account...' : 'Create account'}
+              </button>
+            </form>
           )}
 
           <p className="auth-switch-text">
