@@ -690,3 +690,31 @@ html.dark-mode .cg-highlight-title {
 html.dark-mode .cg-highlight-desc {
   color: #cbb9a8;
 }
+
+/* Dark mode: Retake / secondary buttons */
+html.dark-mode .cg-action-btn--secondary,
+html.dark-mode .cg-highlight-btn-secondary,
+html.dark-mode .cg-btn-step-secondary {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #e5e7eb !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+html.dark-mode .cg-action-btn--secondary:hover,
+html.dark-mode .cg-highlight-btn-secondary:hover,
+html.dark-mode .cg-btn-step-secondary:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+}
+
+/* Dark mode: Scholarships ghost button */
+html.dark-mode .cg-action-btn--ghost {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #e5e7eb !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+html.dark-mode .cg-action-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #ffffff !important;
+}
