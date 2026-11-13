@@ -1989,10 +1989,6 @@ function EntityForm({ tab, record, onSave, onCancel }) {
     if (!isFilled(formData.provinces)) missing.push('Province');
     if (!isFilled(formData.basis)) missing.push('Basis');
     if (!isFilled(formData.providerType)) missing.push('Provider type');
-    if (!isFilled(formData.eligibility)) missing.push('Eligibility details');
-    if (!isFilled(formData.incomeCap)) missing.push('Income cap (PKR)');
-    if (!isFilled(formData.minMerit)) missing.push('Minimum merit %');
-    if (!isFilled(formData.coverage)) missing.push('Coverage');
     if (!isFilled(formData.sourceUrl)) missing.push('Source URL');
     return missing;
   };
@@ -2002,27 +1998,14 @@ function EntityForm({ tab, record, onSave, onCancel }) {
     if (tab !== 'universities') return [];
     const missing = [];
     if (!isFilled(formData.name)) missing.push('Name');
+    if (!isFilled(formData.city)) missing.push('City');
     if (!isFilled(formData.province)) missing.push('Province');
+    if (!isFilled(formData.sector)) missing.push('Sector');
     if (!isFilled(formData.website)) missing.push('Website URL');
     return missing;
   };
   const missingUniversityFields = getMissingUniversityFields();
   const isUniversityComplete = missingUniversityFields.length === 0;
-
-    if (!isScholarship) return [];
-    const missing = [];
-    if (!isFilled(formData.name)) missing.push('Name');
-    if (!isFilled(formData.provider)) missing.push('Provider');
-    if (!isFilled(formData.provinces)) missing.push('Province');
-    if (!isFilled(formData.basis)) missing.push('Basis');
-    if (!isFilled(formData.providerType)) missing.push('Provider type');
-    if (!isFilled(formData.eligibility)) missing.push('Eligibility details');
-    if (!isFilled(formData.incomeCap)) missing.push('Income cap (PKR)');
-    if (!isFilled(formData.minMerit)) missing.push('Minimum merit %');
-    if (!isFilled(formData.coverage)) missing.push('Coverage');
-    if (!isFilled(formData.sourceUrl)) missing.push('Source URL');
-    return missing;
-  };
 
   const missingScholarshipFields = getMissingScholarshipFields();
   const isScholarshipComplete = !isScholarship || missingScholarshipFields.length === 0;
@@ -2041,21 +2024,6 @@ function EntityForm({ tab, record, onSave, onCancel }) {
       const missing = getMissingUniversityFields();
       if (missing.length > 0) {
         if (event) { event.preventDefault(); event.stopPropagation(); }
-        setFormError(`All fields are required. Please fill in: ${missing.join(', ')}.`);
-        return false;
-      }
-    }
-    return true;
-  };
-
-    if (isScholarship) {
-      setSubmitted(true);
-      const missing = getMissingScholarshipFields();
-      if (missing.length > 0) {
-        if (event) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
         setFormError(`All fields are required. Please fill in: ${missing.join(', ')}.`);
         return false;
       }
@@ -2091,11 +2059,11 @@ function EntityForm({ tab, record, onSave, onCancel }) {
   };
   return <form className="admin-edit-form" onSubmit={submit}>
     {tab === 'universities' && <>
-      <label>Name<input value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="e.g. National University of Sciences and Technology" required /></label>
-      <label>City<input value={form.city} onChange={(event) => update('city', event.target.value)} placeholder="e.g. Islamabad" /></label>
-      <label>Province<select value={form.province} onChange={(event) => update('province', event.target.value)}><option value="">Select province or region</option>{['All Pakistan', 'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Azad Jammu & Kashmir', 'Gilgit-Baltistan'].map((province) => <option key={province}>{province}</option>)}{form.province && !['All Pakistan', 'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Azad Jammu & Kashmir', 'Gilgit-Baltistan'].includes(form.province) && <option>{form.province}</option>}</select></label>
-      <label>Sector<select value={form.sector} onChange={(event) => update('sector', event.target.value)}><option value="">Select sector</option><option>Public</option><option>Private</option></select></label>
-      <label>Website URL<span className="admin-field-help">e.g. university.edu.pk (https:// is added automatically if omitted)</span><input type="text" value={form.website} onChange={(event) => update('website', event.target.value)} onBlur={(event) => update('website', normalizeUrl(event.target.value))} placeholder="https://university.edu.pk" /></label>
+      <label>Name <span style={{ color: '#dc2626' }}>*</span><input style={submitted && !isFilled(form.name) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="e.g. National University of Sciences and Technology" required /></label>
+      <label>City <span style={{ color: '#dc2626' }}>*</span><input style={submitted && !isFilled(form.city) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.city} onChange={(event) => update('city', event.target.value)} placeholder="e.g. Islamabad" required /></label>
+      <label>Province <span style={{ color: '#dc2626' }}>*</span><select style={submitted && !isFilled(form.province) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.province} onChange={(event) => update('province', event.target.value)} required><option value="">Select province or region</option>{['All Pakistan', 'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Azad Jammu & Kashmir', 'Gilgit-Baltistan'].map((province) => <option key={province}>{province}</option>)}{form.province && !['All Pakistan', 'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Azad Jammu & Kashmir', 'Gilgit-Baltistan'].includes(form.province) && <option>{form.province}</option>}</select></label>
+      <label>Sector <span style={{ color: '#dc2626' }}>*</span><select style={submitted && !isFilled(form.sector) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.sector} onChange={(event) => update('sector', event.target.value)} required><option value="">Select sector</option><option>Public</option><option>Private</option></select></label>
+      <label>Website URL <span style={{ color: '#dc2626' }}>*</span><span className="admin-field-help">e.g. university.edu.pk (https:// is added automatically if omitted)</span><input style={submitted && !isFilled(form.website) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} type="text" value={form.website} onChange={(event) => update('website', event.target.value)} onBlur={(event) => update('website', normalizeUrl(event.target.value))} placeholder="https://university.edu.pk" required /></label>
     </>}
     {tab === 'scholarships' && <>
       <label>Name <span style={{ color: '#dc2626' }}>*</span><input style={submitted && !isFilled(form.name) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="e.g. HEC Undergraduate Scholarship" required /></label>
@@ -2103,10 +2071,10 @@ function EntityForm({ tab, record, onSave, onCancel }) {
       <label>Province <span style={{ color: '#dc2626' }}>*</span><select style={submitted && !isFilled(form.provinces) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.provinces} onChange={(event) => update('provinces', event.target.value)} required><option value="">Select province or region</option>{['All Pakistan', 'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Azad Jammu & Kashmir', 'Gilgit-Baltistan'].map((province) => <option key={province} value={province}>{province}</option>)}{form.provinces && !['All Pakistan', 'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Azad Jammu & Kashmir', 'Gilgit-Baltistan'].includes(form.provinces) && <option value={form.provinces}>{form.provinces}</option>}</select></label>
       <label>Basis <span style={{ color: '#dc2626' }}>*</span><select style={submitted && !isFilled(form.basis) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.basis} onChange={(event) => update('basis', event.target.value)} required><option value="">Select basis</option><option value="Merit">Merit</option><option value="Need">Need</option><option value="Need + Merit">Need + Merit</option></select></label>
       <label>Provider type <span style={{ color: '#dc2626' }}>*</span><select style={submitted && !isFilled(form.providerType) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.providerType} onChange={(event) => update('providerType', event.target.value)} required><option value="">Select provider type</option><option value="Government">Government</option><option value="Private">Private</option><option value="International">International</option>{form.providerType && !['Government', 'Private', 'International'].includes(form.providerType) && <option value={form.providerType}>{form.providerType}</option>}</select></label>
-      <label>Eligibility details <span style={{ color: '#dc2626' }}>*</span><span className="admin-field-help">What students must meet to qualify.</span><textarea style={submitted && !isFilled(form.eligibility) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.eligibility} onChange={(event) => update('eligibility', event.target.value)} placeholder="e.g. Household income below PKR 60,000 and at least 70% marks" required /></label>
-      <label>Income cap (PKR) <span style={{ color: '#dc2626' }}>*</span><span className="admin-field-help">Maximum household income. Enter 0 if no limit.</span><input style={submitted && !isFilled(form.incomeCap) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} type="number" min="0" value={form.incomeCap !== undefined && form.incomeCap !== null ? form.incomeCap : ''} onChange={(event) => update('incomeCap', clampNonNegative(event.target.value))} placeholder="e.g. 60000" required /></label>
-      <label>Minimum merit % <span style={{ color: '#dc2626' }}>*</span><span className="admin-field-help">Minimum marks or merit percentage. Enter 0 if not required.</span><input style={submitted && !isFilled(form.minMerit) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} type="number" min="0" max="100" value={form.minMerit !== undefined && form.minMerit !== null ? form.minMerit : ''} onChange={(event) => update('minMerit', clampNonNegative(event.target.value))} placeholder="e.g. 70" required /></label>
-      <label>Coverage <span style={{ color: '#dc2626' }}>*</span><span className="admin-field-help">What the scholarship pays for, such as tuition, stipend, or books.</span><textarea style={submitted && !isFilled(form.coverage) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.coverage} onChange={(event) => update('coverage', event.target.value)} placeholder="e.g. Full tuition fee and monthly stipend" required /></label>
+      <label>Eligibility details<span className="admin-field-help">What students must meet to qualify.</span><textarea value={form.eligibility} onChange={(event) => update('eligibility', event.target.value)} placeholder="e.g. Household income below PKR 60,000 and at least 70% marks" /></label>
+      <label>Income cap (PKR)<span className="admin-field-help">Maximum household income. Enter 0 if no limit.</span><input type="number" min="0" value={form.incomeCap !== undefined && form.incomeCap !== null ? form.incomeCap : ''} onChange={(event) => update('incomeCap', clampNonNegative(event.target.value))} placeholder="e.g. 60000" /></label>
+      <label>Minimum merit %<span className="admin-field-help">Minimum marks or merit percentage. Enter 0 if not required.</span><input type="number" min="0" max="100" value={form.minMerit !== undefined && form.minMerit !== null ? form.minMerit : ''} onChange={(event) => update('minMerit', clampNonNegative(event.target.value))} placeholder="e.g. 70" /></label>
+      <label>Coverage<span className="admin-field-help">What the scholarship pays for, such as tuition, stipend, or books.</span><textarea value={form.coverage} onChange={(event) => update('coverage', event.target.value)} placeholder="e.g. Full tuition fee and monthly stipend" /></label>
       <label>Source URL <span style={{ color: '#dc2626' }}>*</span><span className="admin-field-help">Official webpage where students can verify or apply. https:// is added automatically.</span><input style={submitted && !isFilled(form.sourceUrl) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} type="text" value={form.sourceUrl} onChange={(event) => update('sourceUrl', event.target.value)} onBlur={(event) => update('sourceUrl', normalizeUrl(event.target.value))} placeholder="https://official-website.gov.pk/scholarship" required /></label>
     </>}
     {tab === 'eligibility' && <>
@@ -2134,9 +2102,9 @@ function EntityForm({ tab, record, onSave, onCancel }) {
         type="submit"
         disabled={ (isScholarship && !isScholarshipComplete) || (tab === 'universities' && !isUniversityComplete) }
         style={ (isScholarship && !isScholarshipComplete) || (tab === 'universities' && !isUniversityComplete) ? { opacity: 0.55, cursor: 'not-allowed' } : undefined}
-        onClick={handleScholarshipCheck}
+        onClick={handleSaveCheck}
       >
-        {tab === 'scholarships' ? (record ? 'Save Scholarship' : 'Add Scholarship') : (record ? `Update ${getResourceSingular(tab)}` : `Add ${getResourceSingular(tab)}`)}
+        Save
       </button>
     </div>
   </form>;
@@ -2147,8 +2115,116 @@ function ProgramForm({ program, onSave, onCancel }) {
   const [meritFormula, setMeritFormula] = useState(program?.merit_formula || '');
   const [eligibilityPct, setEligibilityPct] = useState(program?.eligibility_pct ?? '');
   const [url, setUrl] = useState(program?.url || '');
-  const resetFields = () => { setDegreeName(''); setMeritFormula(''); setEligibilityPct(''); setUrl(''); };
-  return <form className="admin-program-form" onSubmit={(event) => { event.preventDefault(); onSave({ degree_name: degreeName, merit_formula: meritFormula, eligibility_pct: eligibilityPct, url: normalizeUrl(url) }); }}><label>Degree / program<input value={degreeName} onChange={(event) => setDegreeName(event.target.value)} placeholder="e.g. BS Computer Science" required /></label><label>Minimum merit %<input type="number" min="0" max="100" value={eligibilityPct || ''} onChange={(event) => setEligibilityPct(clampNonNegative(event.target.value))} placeholder="e.g. 60" /></label><label>Merit formula<input value={meritFormula} onChange={(event) => setMeritFormula(event.target.value)} placeholder="e.g. Available upon contact" /></label><label>Program URL<input type="text" value={url} onChange={(event) => setUrl(event.target.value)} onBlur={(event) => setUrl(normalizeUrl(event.target.value))} placeholder="Defaults to university website" /></label><div className="admin-button-row"><button className="primary-button" type="submit">{program ? 'Update Program' : 'Add Program'}</button><button className="secondary-button" type="button" onClick={() => (program ? onCancel() : resetFields())}>Cancel</button></div></form>;
+  const [submitted, setSubmitted] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  useEffect(() => {
+    setDegreeName(program?.degree_name || '');
+    setMeritFormula(program?.merit_formula || '');
+    setEligibilityPct(program?.eligibility_pct ?? '');
+    setUrl(program?.url || '');
+    setSubmitted(false);
+    setFormError('');
+  }, [program]);
+
+  const isFilled = (val) => val !== null && val !== undefined && String(val).trim() !== '';
+
+  const getMissingFields = () => {
+    const missing = [];
+    if (!isFilled(degreeName)) missing.push('Degree / program');
+    if (!isFilled(eligibilityPct)) missing.push('Minimum merit %');
+    if (!isFilled(meritFormula)) missing.push('Merit formula');
+    if (!isFilled(url)) missing.push('Program URL');
+    return missing;
+  };
+
+  const isComplete = getMissingFields().length === 0;
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setSubmitted(true);
+    const missing = getMissingFields();
+    if (missing.length > 0) {
+      setFormError(`All fields are required. Please fill in: ${missing.join(', ')}.`);
+      return;
+    }
+    setFormError('');
+    onSave({
+      degree_name: degreeName.trim(),
+      merit_formula: meritFormula.trim(),
+      eligibility_pct: eligibilityPct,
+      url: normalizeUrl(url.trim()),
+    });
+  };
+
+  return (
+    <form className="admin-program-form" onSubmit={handleSubmit}>
+      <label>
+        Degree / program <span style={{ color: '#dc2626' }}>*</span>
+        <input
+          style={submitted && !isFilled(degreeName) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined}
+          value={degreeName}
+          onChange={(event) => setDegreeName(event.target.value)}
+          placeholder="e.g. BS Computer Science"
+          required
+        />
+      </label>
+      <label>
+        Minimum merit % <span style={{ color: '#dc2626' }}>*</span>
+        <input
+          style={submitted && !isFilled(eligibilityPct) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined}
+          type="number"
+          min="0"
+          max="100"
+          value={eligibilityPct !== undefined && eligibilityPct !== null ? eligibilityPct : ''}
+          onChange={(event) => setEligibilityPct(clampNonNegative(event.target.value))}
+          placeholder="e.g. 60"
+          required
+        />
+      </label>
+      <label>
+        Merit formula <span style={{ color: '#dc2626' }}>*</span>
+        <input
+          style={submitted && !isFilled(meritFormula) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined}
+          value={meritFormula}
+          onChange={(event) => setMeritFormula(event.target.value)}
+          placeholder="e.g. Available upon contact"
+          required
+        />
+      </label>
+      <label>
+        Program URL <span style={{ color: '#dc2626' }}>*</span>
+        <input
+          style={submitted && !isFilled(url) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined}
+          type="text"
+          value={url}
+          onChange={(event) => setUrl(event.target.value)}
+          onBlur={(event) => setUrl(normalizeUrl(event.target.value))}
+          placeholder="Defaults to university website"
+          required
+        />
+      </label>
+      {formError && (
+        <div style={{ color: '#b91c1c', background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style={{ flexShrink: 0 }}>
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+          <span>{formError}</span>
+        </div>
+      )}
+      <div className="admin-button-row">
+        <button
+          className="primary-button"
+          type="submit"
+          disabled={!isComplete}
+          style={!isComplete ? { opacity: 0.55, cursor: 'not-allowed' } : undefined}
+        >
+          Save
+        </button>
+        <button className="secondary-button" type="button" onClick={onCancel}>Cancel</button>
+      </div>
+    </form>
+  );
 }
 
 // Read-only monitoring tables: no edit/delete actions — these are audit logs, not admin-managed content.
@@ -2689,6 +2765,8 @@ function AdminDashboard() {
   const [userSortAsc, setUserSortAsc] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [editingProgram, setEditingProgram] = useState(null);
+  const [showProgramForm, setShowProgramForm] = useState(false);
+  const [newUniversityPrograms, setNewUniversityPrograms] = useState([]);
   const [universitySearch, setUniversitySearch] = useState(''); const [universityCityFilter, setUniversityCityFilter] = useState('all'); const [scholarshipSearch, setScholarshipSearch] = useState(''); const [error, setError] = useState(''); const [notice, setNotice] = useState(''); const [formResetKey, setFormResetKey] = useState(0);
   const [userSearch, setUserSearch] = useState(''); const [userFilter, setUserFilter] = useState('all');
   const [assessmentFilter, setAssessmentFilter] = useState('all');
@@ -2832,7 +2910,7 @@ function AdminDashboard() {
     setTab(nextTab);
     try { localStorage.setItem('adminActiveTab', nextTab); } catch (_) {}
     setResourceView('list');
-    setEditingRecord(null); setEditingProgram(null); setError(''); setNotice('');
+    setEditingRecord(null); setEditingProgram(null); setShowProgramForm(false); setNewUniversityPrograms([]); setError(''); setNotice('');
     setUniversityCityFilter(options.city || 'all');
     setUniversitySearch(options.search || '');
     setScholarshipSearch(options.scholarshipSearch || '');
@@ -2930,8 +3008,21 @@ function AdminDashboard() {
       const path = wasEditing ? `/api/admin/${activeResource}/${editingId}` : `/api/admin/${activeResource}`;
       const res = await api(path, { method: wasEditing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       if (res && res.record && res.record.id) {
+        if (!wasEditing && activeResource === 'universities' && newUniversityPrograms.length > 0) {
+          for (const prog of newUniversityPrograms) {
+            try {
+              await api(`/api/admin/universities/${res.record.id}/programs`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(prog),
+              });
+            } catch (_) {}
+          }
+          await load('universities');
+        }
         setRecords((prev) => prev.map((r) => (String(r.id) === String(tempId) ? { ...r, ...res.record } : r)));
       }
+      setNewUniversityPrograms([]);
     } catch (saveError) {
       setRecords(previousRecords);
       setError(saveError.message);
@@ -2946,8 +3037,39 @@ function AdminDashboard() {
       message: `Are you sure you want to delete ${itemLabel} "${displayName(record)}"? This will be permanently removed from the catalog.`,
     });
   };
-  const saveProgram = async (data) => { if (!editingRecord) return; const wasEditing = Boolean(editingProgram); try { const path = editingProgram ? `/api/admin/universities/${editingRecord.id}/programs/${editingProgram.id}` : `/api/admin/universities/${editingRecord.id}/programs`; await api(path, { method: editingProgram ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); await load('universities'); const updated = (await api('/api/admin/universities')).records.find((university) => String(university.id) === String(editingRecord.id)); setEditingRecord(updated); setEditingProgram(null); setFormResetKey((key) => key + 1); setNotice(wasEditing ? 'Program updated successfully.' : 'Program added successfully.'); } catch (saveError) { setError(saveError.message); } };
+  const saveProgram = async (data) => {
+    const wasEditing = Boolean(editingProgram);
+    if (!editingRecord) {
+      if (editingProgram) {
+        setNewUniversityPrograms((prev) => prev.map((p) => (p.id === editingProgram.id ? { ...p, ...data } : p)));
+      } else {
+        setNewUniversityPrograms((prev) => [...prev, { id: `temp_${Date.now()}`, ...data }]);
+      }
+      setEditingProgram(null);
+      setShowProgramForm(false);
+      setFormResetKey((key) => key + 1);
+      setNotice(wasEditing ? 'Program updated.' : 'Program added.');
+      return;
+    }
+    try {
+      const path = editingProgram ? `/api/admin/universities/${editingRecord.id}/programs/${editingProgram.id}` : `/api/admin/universities/${editingRecord.id}/programs`;
+      await api(path, { method: editingProgram ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      await load('universities');
+      const updated = (await api('/api/admin/universities')).records.find((university) => String(university.id) === String(editingRecord.id));
+      setEditingRecord(updated);
+      setEditingProgram(null);
+      setShowProgramForm(false);
+      setFormResetKey((key) => key + 1);
+      setNotice(wasEditing ? 'Program updated successfully.' : 'Program added successfully.');
+    } catch (saveError) {
+      setError(saveError.message);
+    }
+  };
   const deleteProgram = (program) => {
+    if (!editingRecord) {
+      setNewUniversityPrograms((prev) => prev.filter((p) => p.id !== program.id));
+      return;
+    }
     setDeleteTarget({
       type: 'program',
       payload: program,
@@ -4215,22 +4337,21 @@ function AdminDashboard() {
                 )}
               </div>
               <EntityForm key={`${activeResource}-${formResetKey}`} tab={activeResource} record={editingRecord} onSave={saveRecord} onCancel={() => setEditingRecord(null)} />
-              {activeResource === 'universities' && editingRecord && (
+              {activeResource === 'universities' && (
                 <div className="admin-programs-panel">
-                  <div className="admin-section-heading"><h3>Programs</h3><button className="admin-small-button" type="button" onClick={() => setEditingProgram(null)}>+ Add program</button></div>
+                  <div className="admin-section-heading"><h3>Programs</h3><button className="admin-small-button" type="button" onClick={() => { setEditingProgram(null); setShowProgramForm(true); }}>+ Add program</button></div>
                   <ul className="admin-program-list">
-                    {(editingRecord.programs || []).map((program) => (
+                    {((editingRecord ? editingRecord.programs : newUniversityPrograms) || []).map((program) => (
                       <li key={program.id}>
                         <span>{program.degree_name}{program.eligibility_pct ? ` · Min ${program.eligibility_pct}%` : ''}</span>
                         <span>
-                          <button className="admin-action admin-action--edit" type="button" onClick={() => setEditingProgram(program)}>Edit</button>
+                          <button className="admin-action admin-action--edit" type="button" onClick={() => { setEditingProgram(program); setShowProgramForm(true); }}>Edit</button>
                           <button className="admin-action admin-action--danger" type="button" onClick={() => deleteProgram(program)}>Delete</button>
                         </span>
                       </li>
                     ))}
                   </ul>
-                  {editingProgram && <ProgramForm key={formResetKey} program={editingProgram} onSave={saveProgram} onCancel={() => setEditingProgram(null)} />}
-                  {!editingProgram && <ProgramForm key={formResetKey} onSave={saveProgram} onCancel={() => setEditingProgram(null)} />}
+                  {showProgramForm && <ProgramForm key={`${editingProgram?.id || 'new'}-${formResetKey}`} program={editingProgram} onSave={saveProgram} onCancel={() => { setShowProgramForm(false); setEditingProgram(null); }} />}
                 </div>
               )}
             </div>}
