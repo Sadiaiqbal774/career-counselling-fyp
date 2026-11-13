@@ -544,7 +544,7 @@ function Profile() {
               className="profile-account-row"
               onClick={() => navigate('/change-password')}
             >
-              <span>Change password</span>
+              <span>{currentUser?.hasPassword ? 'Change password' : 'Set a password'}</span>
               <span aria-hidden="true">›</span>
             </button>
             <button
