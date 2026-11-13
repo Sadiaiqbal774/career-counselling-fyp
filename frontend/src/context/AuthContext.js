@@ -180,10 +180,10 @@ export function AuthProvider({ children }) {
       if (!setupResponse.ok) throw new Error(setupResult.message || 'Unable to save recovery details.');
     }
 
-    // Always sign out after signup so the user must verify email before signing in
-    if (data.session) {
-      await supabase.auth.signOut();
-    }
+    // Clear any session returned by Supabase so signup never continues as an
+    // authenticated user before the verification step is complete.
+    const { error: signOutError } = await supabase.auth.signOut();
+    if (signOutError) throw signOutError;
 
     return { requiresEmailVerification: true, email: normalizedEmail };
   }, []);
