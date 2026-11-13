@@ -278,6 +278,22 @@ function ScholarshipFinder() {
           </a>
           <button
             type="button"
+            onClick={() => deleteScholarship(scholarship)}
+            style={{
+              padding: "11px 16px",
+              borderRadius: "8px",
+              border: "1.5px solid #e53935",
+              background: "#ffebee",
+              color: "#b71c1c",
+              fontWeight: 600,
+              fontSize: "14px",
+              cursor: "pointer",
+              marginLeft: "8px",
+            }}
+            title="Delete scholarship"
+          >Delete</button>
+          <button
+            type="button"
             onClick={() => handleToggleBookmark(scholarship)}
             style={{
               padding: "11px 16px",

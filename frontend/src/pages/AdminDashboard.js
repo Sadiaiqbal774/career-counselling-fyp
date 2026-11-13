@@ -4001,7 +4001,7 @@ function AdminDashboard() {
                           )}
                         </div>
                         <h3 className="admin-grid-card__title" title={displayName(record)}>
-                          {displayName(record)}
+                          <Link to={`/admin/universities/${record.id}`}>{displayName(record)}</Link>
                         </h3>
                       </div>
 
@@ -4080,7 +4080,7 @@ function AdminDashboard() {
                           )}
                         </div>
                         <h3 className="admin-grid-card__title" title={displayName(record)}>
-                          {displayName(record)}
+                          <Link to={`/admin/universities/${record.id}`}>{displayName(record)}</Link>
                         </h3>
                         <p className="admin-grid-card__provider">
                           🏢 {record.provider || 'Provider not specified'}

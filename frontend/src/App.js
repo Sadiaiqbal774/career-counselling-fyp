@@ -1,4 +1,5 @@
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import UniversityEdit from './pages/UniversityEdit';
 import ScholarshipFinder from './pages/ScholarshipFinder';
 import UniversityRecommender from './pages/UniversityRecommender';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -129,7 +130,8 @@ function AppLayout() {
           <Route path="/admin/login" Component={AdminLogin} />
           <Route path="/settings" element={<Navigate to="/profile" replace />} />
           <Route element={<AdminProtectedRoute />}>
-            <Route path="/admin" Component={AdminDashboard} />
+            <Route path="/admin/universities/:id" Component={UniversityEdit} />
+          <Route path="/admin" Component={AdminDashboard} />
           </Route>
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" Component={Dashboard} />
