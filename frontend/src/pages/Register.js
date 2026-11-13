@@ -6,7 +6,7 @@ import { securityQuestions } from '../data/securityQuestions';
 import './Auth.css';
 
 function Register() {
-  const { register, initialized, isAuthenticated, resendVerification, verifySignupCode } = useAuth();
+  const { register, initialized, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [name, setName] = useState('');
@@ -18,9 +18,12 @@ function Register() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
+  // Remove unused verification code state
+// const [verificationCode, setVerificationCode] = useState('');
+// // const [isVerifying, setIsVerifying] = useState(false);
+
   const [verificationStep, setVerificationStep] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
+  // const [isVerifying, setIsVerifying] = useState(false);
 
   const destination = location.state?.from?.pathname || '/';
 
@@ -55,7 +58,23 @@ function Register() {
     }
   };
 
+  // Removed unused OTP verification handler
+/*
   const handleVerifyCode = async (event) => {
+    event.preventDefault();
+    setErrorMessage('');
+    setIsVerifying(true);
+    try {
+      const user = await verifySignupCode(verificationEmail, verificationCode);
+      navigate(user?.isAdmin ? '/admin' : '/', { replace: true });
+    } catch (error) {
+      setErrorMessage(error.message || 'That verification code is invalid or expired.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+*/
+ {
     event.preventDefault();
     setErrorMessage('');
     setIsVerifying(true);
