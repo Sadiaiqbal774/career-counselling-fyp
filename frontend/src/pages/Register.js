@@ -23,7 +23,7 @@ function Register() {
 
   const destination = location.state?.from?.pathname || '/';
 
-  if (initialized && isAuthenticated) {
+  if (initialized && isAuthenticated && !isSubmitting && !verificationStep) {
     return <Navigate to={destination} replace />;
   }
 
