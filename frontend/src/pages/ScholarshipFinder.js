@@ -217,7 +217,6 @@ function ScholarshipFinder() {
   };
 
     const eligibility = scholarshipEligibility(scholarship, marks);
-    bookmarkTick;
     const isSaved = isItemBookmarked(currentUser?.id, "scholarships", scholarship);
     const badgeStyle = {
       eligible: { background: "#e3f3e8", color: "#28734a", border: "1px solid #b9dfc4" },
