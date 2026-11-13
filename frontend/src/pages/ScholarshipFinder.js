@@ -200,6 +200,22 @@ function ScholarshipFinder() {
   };
 
   const renderCard = (scholarship, key) => {
+  // Helper to delete a scholarship from the backend
+  const deleteScholarship = async (sch) => {
+    try {
+      const res = await fetch(`${API_URL}/admin/scholarships/${sch.id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      // Optimistically remove from UI
+      setScholarships((prev) => prev.filter((s) => s.id !== sch.id));
+    } catch (err) {
+      console.error('Error deleting scholarship:', err);
+      setFetchError('Failed to delete scholarship.');
+    }
+  };
+
     const eligibility = scholarshipEligibility(scholarship, marks);
     bookmarkTick;
     const isSaved = isItemBookmarked(currentUser?.id, "scholarships", scholarship);
