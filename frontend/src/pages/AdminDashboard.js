@@ -1989,10 +1989,6 @@ function EntityForm({ tab, record, onSave, onCancel }) {
     if (!isFilled(formData.provinces)) missing.push('Province');
     if (!isFilled(formData.basis)) missing.push('Basis');
     if (!isFilled(formData.providerType)) missing.push('Provider type');
-    if (!isFilled(formData.eligibility)) missing.push('Eligibility details');
-    if (!isFilled(formData.incomeCap)) missing.push('Income cap (PKR)');
-    if (!isFilled(formData.minMerit)) missing.push('Minimum merit %');
-    if (!isFilled(formData.coverage)) missing.push('Coverage');
     if (!isFilled(formData.sourceUrl)) missing.push('Source URL');
     return missing;
   };
