@@ -1,0 +1,21 @@
+/* UniversityEdit page styles */
+.university-edit {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.university-edit .admin-form {
+  max-width: 800px;
+}
+
+.university-edit .program-list {
+  list-style: none;
+  padding: 0;
+}
+
+.university-edit .program-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

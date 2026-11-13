@@ -2009,21 +2009,6 @@ function EntityForm({ tab, record, onSave, onCancel }) {
   const missingUniversityFields = getMissingUniversityFields();
   const isUniversityComplete = missingUniversityFields.length === 0;
 
-    if (!isScholarship) return [];
-    const missing = [];
-    if (!isFilled(formData.name)) missing.push('Name');
-    if (!isFilled(formData.provider)) missing.push('Provider');
-    if (!isFilled(formData.provinces)) missing.push('Province');
-    if (!isFilled(formData.basis)) missing.push('Basis');
-    if (!isFilled(formData.providerType)) missing.push('Provider type');
-    if (!isFilled(formData.eligibility)) missing.push('Eligibility details');
-    if (!isFilled(formData.incomeCap)) missing.push('Income cap (PKR)');
-    if (!isFilled(formData.minMerit)) missing.push('Minimum merit %');
-    if (!isFilled(formData.coverage)) missing.push('Coverage');
-    if (!isFilled(formData.sourceUrl)) missing.push('Source URL');
-    return missing;
-  };
-
   const missingScholarshipFields = getMissingScholarshipFields();
   const isScholarshipComplete = !isScholarship || missingScholarshipFields.length === 0;
 
@@ -2041,21 +2026,6 @@ function EntityForm({ tab, record, onSave, onCancel }) {
       const missing = getMissingUniversityFields();
       if (missing.length > 0) {
         if (event) { event.preventDefault(); event.stopPropagation(); }
-        setFormError(`All fields are required. Please fill in: ${missing.join(', ')}.`);
-        return false;
-      }
-    }
-    return true;
-  };
-
-    if (isScholarship) {
-      setSubmitted(true);
-      const missing = getMissingScholarshipFields();
-      if (missing.length > 0) {
-        if (event) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
         setFormError(`All fields are required. Please fill in: ${missing.join(', ')}.`);
         return false;
       }
@@ -2134,7 +2104,7 @@ function EntityForm({ tab, record, onSave, onCancel }) {
         type="submit"
         disabled={ (isScholarship && !isScholarshipComplete) || (tab === 'universities' && !isUniversityComplete) }
         style={ (isScholarship && !isScholarshipComplete) || (tab === 'universities' && !isUniversityComplete) ? { opacity: 0.55, cursor: 'not-allowed' } : undefined}
-        onClick={handleScholarshipCheck}
+        onClick={handleSaveCheck}
       >
         {tab === 'scholarships' ? (record ? 'Save Scholarship' : 'Add Scholarship') : (record ? `Update ${getResourceSingular(tab)}` : `Add ${getResourceSingular(tab)}`)}
       </button>
@@ -2147,8 +2117,24 @@ function ProgramForm({ program, onSave, onCancel }) {
   const [meritFormula, setMeritFormula] = useState(program?.merit_formula || '');
   const [eligibilityPct, setEligibilityPct] = useState(program?.eligibility_pct ?? '');
   const [url, setUrl] = useState(program?.url || '');
-  const resetFields = () => { setDegreeName(''); setMeritFormula(''); setEligibilityPct(''); setUrl(''); };
-  return <form className="admin-program-form" onSubmit={(event) => { event.preventDefault(); onSave({ degree_name: degreeName, merit_formula: meritFormula, eligibility_pct: eligibilityPct, url: normalizeUrl(url) }); }}><label>Degree / program<input value={degreeName} onChange={(event) => setDegreeName(event.target.value)} placeholder="e.g. BS Computer Science" required /></label><label>Minimum merit %<input type="number" min="0" max="100" value={eligibilityPct || ''} onChange={(event) => setEligibilityPct(clampNonNegative(event.target.value))} placeholder="e.g. 60" /></label><label>Merit formula<input value={meritFormula} onChange={(event) => setMeritFormula(event.target.value)} placeholder="e.g. Available upon contact" /></label><label>Program URL<input type="text" value={url} onChange={(event) => setUrl(event.target.value)} onBlur={(event) => setUrl(normalizeUrl(event.target.value))} placeholder="Defaults to university website" /></label><div className="admin-button-row"><button className="primary-button" type="submit">{program ? 'Update Program' : 'Add Program'}</button><button className="secondary-button" type="button" onClick={() => (program ? onCancel() : resetFields())}>Cancel</button></div></form>;
+  useEffect(() => {
+    setDegreeName(program?.degree_name || '');
+    setMeritFormula(program?.merit_formula || '');
+    setEligibilityPct(program?.eligibility_pct ?? '');
+    setUrl(program?.url || '');
+  }, [program]);
+  return (
+    <form className="admin-program-form" onSubmit={(event) => { event.preventDefault(); onSave({ degree_name: degreeName, merit_formula: meritFormula, eligibility_pct: eligibilityPct, url: normalizeUrl(url) }); }}>
+      <label>Degree / program<input value={degreeName} onChange={(event) => setDegreeName(event.target.value)} placeholder="e.g. BS Computer Science" required /></label>
+      <label>Minimum merit %<input type="number" min="0" max="100" value={eligibilityPct || ''} onChange={(event) => setEligibilityPct(clampNonNegative(event.target.value))} placeholder="e.g. 60" /></label>
+      <label>Merit formula<input value={meritFormula} onChange={(event) => setMeritFormula(event.target.value)} placeholder="e.g. Available upon contact" /></label>
+      <label>Program URL<input type="text" value={url} onChange={(event) => setUrl(event.target.value)} onBlur={(event) => setUrl(normalizeUrl(event.target.value))} placeholder="Defaults to university website" /></label>
+      <div className="admin-button-row">
+        <button className="primary-button" type="submit">{program ? 'Update Program' : 'Add Program'}</button>
+        <button className="secondary-button" type="button" onClick={onCancel}>Cancel</button>
+      </div>
+    </form>
+  );
 }
 
 // Read-only monitoring tables: no edit/delete actions — these are audit logs, not admin-managed content.
@@ -2689,6 +2675,7 @@ function AdminDashboard() {
   const [userSortAsc, setUserSortAsc] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [editingProgram, setEditingProgram] = useState(null);
+  const [showProgramForm, setShowProgramForm] = useState(false);
   const [universitySearch, setUniversitySearch] = useState(''); const [universityCityFilter, setUniversityCityFilter] = useState('all'); const [scholarshipSearch, setScholarshipSearch] = useState(''); const [error, setError] = useState(''); const [notice, setNotice] = useState(''); const [formResetKey, setFormResetKey] = useState(0);
   const [userSearch, setUserSearch] = useState(''); const [userFilter, setUserFilter] = useState('all');
   const [assessmentFilter, setAssessmentFilter] = useState('all');
@@ -2832,7 +2819,7 @@ function AdminDashboard() {
     setTab(nextTab);
     try { localStorage.setItem('adminActiveTab', nextTab); } catch (_) {}
     setResourceView('list');
-    setEditingRecord(null); setEditingProgram(null); setError(''); setNotice('');
+    setEditingRecord(null); setEditingProgram(null); setShowProgramForm(false); setError(''); setNotice('');
     setUniversityCityFilter(options.city || 'all');
     setUniversitySearch(options.search || '');
     setScholarshipSearch(options.scholarshipSearch || '');
@@ -2946,7 +2933,7 @@ function AdminDashboard() {
       message: `Are you sure you want to delete ${itemLabel} "${displayName(record)}"? This will be permanently removed from the catalog.`,
     });
   };
-  const saveProgram = async (data) => { if (!editingRecord) return; const wasEditing = Boolean(editingProgram); try { const path = editingProgram ? `/api/admin/universities/${editingRecord.id}/programs/${editingProgram.id}` : `/api/admin/universities/${editingRecord.id}/programs`; await api(path, { method: editingProgram ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); await load('universities'); const updated = (await api('/api/admin/universities')).records.find((university) => String(university.id) === String(editingRecord.id)); setEditingRecord(updated); setEditingProgram(null); setFormResetKey((key) => key + 1); setNotice(wasEditing ? 'Program updated successfully.' : 'Program added successfully.'); } catch (saveError) { setError(saveError.message); } };
+  const saveProgram = async (data) => { if (!editingRecord) return; const wasEditing = Boolean(editingProgram); try { const path = editingProgram ? `/api/admin/universities/${editingRecord.id}/programs/${editingProgram.id}` : `/api/admin/universities/${editingRecord.id}/programs`; await api(path, { method: editingProgram ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); await load('universities'); const updated = (await api('/api/admin/universities')).records.find((university) => String(university.id) === String(editingRecord.id)); setEditingRecord(updated); setEditingProgram(null); setShowProgramForm(false); setFormResetKey((key) => key + 1); setNotice(wasEditing ? 'Program updated successfully.' : 'Program added successfully.'); } catch (saveError) { setError(saveError.message); } };
   const deleteProgram = (program) => {
     setDeleteTarget({
       type: 'program',
@@ -4217,20 +4204,19 @@ function AdminDashboard() {
               <EntityForm key={`${activeResource}-${formResetKey}`} tab={activeResource} record={editingRecord} onSave={saveRecord} onCancel={() => setEditingRecord(null)} />
               {activeResource === 'universities' && editingRecord && (
                 <div className="admin-programs-panel">
-                  <div className="admin-section-heading"><h3>Programs</h3><button className="admin-small-button" type="button" onClick={() => setEditingProgram(null)}>+ Add program</button></div>
+                  <div className="admin-section-heading"><h3>Programs</h3><button className="admin-small-button" type="button" onClick={() => { setEditingProgram(null); setShowProgramForm(true); }}>+ Add program</button></div>
                   <ul className="admin-program-list">
                     {(editingRecord.programs || []).map((program) => (
                       <li key={program.id}>
                         <span>{program.degree_name}{program.eligibility_pct ? ` · Min ${program.eligibility_pct}%` : ''}</span>
                         <span>
-                          <button className="admin-action admin-action--edit" type="button" onClick={() => setEditingProgram(program)}>Edit</button>
+                          <button className="admin-action admin-action--edit" type="button" onClick={() => { setEditingProgram(program); setShowProgramForm(true); }}>Edit</button>
                           <button className="admin-action admin-action--danger" type="button" onClick={() => deleteProgram(program)}>Delete</button>
                         </span>
                       </li>
                     ))}
                   </ul>
-                  {editingProgram && <ProgramForm key={formResetKey} program={editingProgram} onSave={saveProgram} onCancel={() => setEditingProgram(null)} />}
-                  {!editingProgram && <ProgramForm key={formResetKey} onSave={saveProgram} onCancel={() => setEditingProgram(null)} />}
+                  {showProgramForm && <ProgramForm key={`${editingProgram?.id || 'new'}-${formResetKey}`} program={editingProgram} onSave={saveProgram} onCancel={() => { setShowProgramForm(false); setEditingProgram(null); }} />}
                 </div>
               )}
             </div>}
