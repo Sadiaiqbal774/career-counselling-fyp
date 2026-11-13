@@ -10,6 +10,7 @@
  */
 export function hasPassword(user) {
   if (!user) return false;
+  if (typeof user.hasPassword === 'boolean') return user.hasPassword;
   const providers = user.app_metadata?.providers;
   if (Array.isArray(providers)) {
     return providers.includes('email');
@@ -28,4 +29,3 @@ export function hasPassword(user) {
 export function isStrongPassword(password) {
   return typeof password === 'string' && /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password);
 }
-

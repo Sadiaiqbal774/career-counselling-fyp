@@ -4,6 +4,7 @@ import joblib
 import pandas as pd
 from pathlib import Path
 import hashlib
+import hmac
 import json
 import secrets
 import re
@@ -99,6 +100,19 @@ SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").stri
 
 def hash_text(value):
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _recovery_answer_hash(answer, salt):
+    return hashlib.sha256(f"{salt}:{answer.strip().casefold()}".encode("utf-8")).hexdigest()
+
+
+def _recovery_row_by_email(email):
+    rows = supabase_admin_request(
+        "GET",
+        "/rest/v1/recovery_questions",
+        params={"email": f"eq.{email}", "select": "*", "limit": 1},
+    )
+    return rows[0] if rows else None
 
 
 def is_valid_email(email):
@@ -928,6 +942,153 @@ def auth_presence():
                 "logged_in": is_active,
             }
     return jsonify({"status": "ok", "active": is_active}), 200
+
+
+@app.route("/api/auth/recovery-question/setup", methods=["POST"])
+def setup_recovery_question():
+    payload = request.get_json(silent=True) or {}
+    user_id = str(payload.get("userId") or "").strip()
+    email = str(payload.get("email") or "").strip().lower()
+    question = str(payload.get("question") or "").strip()
+    answer = str(payload.get("answer") or "").strip()
+
+    if not user_id or not is_valid_email(email) or not question or not answer:
+        return jsonify({"message": "Recovery details are incomplete."}), 400
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        return jsonify({"message": "Recovery service is not configured."}), 503
+
+    try:
+        auth_user = supabase_admin_request("GET", f"/auth/v1/admin/users/{user_id}")
+        if str(auth_user.get("email") or "").strip().lower() != email:
+            return jsonify({"message": "Recovery details do not match the account."}), 400
+        salt = secrets.token_hex(16)
+        recovery_body = {
+            "user_id": user_id,
+            "email": email,
+            "question": question,
+            "answer_salt": salt,
+            "answer_hash": _recovery_answer_hash(answer, salt),
+            "failed_attempts": 0,
+            "locked_until": None,
+            "reset_token_hash": None,
+            "reset_token_expires_at": None,
+            "reset_token_used": False,
+        }
+        supabase_admin_request(
+            "PATCH",
+            "/rest/v1/recovery_questions",
+            body=recovery_body,
+            params={"user_id": f"eq.{user_id}"},
+        )
+        if not _recovery_row_by_email(email):
+            supabase_admin_request(
+                "POST",
+                "/rest/v1/recovery_questions",
+                body=recovery_body,
+            )
+        return jsonify({"message": "Recovery details saved."}), 200
+    except RuntimeError as error:
+        return jsonify({"message": str(error)}), 503
+
+
+@app.route("/api/auth/recovery-question", methods=["POST"])
+def get_recovery_question():
+    email = str((request.get_json(silent=True) or {}).get("email") or "").strip().lower()
+    if not is_valid_email(email):
+        return jsonify({"message": "Please enter a valid email address."}), 400
+    try:
+        row = _recovery_row_by_email(email)
+    except RuntimeError as error:
+        return jsonify({"message": str(error)}), 503
+    if not row:
+        return jsonify({"message": "No recovery question is configured for this account."}), 404
+    return jsonify({"question": row["question"]}), 200
+
+
+@app.route("/api/auth/recovery-question/verify", methods=["POST"])
+def verify_recovery_question():
+    payload = request.get_json(silent=True) or {}
+    email = str(payload.get("email") or "").strip().lower()
+    answer = str(payload.get("answer") or "").strip()
+    if not is_valid_email(email) or not answer:
+        return jsonify({"message": "Email and recovery answer are required."}), 400
+
+    try:
+        row = _recovery_row_by_email(email)
+        if not row:
+            return jsonify({"message": "Incorrect recovery answer."}), 401
+        locked_until = row.get("locked_until") or ""
+        if locked_until and locked_until > time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()):
+            return jsonify({"message": "Too many attempts. Try again later."}), 429
+        expected = _recovery_answer_hash(answer, row["answer_salt"])
+        if not hmac.compare_digest(expected, row["answer_hash"]):
+            failed_attempts = int(row.get("failed_attempts") or 0) + 1
+            lock_value = None
+            if failed_attempts >= 5:
+                lock_value = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + 900))
+                failed_attempts = 0
+            supabase_admin_request(
+                "PATCH",
+                "/rest/v1/recovery_questions",
+                body={"failed_attempts": failed_attempts, "locked_until": lock_value},
+                params={"user_id": f"eq.{row['user_id']}"},
+            )
+            return jsonify({"message": "Incorrect recovery answer."}), 401
+
+        recovery_token = secrets.token_urlsafe(32)
+        supabase_admin_request(
+            "PATCH",
+            "/rest/v1/recovery_questions",
+            body={
+                "failed_attempts": 0,
+                "locked_until": None,
+                "reset_token_hash": hash_text(recovery_token),
+                "reset_token_expires_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + 900)),
+                "reset_token_used": False,
+            },
+            params={"user_id": f"eq.{row['user_id']}"},
+        )
+        return jsonify({"recoveryToken": recovery_token}), 200
+    except RuntimeError as error:
+        return jsonify({"message": str(error)}), 503
+
+
+@app.route("/api/auth/recovery-question/complete", methods=["POST"])
+def complete_recovery_question():
+    payload = request.get_json(silent=True) or {}
+    recovery_token = str(payload.get("recoveryToken") or "").strip()
+    password = payload.get("newPassword") or ""
+    if not recovery_token or not is_strong_password(password):
+        return jsonify({"message": "Choose a strong new password."}), 400
+    try:
+        rows = supabase_admin_request(
+            "GET",
+            "/rest/v1/recovery_questions",
+            params={
+                "reset_token_hash": f"eq.{hash_text(recovery_token)}",
+                "reset_token_used": "eq.false",
+                "select": "*",
+                "limit": 1,
+            },
+        )
+        row = rows[0] if rows else None
+        expiry = row.get("reset_token_expires_at") if row else None
+        if not row or not expiry or expiry <= time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()):
+            return jsonify({"message": "The recovery session is invalid or expired."}), 401
+        supabase_admin_request(
+            "PUT",
+            f"/auth/v1/admin/users/{row['user_id']}",
+            body={"password": password},
+        )
+        supabase_admin_request(
+            "PATCH",
+            "/rest/v1/recovery_questions",
+            body={"reset_token_used": True, "reset_token_hash": None},
+            params={"user_id": f"eq.{row['user_id']}"},
+        )
+        return jsonify({"message": "Password reset successfully."}), 200
+    except RuntimeError as error:
+        return jsonify({"message": str(error)}), 503
 
 @app.route("/api/auth/login", methods=["POST"])
 def login():

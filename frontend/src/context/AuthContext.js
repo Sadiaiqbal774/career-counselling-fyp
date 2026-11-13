@@ -38,8 +38,8 @@ function getResetRedirect() {
 
 function getEmailVerificationRedirect() {
   return typeof window === 'undefined'
-    ? '/'
-    : `${window.location.origin}/`;
+    ? '/login'
+    : `${window.location.origin}/login`;
 }
 
 function shouldPingActiveUser(user) {
@@ -346,13 +346,26 @@ export function AuthProvider({ children }) {
     await updatePassword(newPassword);
   }, [updatePassword]);
 
-  const setPasswordForGoogleUser = useCallback(async ({ nonce, newPassword }) => {
+  const setPasswordForGoogleUser = useCallback(async ({ email, otpCode, newPassword }) => {
     ensureSupabaseConfigured();
     if (!isStrongPassword(newPassword)) {
       throw new Error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
     }
-    const { error } = await supabase.auth.updateUser({ password: newPassword, nonce });
-    if (error) throw error;
+
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    if (!normalizedEmail || !otpCode) {
+      throw new Error('Enter the verification code sent to your email.');
+    }
+
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      email: normalizedEmail,
+      token: otpCode.trim(),
+      type: 'email',
+    });
+    if (verifyError) throw new Error('The verification code is invalid or expired.');
+
+    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+    if (updateError) throw updateError;
 
     await supabase.auth.refreshSession();
     const { data: refreshedData } = await supabase.auth.getSession();

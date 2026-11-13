@@ -80,7 +80,7 @@ function ChangePassword() {
       return;
     }
     try {
-      await setPasswordForGoogleUser({ nonce: otpCode, newPassword: newPwd });
+      await setPasswordForGoogleUser({ email, otpCode, newPassword: newPwd });
       toast.success('Password set successfully.');
       setShowSetPassword(false);
     } catch (e) {
@@ -148,45 +148,45 @@ function ChangePassword() {
             <p className="muted-text">Set a strong new password for your account.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="auth-form">
-            {usesPassword ? (
+          {usesPassword ? (
+            <form onSubmit={handleSubmit} className="auth-form">
               <label className="auth-field">
                 <span>Current password</span>
                 <PasswordField value={oldPassword} onChange={(ev) => setOldPassword(ev.target.value)} required />
               </label>
-            ) : (
-              <>
-                <p className="muted-text">
-                  This account uses Google sign‑in and has no current password.
-                </p>
-                {!currentUser.emailConfirmed && (
-                  <p className="error">Your Google email is not verified. Please verify it first.</p>
-                )}
-                <button
-                  type="button"
-                  className="auth-secondary-button"
-                  disabled={!currentUser.emailConfirmed}
-                  onClick={() => setShowSetPassword(true)}
-                >
-                  Set a password
-                </button>
-              </>
-            )}
-            <label className="auth-field">
-              <span>New password</span>
-              <PasswordField value={password} onChange={(ev) => setPassword(ev.target.value)} required />
-            </label>
-            <label className="auth-field">
-              <span>Confirm password</span>
-              <PasswordField value={confirmPassword} onChange={(ev) => setConfirmPassword(ev.target.value)} required />
-            </label>
-            {error && <p className="auth-error">{error}</p>}
-            {message && <p className="auth-success">{message}</p>}
-            {alternativeMessage && <p className="auth-success">{alternativeMessage}</p>}
-            <button className="auth-primary-button" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Updating...' : 'Update password'}
-            </button>
-          </form>
+              <label className="auth-field">
+                <span>New password</span>
+                <PasswordField value={password} onChange={(ev) => setPassword(ev.target.value)} required />
+              </label>
+              <label className="auth-field">
+                <span>Confirm password</span>
+                <PasswordField value={confirmPassword} onChange={(ev) => setConfirmPassword(ev.target.value)} required />
+              </label>
+              {error && <p className="auth-error">{error}</p>}
+              {message && <p className="auth-success">{message}</p>}
+              {alternativeMessage && <p className="auth-success">{alternativeMessage}</p>}
+              <button className="auth-primary-button" type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Updating...' : 'Change password'}
+              </button>
+            </form>
+          ) : (
+            <div className="auth-form">
+              <p className="muted-text">
+                This account uses Google sign‑in and has no current password.
+              </p>
+              {!currentUser.emailConfirmed && (
+                <p className="auth-error">Your Google email is not verified. Please verify it first.</p>
+              )}
+              <button
+                type="button"
+                className="auth-primary-button"
+                disabled={!currentUser.emailConfirmed}
+                onClick={() => setShowSetPassword(true)}
+              >
+                Set a password
+              </button>
+            </div>
+          )}
           <button type="button" className="auth-secondary-button" onClick={tryAnotherWay}>
             Try another way (send reset link)
           </button>

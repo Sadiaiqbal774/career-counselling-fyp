@@ -40,12 +40,11 @@ function Register() {
 
     try {
       const result = await register({ name, email, password, recoveryQuestion, recoveryAnswer });
-      if (result?.requiresEmailVerification) {
-        setVerificationEmail(result.email);
-        setVerificationStep(true);
-      } else {
-        navigate(destination, { replace: true });
+      if (!result?.requiresEmailVerification) {
+        throw new Error('Email verification is required before signing in.');
       }
+      setVerificationEmail(result.email);
+      setVerificationStep(true);
     } catch (error) {
       setErrorMessage(error.message || 'Unable to create the account right now.');
     } finally {
