@@ -23,6 +23,7 @@ import AdminProtectedRoute from './components/AdminProtectedRoute';
 import ChatbotWidget from './components/ChatbotWidget';
 import { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
+import { readThemeSettings, applyTheme } from './lib/theme';
 
 function Header() {
   const location = useLocation();
@@ -101,20 +102,16 @@ function AppFooter() {
 
 function AppLayout() {
   const location = useLocation();
+  const { currentUser } = useAuth();
   const isAdminPortal = location.pathname.startsWith('/admin');
 
   useEffect(() => {
-    try {
-      const settings = JSON.parse(localStorage.getItem('career-guide-settings') || '{}');
-      const isDark = Boolean(settings.darkMode);
-      document.documentElement.classList.toggle('dark', isDark);
-      document.documentElement.classList.toggle('dark-mode', isDark);
-      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    } catch {
-      document.documentElement.classList.remove('dark', 'dark-mode');
-      document.documentElement.setAttribute('data-theme', 'light');
+    if (isAdminPortal) {
+      applyTheme(false);
+      return;
     }
-  }, []);
+    applyTheme(Boolean(readThemeSettings(currentUser?.id).darkMode));
+  }, [isAdminPortal, currentUser?.id]);
 
   return (
     <div className="app-shell">

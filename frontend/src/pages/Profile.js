@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import supabase from '../lib/supabase';
+import { readThemeSettings, saveThemeSettings, applyTheme } from '../lib/theme';
 import interestExamples from '../data/interestExamples.json';
 import { getProfileCompletion, saveUserProfile, readUserProfile } from '../data/userData';
 import './Profile.css';
@@ -23,16 +24,6 @@ const pakistaniCities = [
 ];
 const REQUIRED_FIELDS = { 1: ['fullName', 'email', 'phone', 'city', 'school'], 2: ['marks', 'intermediateMarks'] };
 const profileStorageKey = (userId) => `career-guide-profile-${userId}`;
-const SETTINGS_KEY = 'career-guide-settings';
-const DEFAULT_SETTINGS = { darkMode: false };
-
-function readSettings() {
-  try {
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') };
-  } catch {
-    return DEFAULT_SETTINGS;
-  }
-}
 
 function readLocalProfile(userId) {
   return readUserProfile(userId);
@@ -41,7 +32,7 @@ function readLocalProfile(userId) {
 function Profile() {
   const navigate = useNavigate();
   const { currentUser, logout = async () => {}, deleteAccount = async () => {} } = useAuth();
-  const [settings, setSettings] = useState(readSettings);
+  const [settings, setSettings] = useState(() => readThemeSettings(currentUser?.id));
   const [profile, setProfile] = useState(EMPTY_PROFILE);
   const [step, setStep] = useState(1);
   const [profileSaved, setProfileSaved] = useState(false);
@@ -50,17 +41,16 @@ function Profile() {
   const [showScoreInfo, setShowScoreInfo] = useState(false);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-      const isDark = Boolean(settings.darkMode);
-      document.documentElement.classList.toggle('dark', isDark);
-      document.documentElement.classList.toggle('dark-mode', isDark);
-      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    } catch {}
-  }, [settings]);
+    setSettings(readThemeSettings(currentUser?.id));
+  }, [currentUser?.id]);
 
   const updateSetting = (key, value) => {
-    setSettings((previous) => ({ ...previous, [key]: value }));
+    const next = { ...settings, [key]: value };
+    setSettings(next);
+    saveThemeSettings(currentUser?.id, next);
+    if (key === 'darkMode') {
+      applyTheme(Boolean(value));
+    }
     toast.success('Settings saved.');
   };
 

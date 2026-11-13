@@ -25,7 +25,7 @@ describe('CareerGuide App Redesign Verification', () => {
   });
 
   test('Requirement 1: Root theme persistence and dark-mode toggle', async () => {
-    localStorage.setItem('career-guide-settings', JSON.stringify({ darkMode: true }));
+    localStorage.setItem('career-guide-settings:guest', JSON.stringify({ darkMode: true }));
     render(<App />);
 
     expect(document.documentElement.classList.contains('dark')).toBe(true);
