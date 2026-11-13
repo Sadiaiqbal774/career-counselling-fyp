@@ -3366,3 +3366,27 @@ html.dark-mode .app-footer__admin-link {
     opacity: 1;
   }
 }
+/* Dark mode: University Recommender cards */
+html.dark-mode .summary-stats,
+html.dark-mode .career-header {
+  background: linear-gradient(135deg, #38291f 0%, #2a1f18 100%) !important;
+  border-color: #3d2f26 !important;
+}
+
+/* Dark mode: University Recommender badges and links */
+html.dark-mode .eligible-badge.yes {
+  background: rgba(34, 197, 94, 0.18) !important;
+  color: #86efac !important;
+}
+html.dark-mode .eligible-badge.no {
+  background: rgba(239, 68, 68, 0.18) !important;
+  color: #fca5a5 !important;
+}
+html.dark-mode .eligible-badge.unknown {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #e5e7eb !important;
+}
+html.dark-mode .uni-link.secondary {
+  background: rgba(34, 197, 94, 0.15) !important;
+  color: #86efac !important;
+}
