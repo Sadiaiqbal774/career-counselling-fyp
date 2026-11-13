@@ -7,6 +7,32 @@ import './AdminDashboard.css';
 
 const API_URL = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000').trim().replace(/\/+$/, '');
 
+const PAKISTAN_CITIES = [
+  'Abbottabad', 'Attock', 'Awaran',
+  'Badin', 'Bagh', 'Bahawalnagar', 'Bahawalpur', 'Bannu', 'Barkhan', 'Batgram', 'Bhakkar', 'Bhalwal', 'Bhitshah', 'Burewala',
+  'Chagai', 'Chakdara', 'Chakwal', 'Chaman', 'Charsadda', 'Chiniot', 'Chishtian', 'Chitral',
+  'Dadu', 'Daharki', 'Daska', 'Dera Bugti', 'Dera Ghazi Khan', 'Dera Ismail Khan', 'Dina', 'Dinga',
+  'Faisalabad', 'Fateh Jang',
+  'Ghotki', 'Gilgit', 'Gojra', 'Gujar Khan', 'Gujranwala', 'Gujrat', 'Gwadar',
+  'Hafizabad', 'Hala', 'Hangu', 'Haripur', 'Haroonabad', 'Hasilpur', 'Haveli', 'Havelian', 'Hub', 'Hyderabad',
+  'Islamabad',
+  'Jacobabad', 'Jahanian', 'Jalalpur', 'Jampur', 'Jamshoro', 'Jaranwala', 'Jauharabad', 'Jhang', 'Jhelum',
+  'Kalat', 'Kamalia', 'Kamber Ali Khan', 'Kamoke', 'Kandhkot', 'Karachi', 'Karak', 'Kashmore', 'Kasur', 'Khairpur', 'Khanewal', 'Khanpur', 'Kharian', 'Khushab', 'Khuzdar', 'Kohat', 'Kohlu', 'Kot Addu', 'Kotli', 'Kotri',
+  'Lahore', 'Lakki Marwat', 'Lalamusa', 'Larkana', 'Lasbela', 'Layyah', 'Liaquatpur', 'Lodhran', 'Loralai',
+  'Mailsi', 'Malakand', 'Mandi Bahauddin', 'Mansehra', 'Mardan', 'Matiari', 'Mian Channu', 'Mianwali', 'Mirpur', 'Mirpur Khas', 'Moro', 'Multan', 'Muridke', 'Murree', 'Muzaffarabad', 'Muzaffargarh',
+  'Nankana Sahib', 'Narowal', 'Naseerabad', 'Naushahro Feroze', 'Nawabshah', 'Nowshera',
+  'Okara',
+  'Pakpattan', 'Panjgur', 'Pasrur', 'Pattoki', 'Peshawar', 'Pishin',
+  'Quetta',
+  'Rahim Yar Khan', 'Raiwind', 'Rajanpur', 'Rawalakot', 'Rawalpindi', 'Rohri',
+  'Sadiqabad', 'Sahiwal', 'Sambrial', 'Samundri', 'Sanghar', 'Sargodha', 'Shahdadkot', 'Shahdadpur', 'Shaheed Benazirabad', 'Sheikhupura', 'Shikarpur', 'Shorkot', 'Sialkot', 'Sibi', 'Skardu', 'Sohawa', 'Sukkur', 'Swabi', 'Swat',
+  'Talagang', 'Tando Adam', 'Tando Allahyar', 'Tandojam', 'Tank', 'Taunsa', 'Taxila', 'Timergara', 'Toba Tek Singh', 'Topi', 'Turbat',
+  'Umerkot', 'Usta Muhammad', 'Uthal',
+  'Vehari',
+  'Wah Cantt', 'Wazirabad',
+  'Zhob', 'Ziarat'
+];
+
 const tabs = [
   ['dashboard', 'Dashboard'],
   ['users', 'Users'],
@@ -2060,7 +2086,18 @@ function EntityForm({ tab, record, onSave, onCancel }) {
   return <form className="admin-edit-form" onSubmit={submit}>
     {tab === 'universities' && <>
       <label>Name <span style={{ color: '#dc2626' }}>*</span><input style={submitted && !isFilled(form.name) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="e.g. National University of Sciences and Technology" required /></label>
-      <label>City <span style={{ color: '#dc2626' }}>*</span><input style={submitted && !isFilled(form.city) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.city} onChange={(event) => update('city', event.target.value)} placeholder="e.g. Islamabad" required /></label>
+      <label>City <span style={{ color: '#dc2626' }}>*</span>
+        <select
+          style={submitted && !isFilled(form.city) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined}
+          value={form.city}
+          onChange={(event) => update('city', event.target.value)}
+          required
+        >
+          <option value="">Select city</option>
+          {PAKISTAN_CITIES.map((city) => <option key={city} value={city}>{city}</option>)}
+          {form.city && !PAKISTAN_CITIES.includes(form.city) && <option value={form.city}>{form.city}</option>}
+        </select>
+      </label>
       <label>Province <span style={{ color: '#dc2626' }}>*</span><select style={submitted && !isFilled(form.province) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.province} onChange={(event) => update('province', event.target.value)} required><option value="">Select province or region</option>{['All Pakistan', 'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Azad Jammu & Kashmir', 'Gilgit-Baltistan'].map((province) => <option key={province}>{province}</option>)}{form.province && !['All Pakistan', 'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory', 'Azad Jammu & Kashmir', 'Gilgit-Baltistan'].includes(form.province) && <option>{form.province}</option>}</select></label>
       <label>Sector <span style={{ color: '#dc2626' }}>*</span><select style={submitted && !isFilled(form.sector) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} value={form.sector} onChange={(event) => update('sector', event.target.value)} required><option value="">Select sector</option><option>Public</option><option>Private</option></select></label>
       <label>Website URL <span style={{ color: '#dc2626' }}>*</span><span className="admin-field-help">e.g. university.edu.pk (https:// is added automatically if omitted)</span><input style={submitted && !isFilled(form.website) ? { borderColor: '#dc2626', backgroundColor: '#fef2f2' } : undefined} type="text" value={form.website} onChange={(event) => update('website', event.target.value)} onBlur={(event) => update('website', normalizeUrl(event.target.value))} placeholder="https://university.edu.pk" required /></label>
@@ -4339,7 +4376,18 @@ function AdminDashboard() {
               <EntityForm key={`${activeResource}-${formResetKey}`} tab={activeResource} record={editingRecord} onSave={saveRecord} onCancel={() => setEditingRecord(null)} />
               {activeResource === 'universities' && (
                 <div className="admin-programs-panel">
-                  <div className="admin-section-heading"><h3>Programs</h3><button className="admin-small-button" type="button" onClick={() => { setEditingProgram(null); setShowProgramForm(true); }}>+ Add program</button></div>
+                  <div className="admin-section-heading">
+                    <h3>Programs</h3>
+                    {!showProgramForm && (
+                      <button
+                        className="admin-small-button"
+                        type="button"
+                        onClick={() => { setEditingProgram(null); setShowProgramForm(true); }}
+                      >
+                        {((editingRecord ? editingRecord.programs : newUniversityPrograms) || []).length > 0 ? 'Add another program' : 'Add program'}
+                      </button>
+                    )}
+                  </div>
                   <ul className="admin-program-list">
                     {((editingRecord ? editingRecord.programs : newUniversityPrograms) || []).map((program) => (
                       <li key={program.id}>
