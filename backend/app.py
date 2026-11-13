@@ -1661,10 +1661,6 @@ def admin_resource(resource):
             ("provinces", "Province"),
             ("basis", "Basis"),
             ("provider_type", "Provider type"),
-            ("eligibility_raw", "Eligibility details"),
-            ("income_cap_pkr", "Income cap"),
-            ("min_merit_pct", "Minimum merit %"),
-            ("coverage", "Coverage"),
             ("source_url", "Source URL"),
         ]
         empty_fields = [label for key, label in required_fields if str(payload.get(key, "")).strip() == ""]
@@ -1746,10 +1742,6 @@ def admin_update_resource(resource, record_id):
             ("provinces", "Province"),
             ("basis", "Basis"),
             ("provider_type", "Provider type"),
-            ("eligibility_raw", "Eligibility details"),
-            ("income_cap_pkr", "Income cap"),
-            ("min_merit_pct", "Minimum merit %"),
-            ("coverage", "Coverage"),
             ("source_url", "Source URL"),
         ]
         empty_fields = [label for key, label in required_fields if str(payload.get(key, "")).strip() == ""]
