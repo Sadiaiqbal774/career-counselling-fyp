@@ -152,10 +152,26 @@ def _send_verification_email(email, name, token):
         f"Hi {name},\n\nVerify your CareerGuide account within one hour:\n{verification_url}\n\n"
         "This link can only be used once."
     )
-    with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", "587")), timeout=15) as smtp:
-        smtp.starttls()
-        smtp.login(user, password)
-        smtp.send_message(message)
+
+    raw_port = int(os.environ.get("SMTP_PORT", "2525"))
+    ports_to_try = [raw_port]
+    for fallback_p in [2525, 587]:
+        if fallback_p not in ports_to_try:
+            ports_to_try.append(fallback_p)
+
+    last_exc = None
+    for p in ports_to_try:
+        try:
+            with smtplib.SMTP(host, p, timeout=12) as smtp:
+                smtp.starttls()
+                smtp.login(user, password)
+                smtp.send_message(message)
+                return
+        except Exception as e:
+            last_exc = e
+            app.logger.warning("SMTP attempt on port %s failed: %s", p, e)
+
+    raise RuntimeError(f"Unable to send verification email via Brevo ({last_exc}).")
 
 
 def _recovery_answer_hash(answer, salt):
@@ -1023,17 +1039,21 @@ def register():
         )
         try:
             _send_verification_email(email, name, token)
-        except Exception:
+        except Exception as email_err:
+            app.logger.exception("Failed to deliver verification email: %s", email_err)
             supabase_admin_request(
                 "DELETE",
                 "/rest/v1/pending_registrations",
                 params={"token_hash": f"eq.{hash_text(token)}"},
             )
-            raise
+            return jsonify({"message": f"Unable to deliver verification email: {str(email_err)}"}), 503
     except RuntimeError as error:
         return jsonify({"message": str(error)}), 503
-    except smtplib.SMTPException:
-        return jsonify({"message": "Unable to send the verification email. Please try again."}), 503
+    except smtplib.SMTPException as error:
+        return jsonify({"message": f"SMTP error: {str(error)}"}), 503
+    except Exception as error:
+        app.logger.exception("Registration error: %s", error)
+        return jsonify({"message": f"Registration failed: {str(error)}"}), 500
 
     return jsonify({"requiresEmailVerification": True, "email": email}), 202
 
