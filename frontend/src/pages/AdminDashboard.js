@@ -3236,23 +3236,6 @@ function AdminDashboard() {
         }));
         setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
       }
-          id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-          type: nextBlocked ? 'admin_user_blocked' : 'admin_user_unblocked',
-          details: {
-            userId: editingUser.id,
-            userName: editingUser.name,
-            email: editingUser.email,
-            action: nextBlocked ? 'Blocked account' : 'Unblocked account',
-          },
-          createdAt: new Date().toISOString(),
-        };
-        persistAdminAction(actionItem);
-        setDashboardData((prev) => ({
-          ...prev,
-          activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
-        }));
-        setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
-      }
       setEditingUser(null);
       setOriginalUser(null);
       setNotice('User updated successfully.');
