@@ -35,6 +35,9 @@ This project deploys across two free services (no credit card required for eithe
   `recovery_questions` table used by the backend for salted recovery-answer hashes and one-time
   recovery sessions. The backend service-role key is required for these operations and is never
   exposed to the frontend.
+- Run `backend/sql/pending-registrations.sql` in the Supabase SQL editor. Configure the backend
+  Brevo SMTP variables and a generated `PENDING_PASSWORD_ENCRYPTION_KEY`. Registration data stays
+  pending until the single-use link is consumed; no Supabase Auth user is created beforehand.
 
 ### Not deployed
 - `frontend/server/` (the Express/Postgres setup) is not used anywhere by the React app — nothing in `frontend/src` calls it. It doesn't need to be deployed.

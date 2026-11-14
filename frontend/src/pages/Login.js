@@ -1,19 +1,33 @@
-import { useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PasswordField from '../components/PasswordField';
 import './Auth.css';
 
 function Login() {
-  const { login, initialized, isAuthenticated, signInWithGoogle } = useAuth();
+  const { login, initialized, isAuthenticated, signInWithGoogle, verifyRegistration } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const destination = location.state?.from?.pathname || '/dashboard';
+
+  useEffect(() => {
+    const token = searchParams.get('verification_token');
+    if (!token) return;
+    setIsSubmitting(true);
+    verifyRegistration(token)
+      .then(() => setErrorMessage('Email verified. Your account is ready. Sign in to continue.'))
+      .catch((error) => setErrorMessage(error.message || 'Unable to verify the registration.'))
+      .finally(() => {
+        setSearchParams({}, { replace: true });
+        setIsSubmitting(false);
+      });
+  }, [searchParams, setSearchParams, verifyRegistration]);
 
   if (initialized && isAuthenticated) {
     return <Navigate to={destination} replace />;

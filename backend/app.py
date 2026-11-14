@@ -11,9 +11,12 @@ import re
 import os
 import time
 import csv
-from urllib.parse import urlencode
+import smtplib
+from email.message import EmailMessage
+from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
+from cryptography.fernet import Fernet, InvalidToken
 from supabase_auth import (
     SupabaseAuthError,
     admin_email_allowlist,
@@ -96,10 +99,63 @@ SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "").strip()
 ADMIN_SESSION_TTL = 60 * 60 * 8
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000").strip().rstrip("/")
+PENDING_REGISTRATION_TTL = 60 * 60
+PENDING_PASSWORD_ENCRYPTION_KEY = os.environ.get("PENDING_PASSWORD_ENCRYPTION_KEY", "").strip()
 
 
 def hash_text(value):
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _pending_password_hash(password, salt):
+    return hashlib.scrypt(
+        password.encode("utf-8"),
+        salt=salt,
+        n=16384,
+        r=8,
+        p=1,
+        dklen=32,
+    ).hex()
+
+
+def _pending_password_cipher():
+    if not PENDING_PASSWORD_ENCRYPTION_KEY:
+        raise RuntimeError("PENDING_PASSWORD_ENCRYPTION_KEY is required for email verification.")
+    try:
+        return Fernet(PENDING_PASSWORD_ENCRYPTION_KEY.encode("ascii"))
+    except (ValueError, TypeError) as error:
+        raise RuntimeError("PENDING_PASSWORD_ENCRYPTION_KEY is invalid.") from error
+
+
+def _cleanup_pending_registrations():
+    supabase_admin_request(
+        "DELETE",
+        "/rest/v1/pending_registrations",
+        params={"expires_at": f"lt.{time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}"},
+    )
+
+
+def _send_verification_email(email, name, token):
+    host = os.environ.get("SMTP_HOST", "smtp-relay.brevo.com").strip()
+    user = os.environ.get("SMTP_USER", "").strip()
+    password = os.environ.get("SMTP_PASS", "").strip()
+    if not host or not user or not password:
+        raise RuntimeError("Brevo SMTP is not configured.")
+
+    verification_url = f"{FRONTEND_URL}/login?verification_token={quote(token, safe='')}"
+    message = EmailMessage()
+    message["Subject"] = "Verify your CareerGuide account"
+    message["From"] = os.environ.get("SMTP_FROM_EMAIL", user).strip()
+    message["To"] = email
+    message.set_content(
+        f"Hi {name},\n\nVerify your CareerGuide account within one hour:\n{verification_url}\n\n"
+        "This link can only be used once."
+    )
+    with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", "587")), timeout=15) as smtp:
+        smtp.starttls()
+        smtp.login(user, password)
+        smtp.send_message(message)
 
 
 def _recovery_answer_hash(answer, salt):
@@ -681,7 +737,7 @@ def load_local_assessment_records():
     return output
 
 
-def supabase_admin_request(method, path, body=None, params=None):
+def supabase_admin_request(method, path, body=None, params=None, extra_headers=None):
     if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
         raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for admin user management.")
 
@@ -695,6 +751,8 @@ def supabase_admin_request(method, path, body=None, params=None):
         "Content-Type": "application/json",
         "User-Agent": "CareerCounsellingFYP-Backend/1.0",
     }
+    if extra_headers:
+        headers.update(extra_headers)
     data = json.dumps(body).encode("utf-8") if body is not None else None
     admin_request = Request(url, data=data, headers=headers, method=method)
 
@@ -891,39 +949,148 @@ def register():
             "Password must contain uppercase, lowercase, number and special character."
         }), 400
 
-    users = load_users()
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        return jsonify({"message": "Registration service is not configured."}), 503
 
-    if any(user["email"] == email for user in users):
-        return jsonify({
-            "message":
-            "An account with this email already exists."
-        }), 409
+    try:
+        _cleanup_pending_registrations()
+        if any((user.get("email") or "").strip().lower() == email for user in list_supabase_users(force_refresh=True)):
+            return jsonify({"message": "An account with this email already exists."}), 409
 
-    user = {
-        "id": secrets.token_hex(12),
-        "name": name,
-        "email": email,
-        "passwordHash": hash_text(password),
-        "securityQuestion": security_question,
-        "securityAnswerHash": hash_text(
-            security_answer.lower()
-        ),
-        "authProvider": "local",
-        "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-    }
+        pending = supabase_admin_request(
+            "GET",
+            "/rest/v1/pending_registrations",
+            params={"email": f"eq.{email}", "select": "id", "limit": 1},
+        )
+        if pending:
+            return jsonify({"message": "A verification email has already been sent for this email."}), 409
 
-    users.append(user)
-    save_users(users)
+        token = secrets.token_urlsafe(32)
+        password_salt = secrets.token_bytes(16)
+        password_ciphertext = _pending_password_cipher().encrypt(password.encode("utf-8")).decode("ascii")
+        pending_body = {
+            "name": name,
+            "email": email,
+            "password_ciphertext": password_ciphertext,
+            "password_salt": password_salt.hex(),
+            "password_hash": _pending_password_hash(password, password_salt),
+            "security_question": security_question,
+            "security_answer_ciphertext": _pending_password_cipher().encrypt(
+                security_answer.encode("utf-8")
+            ).decode("ascii"),
+            "token_hash": hash_text(token),
+            "expires_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + PENDING_REGISTRATION_TTL)),
+        }
+        supabase_admin_request(
+            "POST",
+            "/rest/v1/pending_registrations",
+            body=pending_body,
+            extra_headers={"Prefer": "return=minimal"},
+        )
+        try:
+            _send_verification_email(email, name, token)
+        except Exception:
+            supabase_admin_request(
+                "DELETE",
+                "/rest/v1/pending_registrations",
+                params={"token_hash": f"eq.{hash_text(token)}"},
+            )
+            raise
+    except RuntimeError as error:
+        return jsonify({"message": str(error)}), 503
+    except smtplib.SMTPException:
+        return jsonify({"message": "Unable to send the verification email. Please try again."}), 503
 
-    token = secrets.token_urlsafe(24)
-    active_sessions[token] = user["id"]
-    active_user_presence[str(user["id"])] = {"last_seen": time.time(), "logged_in": True}
-    active_user_presence[user["email"].lower()] = {"last_seen": time.time(), "logged_in": True}
+    return jsonify({"requiresEmailVerification": True, "email": email}), 202
 
-    return jsonify({
-        "user": sanitize_user(user),
-        "token": token
-    }), 201
+
+@app.route("/api/auth/resend-verification", methods=["POST"])
+def resend_registration_verification():
+    email = str((request.get_json(silent=True) or {}).get("email") or "").strip().lower()
+    if not is_valid_email(email):
+        return jsonify({"message": "Please use a valid email address."}), 400
+    try:
+        _cleanup_pending_registrations()
+        rows = supabase_admin_request(
+            "GET",
+            "/rest/v1/pending_registrations",
+            params={"email": f"eq.{email}", "select": "*", "limit": 1},
+        )
+        if not rows:
+            return jsonify({"message": "This registration has expired. Please create the account again."}), 404
+        token = secrets.token_urlsafe(32)
+        supabase_admin_request(
+            "PATCH",
+            "/rest/v1/pending_registrations",
+            body={
+                "token_hash": hash_text(token),
+                "expires_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + PENDING_REGISTRATION_TTL)),
+            },
+            params={"id": f"eq.{rows[0]['id']}"},
+        )
+        _send_verification_email(email, rows[0]["name"], token)
+    except (RuntimeError, smtplib.SMTPException) as error:
+        return jsonify({"message": str(error) or "Unable to resend verification email."}), 503
+    return jsonify({"message": "A new verification email has been sent."}), 200
+
+
+@app.route("/api/auth/verify-registration", methods=["POST"])
+def verify_registration():
+    token = str((request.get_json(silent=True) or {}).get("token") or "").strip()
+    if not token:
+        return jsonify({"message": "Verification token is required."}), 400
+    try:
+        _cleanup_pending_registrations()
+        rows = supabase_admin_request(
+            "DELETE",
+            "/rest/v1/pending_registrations",
+            params={
+                "token_hash": f"eq.{hash_text(token)}",
+                "expires_at": f"gt.{time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}",
+            },
+            extra_headers={"Prefer": "return=representation"},
+        )
+        pending = rows[0] if rows else None
+        if not pending:
+            return jsonify({"message": "This verification link is invalid, expired, or already used."}), 400
+
+        password = _pending_password_cipher().decrypt(pending["password_ciphertext"].encode("ascii")).decode("utf-8")
+        if not hmac.compare_digest(
+            _pending_password_hash(password, bytes.fromhex(pending["password_salt"])),
+            pending["password_hash"],
+        ):
+            return jsonify({"message": "The pending registration is invalid."}), 400
+
+        user = supabase_admin_request(
+            "POST",
+            "/auth/v1/admin/users",
+            body={
+                "email": pending["email"],
+                "password": password,
+                "email_confirm": True,
+                "user_metadata": {"name": pending["name"]},
+            },
+        )
+        security_answer = _pending_password_cipher().decrypt(
+            pending["security_answer_ciphertext"].encode("ascii")
+        ).decode("utf-8")
+        salt = secrets.token_hex(16)
+        supabase_admin_request(
+            "POST",
+            "/rest/v1/recovery_questions",
+            body={
+                "user_id": user["id"],
+                "email": pending["email"],
+                "question": pending["security_question"],
+                "answer_salt": salt,
+                "answer_hash": _recovery_answer_hash(security_answer, salt),
+                "failed_attempts": 0,
+                "reset_token_used": False,
+            },
+        )
+    except (RuntimeError, InvalidToken, UnicodeDecodeError, ValueError) as error:
+        return jsonify({"message": str(error) or "Unable to verify the registration."}), 503
+    return jsonify({"message": "Email verified. Your account is ready to use."}), 201
 
 
 @app.route("/api/auth/presence", methods=["POST"])

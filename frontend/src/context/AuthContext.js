@@ -36,12 +36,6 @@ function getResetRedirect() {
     : `${window.location.origin}/reset-password`;
 }
 
-function getEmailVerificationRedirect() {
-  return typeof window === 'undefined'
-    ? '/login'
-    : `${window.location.origin}/login`;
-}
-
 function shouldPingActiveUser(user) {
   if (!user?.id && !user?.email) return false;
   if (typeof window !== 'undefined') {
@@ -150,42 +144,20 @@ export function AuthProvider({ children }) {
       throw new Error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
     }
 
-    const { data, error } = await supabase.auth.signUp({
-      email: normalizedEmail,
-      password,
-      options: {
-        data: { name: name.trim() },
-        emailRedirectTo: getEmailVerificationRedirect(),
-      },
+    const response = await fetch(`${API_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: name.trim(),
+        email: normalizedEmail,
+        password,
+        securityQuestion: recoveryQuestion,
+        securityAnswer: recoveryAnswer,
+      }),
     });
-    if (error) throw error;
-
-    if (data.user?.identities && data.user.identities.length === 0) {
-      throw new Error('This email is already registered. Please sign in instead.');
-    }
-
-    // Save recovery question whether or not a session was created
-    if (data.user?.id && recoveryQuestion && recoveryAnswer) {
-      const setupResponse = await fetch(`${API_URL}/api/auth/recovery-question/setup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: data.user.id,
-          email: normalizedEmail,
-          question: recoveryQuestion,
-          answer: recoveryAnswer,
-        }),
-      });
-      const setupResult = await setupResponse.json().catch(() => ({}));
-      if (!setupResponse.ok) throw new Error(setupResult.message || 'Unable to save recovery details.');
-    }
-
-    // Clear any session returned by Supabase so signup never continues as an
-    // authenticated user before the verification step is complete.
-    const { error: signOutError } = await supabase.auth.signOut();
-    if (signOutError) throw signOutError;
-
-    return { requiresEmailVerification: true, email: normalizedEmail };
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.message || 'Unable to start registration.');
+    return result;
   }, []);
 
   const login = useCallback(async ({ email, password }) => {
@@ -254,13 +226,24 @@ export function AuthProvider({ children }) {
   }, []);
 
   const resendVerification = useCallback(async (email) => {
-    ensureSupabaseConfigured();
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email: email.trim().toLowerCase(),
-      options: { emailRedirectTo: getEmailVerificationRedirect() },
+    const response = await fetch(`${API_URL}/api/auth/resend-verification`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim().toLowerCase() }),
     });
-    if (error) throw error;
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.message || 'Unable to resend verification email.');
+  }, []);
+
+  const verifyRegistration = useCallback(async (token) => {
+    const response = await fetch(`${API_URL}/api/auth/verify-registration`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.message || 'Unable to verify the registration.');
+    return result;
   }, []);
 
   const verifySignupCode = useCallback(async (email, token) => {
@@ -419,6 +402,7 @@ export function AuthProvider({ children }) {
     logout,
     signInWithGoogle,
     resendVerification,
+    verifyRegistration,
     verifySignupCode,
     resetPassword,
     updatePassword,
@@ -442,6 +426,7 @@ export function AuthProvider({ children }) {
     logout,
     signInWithGoogle,
     resendVerification,
+    verifyRegistration,
     verifySignupCode,
     resetPassword,
     updatePassword,
