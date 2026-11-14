@@ -1799,9 +1799,9 @@ def admin_update_user(user_id):
         updated = supabase_admin_request("PUT", f"/auth/v1/admin/users/{user_id}", body=update_body)
         invalidate_supabase_users_cache()
         if will_block is not None:
-            log_activity("admin_user_blocked" if will_block else "admin_user_unblocked", {"userId": user_id, "email": email})
+            log_activity("admin_user_blocked" if will_block else "admin_user_unblocked", {"userId": user_id, "email": email, "userName": name})
         else:
-            log_activity("admin_user_updated", {"userId": user_id, "email": email})
+            log_activity("admin_user_updated", {"userId": user_id, "email": email, "userName": name})
 
         return jsonify({"user": sanitize_supabase_user(updated)}), 200
     except Exception as error:
@@ -1821,12 +1821,27 @@ def admin_delete_user(user_id):
         return refusal
 
     # 1. First check if user exists in local users.json store
+    user_name = None
+    user_email = None
     users = load_users()
+    local_target = next((entry for entry in users if str(entry.get("id")) == str(user_id)), None)
+    if local_target:
+        user_name = local_target.get("name")
+        user_email = local_target.get("email")
+    elif SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
+        try:
+            curr = supabase_admin_request("GET", f"/auth/v1/admin/users/{user_id}")
+            if curr:
+                user_email = curr.get("email")
+                user_name = (curr.get("user_metadata") or {}).get("name")
+        except Exception:
+            pass
+
     remaining_users = [entry for entry in users if str(entry.get("id")) != str(user_id)]
     if len(remaining_users) < len(users):
         save_users(remaining_users)
         invalidate_supabase_users_cache()
-        log_activity("admin_user_deleted", {"userId": user_id})
+        log_activity("admin_user_deleted", {"userId": user_id, "userName": user_name, "email": user_email})
         return jsonify({"message": "User deleted successfully."}), 200
 
     # 2. Otherwise delete via Supabase if configured
@@ -1842,7 +1857,7 @@ def admin_delete_user(user_id):
             except Exception:
                 pass
 
-        log_activity("admin_user_deleted", {"userId": user_id})
+        log_activity("admin_user_deleted", {"userId": user_id, "userName": user_name, "email": user_email})
         return jsonify({"message": "User deleted successfully."}), 200
     except Exception as error:
         return jsonify({"message": str(error)}), 500

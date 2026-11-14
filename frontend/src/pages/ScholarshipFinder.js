@@ -105,6 +105,11 @@ function ScholarshipFinder() {
   const [userProfile, setUserProfile] = useState(null);
   const [quizScores, setQuizScores] = useState({});
   const [bookmarkTick, setBookmarkTick] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(12);
+
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [search, selectedRegion, marks, onlyEligible]);
 
   const applyCustomOrdering = (items) => {
     const targetName = "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)";
@@ -443,8 +448,33 @@ function ScholarshipFinder() {
 
       {!loading && !fetchError && (
         <>
-          <div style={gridStyle}>{filteredScholarships.map((s, i) => renderCard(s, s.id || i))}</div>
+          <div style={gridStyle}>
+            {filteredScholarships.slice(0, visibleCount).map((s, i) => renderCard(s, s.id || i))}
+          </div>
           {filteredScholarships.length === 0 && <p style={{ marginTop: "24px" }}>No scholarships match your filter criteria.</p>}
+          {visibleCount < filteredScholarships.length && (
+            <div style={{ textAlign: "center", marginTop: "36px", marginBottom: "20px" }}>
+              <button
+                type="button"
+                onClick={() => setVisibleCount((prev) => prev + 12)}
+                className="scholarship-show-more-btn"
+                style={{
+                  padding: "12px 28px",
+                  borderRadius: "10px",
+                  border: "1.5px solid var(--accent, #c17b3f)",
+                  background: "var(--surface, #ffffff)",
+                  color: "var(--accent, #c17b3f)",
+                  fontWeight: 700,
+                  fontSize: "15px",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                }}
+              >
+                Show More Scholarships ({filteredScholarships.length - visibleCount} remaining) ↓
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>

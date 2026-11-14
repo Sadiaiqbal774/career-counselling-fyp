@@ -1439,14 +1439,8 @@ function SystemReportsView({ records, users = [], assessments = [], chatbot = []
                     resolvedName = local.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                   }
 
-                  let displayUser = 'Registered Student';
-                  if (resolvedName && rawEmail) {
-                    displayUser = resolvedName.includes('@') ? rawEmail : `${resolvedName} (${rawEmail})`;
-                  } else if (resolvedName) {
-                    displayUser = resolvedName;
-                  } else if (rawEmail) {
-                    displayUser = rawEmail;
-                  }
+                  let displayUser = resolvedName || (rawEmail ? rawEmail.split('@')[0] : 'Visitor / Student');
+                  let displayEmail = rawEmail || (rawUid ? users.find((u) => String(u.id) === String(rawUid))?.email : null);
 
                   return (
                     <tr key={record.id || `${eventType}-${record.timestamp}`}>
@@ -1460,8 +1454,13 @@ function SystemReportsView({ records, users = [], assessments = [], chatbot = []
                           </span>
                         </div>
                       </td>
-                      <td style={{ fontWeight: 600, color: 'var(--ink)' }}>
-                        {displayUser}
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <strong style={{ fontWeight: 600, color: 'var(--ink)', fontSize: '0.94rem' }}>{displayUser}</strong>
+                          {displayEmail && (
+                            <span style={{ fontSize: '0.8rem', color: 'var(--ink-muted)' }}>{displayEmail}</span>
+                          )}
+                        </div>
                       </td>
                       <td style={{ whiteSpace: 'nowrap', color: 'var(--ink-muted)', fontSize: '0.85rem' }}>
                         {formatDateTime(dateValue(record))}
@@ -2741,14 +2740,25 @@ function MonitoringTable({ tab, records, users = [], assessmentFilter: externalF
               </tr>
             </thead>
             <tbody>
-              {visibleRecords.map((record) => (
-                <tr key={record.id}>
-                  <td>{getUserDisplayName(record, users)}</td>
-                  <td className="admin-table__message"><ExpandableCell value={record.message} previewLength={80} /></td>
-                  <td className="admin-table__message">{record.response ? <ExpandableCell value={record.response} previewLength={80} /> : <StatusPill tone="muted">No reply matched</StatusPill>}</td>
-                  <td>{formatDateTime(dateValue(record))}</td>
-                </tr>
-              ))}
+              {visibleRecords.map((record) => {
+                const name = getUserDisplayName(record, users);
+                const email = record.userEmail || record.email || record.user?.email || (users.find((u) => String(u.id) === String(record.userId))?.email);
+                return (
+                  <tr key={record.id}>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <strong style={{ color: 'var(--ink)', fontSize: '0.94rem' }}>{name}</strong>
+                        {email && (
+                          <span style={{ fontSize: '0.8rem', color: 'var(--ink-muted)' }}>{email}</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="admin-table__message"><ExpandableCell value={record.message} previewLength={80} /></td>
+                    <td className="admin-table__message">{record.response ? <ExpandableCell value={record.response} previewLength={80} /> : <StatusPill tone="muted">No reply matched</StatusPill>}</td>
+                    <td>{formatDateTime(dateValue(record))}</td>
+                  </tr>
+                );
+              })}
               {visibleRecords.length === 0 && (
                 <tr>
                   <td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: 'var(--ink-muted)' }}>
@@ -2774,6 +2784,28 @@ function MonitoringTable({ tab, records, users = [], assessmentFilter: externalF
     );
   }
   return <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Event type</th><th>Timestamp</th><th>Details</th></tr></thead><tbody>{records.map((record) => <tr key={record.id}><td>{record.type || record.eventType || '-'}</td><td>{dateValue(record)}</td><td>{typeof record.details === 'object' ? JSON.stringify(record.details) : record.details || '-'}</td></tr>)}</tbody></table></div>;
+}
+
+const ADMIN_ACTIONS_STORAGE_KEY = 'cg_admin_persisted_actions';
+
+function getPersistedAdminActions() {
+  try {
+    const raw = localStorage.getItem(ADMIN_ACTIONS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function persistAdminAction(action) {
+  try {
+    const existing = getPersistedAdminActions();
+    const updated = [action, ...existing.filter((a) => a.id !== action.id)].slice(0, 500);
+    localStorage.setItem(ADMIN_ACTIONS_STORAGE_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (_) {
+    return [];
+  }
 }
 
 function AdminDashboard() {
@@ -2880,6 +2912,17 @@ function AdminDashboard() {
         }).catch(() => {});
       }
       const result = await api(`/api/admin/${resource}`);
+      if (resource === 'activity') {
+        const persistedActions = getPersistedAdminActions();
+        const serverRecords = result.records || [];
+        const combined = [
+          ...persistedActions,
+          ...serverRecords.filter((sa) => !persistedActions.some((pa) => pa.id === sa.id || (pa.createdAt === sa.createdAt && pa.type === sa.type))),
+        ].sort((a, b) => timestampValue(b) - timestampValue(a));
+        setRecords(combined);
+        setDashboardData((prev) => ({ ...prev, activity: combined }));
+        return;
+      }
       setRecords((result.records || []).sort((a, b) => timestampValue(b) - timestampValue(a)));
     }
   };
@@ -2895,13 +2938,19 @@ function AdminDashboard() {
     ]);
     const sortedUsers = (stats.users || []).sort((a, b) => timestampValue(b) - timestampValue(a));
     setUsers(sortedUsers);
+    const persistedActions = getPersistedAdminActions();
+    const serverActivity = activity.records || [];
+    const combinedActivity = [
+      ...persistedActions,
+      ...serverActivity.filter((sa) => !persistedActions.some((pa) => pa.id === sa.id || (pa.createdAt === sa.createdAt && pa.type === sa.type))),
+    ].sort((a, b) => timestampValue(b) - timestampValue(a));
     setDashboardData({
       users: sortedUsers,
       scholarships: scholarships.records || [],
       universities: universities.records || [],
       eligibility: eligibility.records || [],
       assessments: assessments.records || [],
-      activity: activity.records || [],
+      activity: combinedActivity,
       chatbot: chatbot.records || [],
     });
   };
@@ -2978,6 +3027,23 @@ function AdminDashboard() {
         body: JSON.stringify({ name: user.name, email: user.email, blocked: nextBlocked }),
       });
       setUsers((prevUsers) => prevUsers.map((entry) => (entry.id === user.id ? result.user : entry)));
+      const actionItem = {
+        id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        type: nextBlocked ? 'admin_user_blocked' : 'admin_user_unblocked',
+        details: {
+          userId: user.id,
+          userName: user.name,
+          email: user.email,
+          action: nextBlocked ? 'Blocked account' : 'Unblocked account',
+        },
+        createdAt: new Date().toISOString(),
+      };
+      persistAdminAction(actionItem);
+      setDashboardData((prev) => ({
+        ...prev,
+        activity: [actionItem, ...(prev.activity || [])],
+      }));
+      setRecords((prev) => (tab === 'activity' ? [actionItem, ...prev] : prev));
       setNotice(`User ${user.name || user.email} is now ${nextBlocked ? 'blocked' : 'active'}.`);
     } catch (toggleError) {
       setError(toggleError.message);
@@ -3005,6 +3071,26 @@ function AdminDashboard() {
         body: JSON.stringify({ name: editingUser.name, email: editingUser.email, blocked: Boolean(editingUser.blocked) }),
       });
       setUsers((prevUsers) => prevUsers.map((user) => (user.id === result.user.id ? result.user : user)));
+      if (Boolean(editingUser.blocked) !== Boolean(originalUser?.blocked)) {
+        const nextBlocked = Boolean(editingUser.blocked);
+        const actionItem = {
+          id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          type: nextBlocked ? 'admin_user_blocked' : 'admin_user_unblocked',
+          details: {
+            userId: editingUser.id,
+            userName: editingUser.name,
+            email: editingUser.email,
+            action: nextBlocked ? 'Blocked account' : 'Unblocked account',
+          },
+          createdAt: new Date().toISOString(),
+        };
+        persistAdminAction(actionItem);
+        setDashboardData((prev) => ({
+          ...prev,
+          activity: [actionItem, ...(prev.activity || [])],
+        }));
+        setRecords((prev) => (tab === 'activity' ? [actionItem, ...prev] : prev));
+      }
       setEditingUser(null);
       setOriginalUser(null);
       setNotice('User updated successfully.');
@@ -3123,6 +3209,23 @@ function AdminDashboard() {
         const user = target.payload;
         await api(`/api/admin/users/${user.id}`, { method: 'DELETE' });
         setUsers((prevUsers) => prevUsers.filter((entry) => entry.id !== user.id));
+        const actionItem = {
+          id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          type: 'admin_user_deleted',
+          details: {
+            userId: user.id,
+            userName: user.name,
+            email: user.email,
+            action: 'Deleted user account',
+          },
+          createdAt: new Date().toISOString(),
+        };
+        persistAdminAction(actionItem);
+        setDashboardData((prev) => ({
+          ...prev,
+          activity: [actionItem, ...(prev.activity || [])],
+        }));
+        setRecords((prev) => (tab === 'activity' ? [actionItem, ...prev] : prev));
         setNotice('User deleted successfully.');
       } else if (target.type === 'record') {
         const record = target.payload;
@@ -3850,6 +3953,23 @@ function AdminDashboard() {
                           setUserDeleteConfirmation((prev) => ({ ...prev, isDeleting: true, error: '' }));
                           try {
                             await api(`/api/admin/users/${target.id}`, { method: 'DELETE' });
+                            const actionItem = {
+                              id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+                              type: 'admin_user_deleted',
+                              details: {
+                                userId: target.id,
+                                userName: target.name,
+                                email: target.email,
+                                action: 'Deleted user account',
+                              },
+                              createdAt: new Date().toISOString(),
+                            };
+                            persistAdminAction(actionItem);
+                            setDashboardData((prev) => ({
+                              ...prev,
+                              activity: [actionItem, ...(prev.activity || [])],
+                            }));
+                            setRecords((prev) => (tab === 'activity' ? [actionItem, ...prev] : prev));
                             setUserDeleteConfirmation(null);
                             setEditingUser(null);
                             setOriginalUser(null);

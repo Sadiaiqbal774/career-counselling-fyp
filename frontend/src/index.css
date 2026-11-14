@@ -595,6 +595,13 @@ html.dark-mode .eyebrow {
   background: #5d4037;
 }
 
+.scholarship-show-more-btn:hover {
+  background: var(--accent, #c17b3f) !important;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(193, 123, 63, 0.3) !important;
+}
+
 /* Dark Mode for Scholarship Finder */
 html.dark .scholarship-page,
 html.dark-mode .scholarship-page,

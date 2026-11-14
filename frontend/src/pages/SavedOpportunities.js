@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { getBookmarks, toggleItemBookmark } from '../data/bookmarkData';
 import { formatApplyUrl } from './ScholarshipFinder';
+import { formatUniversityLinks } from './UniversityRecommender';
 import './SavedOpportunities.css';
 
 function SavedOpportunities() {
@@ -165,18 +166,27 @@ function SavedOpportunities() {
                   </div>
 
                   <div className="saved-card-footer">
-                    {(uni.link || uni.website_url || uni.website) ? (
-                      <a
-                        href={uni.link || uni.website_url || uni.website}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="saved-card-apply-btn"
-                      >
-                        Visit / Apply Online →
-                      </a>
-                    ) : (
-                      <span className="saved-card-no-link">No link available</span>
-                    )}
+                    {(() => {
+                      const rawUrl = uni.link || uni.website_url || uni.website;
+                      const { websiteUrl, applyUrl } = formatUniversityLinks(
+                        rawUrl,
+                        uni.University || uni.university || uni.name,
+                        uni.Program || uni.program
+                      );
+                      const targetUrl = applyUrl || websiteUrl;
+                      return targetUrl ? (
+                        <a
+                          href={targetUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="saved-card-apply-btn"
+                        >
+                          Visit / Apply Online →
+                        </a>
+                      ) : (
+                        <span className="saved-card-no-link">No link available</span>
+                      );
+                    })()}
                   </div>
                 </article>
               ))}

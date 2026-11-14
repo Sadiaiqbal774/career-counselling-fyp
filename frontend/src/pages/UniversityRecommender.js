@@ -7,6 +7,68 @@ import { readUserProfile, readUserQuizData } from "../data/userData";
 import { isItemBookmarked, toggleItemBookmark } from "../data/bookmarkData";
 import { formatApplyUrl } from "./ScholarshipFinder";
 
+export function formatUniversityLinks(rawUrl, uniName = "", programName = "") {
+  const cleanUni = String(uniName || "").trim();
+  const cleanProg = String(programName || "").trim();
+
+  const isBrokenOrPdfOrAggregator = (u) => {
+    if (!u || typeof u !== "string") return true;
+    const lower = u.toLowerCase();
+    return (
+      lower.includes(".pdf") ||
+      lower.includes("result.pk") ||
+      lower.includes("jobz.pk") ||
+      lower.includes("ilmkidunya.com") ||
+      lower.includes("moawin.pk") ||
+      lower.includes("pmdc.org.pk") ||
+      lower.includes("facebook.com") ||
+      lower.includes("merit-lists") ||
+      lower.includes("merit-list")
+    );
+  };
+
+  const getDomainRoot = (u) => {
+    try {
+      const parsed = new URL(u.startsWith("http") ? u : `https://${u}`);
+      return `${parsed.protocol}//${parsed.hostname}`;
+    } catch {
+      return null;
+    }
+  };
+
+  let websiteUrl = rawUrl;
+  let applyUrl = "";
+
+  if (!rawUrl || isBrokenOrPdfOrAggregator(rawUrl)) {
+    const root = rawUrl ? getDomainRoot(rawUrl) : null;
+    const isAggregator = rawUrl && [
+      "result.pk",
+      "jobz.pk",
+      "ilmkidunya.com",
+      "moawin.pk",
+      "pmdc.org.pk",
+    ].some((agg) => rawUrl.toLowerCase().includes(agg));
+
+    if (root && !isAggregator) {
+      websiteUrl = root;
+    } else {
+      websiteUrl = `https://www.google.com/search?q=${encodeURIComponent(
+        (cleanUni || "University") + " Pakistan official website"
+      )}`;
+    }
+    applyUrl = `https://www.google.com/search?q=${encodeURIComponent(
+      cleanUni + " " + (cleanProg || "") + " admissions apply online Pakistan"
+    )}`;
+  } else {
+    if (!websiteUrl.startsWith("http")) websiteUrl = `https://${websiteUrl}`;
+    applyUrl = `https://www.google.com/search?q=${encodeURIComponent(
+      cleanUni + " " + (cleanProg || "") + " admissions apply online"
+    )}`;
+  }
+
+  return { websiteUrl, applyUrl };
+}
+
 const API_URL = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000').trim().replace(/\/+$/, '');
 
 // ─── Google Font ───────────────────────────────────────────────────
@@ -1306,45 +1368,54 @@ function UniversityRecommender() {
                           </p>
                         )}
 
-                        <div className="uni-links">
-                          <a
-                            href={uni.link}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="uni-link primary"
-                          >
-                            Official Website
-                          </a>
+                        {(() => {
+                          const { websiteUrl, applyUrl } = formatUniversityLinks(
+                            uni.link,
+                            uni.University || uni.university || uni.name,
+                            uni.Program || uni.program || uni.degree_name
+                          );
+                          return (
+                            <div className="uni-links">
+                              <a
+                                href={websiteUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="uni-link primary"
+                              >
+                                Official Website
+                              </a>
 
-                          <a
-                            href={uni.link}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="uni-link primary"
-                          >
-                            Apply Now →
-                          </a>
+                              <a
+                                href={applyUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="uni-link primary"
+                              >
+                                Apply Now →
+                              </a>
 
-                          <button
-                            type="button"
-                            onClick={() => handleToggleUniBookmark(uni)}
-                            className="uni-link"
-                            style={{
-                              border: isSaved ? "1.5px solid var(--accent)" : "1.5px solid var(--border)",
-                              background: isSaved ? "var(--accent-lt)" : "var(--bg-card)",
-                              color: isSaved ? "var(--accent-dk)" : "var(--text)",
-                              fontWeight: 600,
-                              cursor: "pointer",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "5px"
-                            }}
-                            title={isSaved ? "Remove from saved opportunities in profile" : "Save university to Profile"}
-                          >
-                            <span>{isSaved ? "★" : "☆"}</span>
-                            <span>{isSaved ? "Saved" : "Save"}</span>
-                          </button>
-                        </div>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleUniBookmark(uni)}
+                                className="uni-link"
+                                style={{
+                                  border: isSaved ? "1.5px solid var(--accent)" : "1.5px solid var(--border)",
+                                  background: isSaved ? "var(--accent-lt)" : "var(--bg-card)",
+                                  color: isSaved ? "var(--accent-dk)" : "var(--text)",
+                                  fontWeight: 600,
+                                  cursor: "pointer",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "5px"
+                                }}
+                                title={isSaved ? "Remove from saved opportunities in profile" : "Save university to Profile"}
+                              >
+                                <span>{isSaved ? "★" : "☆"}</span>
+                                <span>{isSaved ? "Saved" : "Save"}</span>
+                              </button>
+                            </div>
+                          );
+                        })()}
 
                         {uni.guidance && uni.guidance.length > 0 && (
                           <>
