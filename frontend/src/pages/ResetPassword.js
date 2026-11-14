@@ -46,6 +46,14 @@ function ResetPassword() {
         return;
       }
 
+      // Check if URL hash or query contains recovery flag
+      if (typeof window !== 'undefined' && (window.location.hash.includes('type=recovery') || searchParams.get('type') === 'recovery')) {
+        if (!mounted) return;
+        setRecoveryReady(true);
+        setRecoveryChecked(true);
+        return;
+      }
+
       // Check current session to allow onAuthStateChange to process any implicit flow,
       // but do NOT enable recoveryReady just because data.session exists.
       try {

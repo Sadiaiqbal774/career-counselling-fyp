@@ -94,7 +94,14 @@ export function AuthProvider({ children }) {
         }
       });
 
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => applySession(session));
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      applySession(session);
+      if (event === 'PASSWORD_RECOVERY') {
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/reset-password')) {
+          window.location.href = `/reset-password${window.location.hash || ''}`;
+        }
+      }
+    });
     return () => {
       cancelled = true;
       data.subscription.unsubscribe();
@@ -270,7 +277,29 @@ export function AuthProvider({ children }) {
 
   const resetPassword = useCallback(async (email) => {
     ensureSupabaseConfigured();
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    if (!cleanEmail) throw new Error('Email is required to send password reset link.');
+
+    // 1. First try backend endpoint which delivers email directly via Brevo SMTP
+    try {
+      const response = await fetch(`${API_URL}/api/auth/send-reset-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        return data;
+      }
+      if (response.status >= 500) {
+        throw new Error(data.message || 'Email delivery service is currently unavailable.');
+      }
+    } catch (err) {
+      console.warn('Backend send-reset-link failed, trying Supabase fallback:', err);
+    }
+
+    // 2. Fallback to Supabase client-side resetPasswordForEmail
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
       redirectTo: getResetRedirect(),
     });
     if (error) throw error;

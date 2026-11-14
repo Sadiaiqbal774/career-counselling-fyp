@@ -102,8 +102,22 @@ function AppFooter() {
 
 function AppLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const isAdminPortal = location.pathname.startsWith('/admin');
+
+  // Auto-detect password recovery link from URL hash or parameters and route to /reset-password
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash || '';
+      const search = window.location.search || '';
+      if (hash.includes('type=recovery') || search.includes('type=recovery')) {
+        if (!location.pathname.startsWith('/reset-password')) {
+          navigate(`/reset-password${search}${hash}`, { replace: true });
+        }
+      }
+    }
+  }, [location.pathname, navigate]);
 
   useEffect(() => {
     if (isAdminPortal) {

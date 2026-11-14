@@ -32,7 +32,7 @@ function ForgotPassword() {
     try {
       if (method === 'email') {
         await resetPassword(email);
-        setMessage('If an account exists for that email, a password reset link has been sent.');
+        setMessage('A secure password reset link has been sent to your email. Please check your inbox and spam folder.');
       } else if (!question) {
         setQuestion(await getRecoveryQuestion(email));
         setMessage('Answer your recovery question to continue.');

@@ -16,6 +16,7 @@ function ChangePassword() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSendingLink, setIsSendingLink] = useState(false);
   const [alternativeMessage, setAlternativeMessage] = useState('');
 
   // ----- OTP / Set‑Password state -----
@@ -118,11 +119,22 @@ function ChangePassword() {
 
   const tryAnotherWay = async () => {
     setAlternativeMessage('');
+    setError('');
+    const targetEmail = (email || currentUser?.email || '').trim().toLowerCase();
+    if (!targetEmail) {
+      setError('Please log in again or specify your email to receive a reset link.');
+      return;
+    }
+    setIsSendingLink(true);
     try {
-      await resetPassword(email);
-      setAlternativeMessage('If an account exists for this email, a secure reset link has been sent.');
+      await resetPassword(targetEmail);
+      setAlternativeMessage(`A secure password reset link has been sent to ${targetEmail}. Please check your inbox and spam folder.`);
+      toast.success('Password reset link sent to your email!');
     } catch (err) {
       setError(err.message || 'Unable to send the reset link.');
+      toast.error(err.message || 'Unable to send the reset link.');
+    } finally {
+      setIsSendingLink(false);
     }
   };
 
@@ -164,8 +176,7 @@ function ChangePassword() {
               </label>
               {error && <p className="auth-error">{error}</p>}
               {message && <p className="auth-success">{message}</p>}
-              {alternativeMessage && <p className="auth-success">{alternativeMessage}</p>}
-              <button className="auth-primary-button" type="submit" disabled={isSubmitting}>
+              <button className="auth-primary-button" type="submit" disabled={isSubmitting || isSendingLink}>
                 {isSubmitting ? 'Updating...' : 'Change password'}
               </button>
             </form>
@@ -187,8 +198,20 @@ function ChangePassword() {
               </button>
             </div>
           )}
-          <button type="button" className="auth-secondary-button" onClick={tryAnotherWay}>
-            Try another way (send reset link)
+          {alternativeMessage && (
+            <p className="auth-success" style={{ marginTop: '16px', marginBottom: '8px' }}>
+              {alternativeMessage}
+            </p>
+          )}
+
+          <button
+            type="button"
+            className="auth-secondary-button"
+            onClick={tryAnotherWay}
+            disabled={isSendingLink || isSubmitting}
+            style={{ marginTop: '12px' }}
+          >
+            {isSendingLink ? 'Sending reset link...' : 'Try another way (send reset link)'}
           </button>
         </section>
       </section>

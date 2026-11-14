@@ -174,6 +174,48 @@ def _send_verification_email(email, name, token):
     raise RuntimeError(f"Unable to send verification email via Brevo ({last_exc}).")
 
 
+def _send_password_reset_email(email, name, reset_url):
+    host = os.environ.get("SMTP_HOST", "smtp-relay.brevo.com").strip()
+    user = os.environ.get("SMTP_USER", "").strip()
+    password = os.environ.get("SMTP_PASS", "").strip()
+    if not host or not user or not password:
+        raise RuntimeError("Brevo SMTP is not configured.")
+
+    recipient_name = name or (email.split("@")[0].replace(".", " ").capitalize() if email else "User")
+    message = EmailMessage()
+    message["Subject"] = "Reset your CareerGuide password"
+    message["From"] = os.environ.get("SMTP_FROM_EMAIL", user).strip()
+    message["To"] = email
+    message.set_content(
+        f"Hi {recipient_name},\n\n"
+        f"We received a request to reset your CareerGuide account password. Click the secure link below to choose a new password:\n\n"
+        f"{reset_url}\n\n"
+        f"This link is valid for 1 hour and can only be used once.\n\n"
+        f"If you did not request this, please disregard this email. Your password will remain unchanged.\n\n"
+        f"Best regards,\nCareerGuide Security Team"
+    )
+
+    raw_port = int(os.environ.get("SMTP_PORT", "2525"))
+    ports_to_try = [raw_port]
+    for fallback_p in [2525, 587]:
+        if fallback_p not in ports_to_try:
+            ports_to_try.append(fallback_p)
+
+    last_exc = None
+    for p in ports_to_try:
+        try:
+            with smtplib.SMTP(host, p, timeout=12) as smtp:
+                smtp.starttls()
+                smtp.login(user, password)
+                smtp.send_message(message)
+                return
+        except Exception as e:
+            last_exc = e
+            app.logger.warning("SMTP reset password attempt on port %s failed: %s", p, e)
+
+    raise RuntimeError(f"Unable to send password reset email via Brevo ({last_exc}).")
+
+
 def _recovery_answer_hash(answer, salt):
     return hashlib.sha256(f"{salt}:{answer.strip().casefold()}".encode("utf-8")).hexdigest()
 
@@ -1340,6 +1382,50 @@ def complete_recovery_question():
         return jsonify({"message": "Password reset successfully."}), 200
     except RuntimeError as error:
         return jsonify({"message": str(error)}), 503
+
+
+@app.route("/api/auth/send-reset-link", methods=["POST"])
+def send_password_reset_link():
+    payload = request.get_json(silent=True) or {}
+    email = str(payload.get("email") or "").strip().lower()
+    if not is_valid_email(email):
+        return jsonify({"message": "Please enter a valid email address."}), 400
+
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        return jsonify({"message": "Supabase service is not configured."}), 503
+
+    try:
+        redirect_url = f"{FRONTEND_URL}/reset-password"
+        gen_body = {
+            "type": "recovery",
+            "email": email,
+            "options": {
+                "redirectTo": redirect_url
+            }
+        }
+        try:
+            gen_res = supabase_admin_request("POST", "/auth/v1/admin/generate_link", body=gen_body)
+        except RuntimeError as rerr:
+            if "404" in str(rerr) or "not found" in str(rerr).lower():
+                return jsonify({"message": "If an account exists for this email, a reset link has been sent."}), 200
+            raise rerr
+
+        if not gen_res or not gen_res.get("action_link"):
+            return jsonify({"message": "If an account exists for this email, a reset link has been sent."}), 200
+
+        action_link = gen_res["action_link"]
+        user_meta = gen_res.get("user_metadata") or (gen_res.get("user") or {}).get("user_metadata") or {}
+        user_name = user_meta.get("name") or user_meta.get("full_name") or user_meta.get("username")
+        user_id = gen_res.get("id") or (gen_res.get("user") or {}).get("id")
+
+        _send_password_reset_email(email, user_name, action_link)
+        log_activity("password_reset_requested", {"email": email, "userId": user_id, "userName": user_name})
+        return jsonify({"message": "A secure password reset link has been sent to your email."}), 200
+
+    except Exception as error:
+        app.logger.exception("Password reset email delivery error: %s", error)
+        return jsonify({"message": f"Unable to deliver password reset email: {str(error)}"}), 500
+
 
 @app.route("/api/auth/login", methods=["POST"])
 def login():
