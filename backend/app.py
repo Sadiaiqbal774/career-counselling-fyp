@@ -840,22 +840,56 @@ def sanitize_supabase_user(user):
     }
 
 
+KNOWN_UNIVERSITY_DOMAINS = {
+    "aga khan": "https://www.aku.edu",
+    "air university": "https://www.au.edu.pk",
+    "fast": "https://nu.edu.pk",
+    "nuces": "https://nu.edu.pk",
+    "nust": "https://nust.edu.pk",
+    "lums": "https://lums.edu.pk",
+    "comsats": "https://www.comsats.edu.pk",
+    "quaid-i-azam": "https://qau.edu.pk",
+    "quaid-e-azam": "https://qau.edu.pk",
+    "punjab university": "https://pu.edu.pk",
+    "university of the punjab": "https://pu.edu.pk",
+    "uet": "https://uet.edu.pk",
+    "giki": "https://giki.edu.pk",
+    "pieas": "https://www.pieas.edu.pk",
+    "bahria": "https://bahria.edu.pk",
+    "iba": "https://www.iba.edu.pk",
+    "abbottabad university": "https://aust.edu.pk",
+    "abdul wali khan": "https://awkum.edu.pk",
+    "bahauddin zakariya": "https://www.bzu.edu.pk",
+    "buitems": "https://www.buitms.edu.pk",
+    "beaconhouse": "https://www.bnu.edu.pk",
+    "allama iqbal open": "https://www.aiou.edu.pk",
+    "gcu": "https://www.gcu.edu.pk",
+    "government college": "https://www.gcu.edu.pk",
+    "karachi": "https://uok.edu.pk",
+    "ned": "https://www.neduet.edu.pk",
+    "dow": "https://duhs.edu.pk",
+    "king edward": "https://kemu.edu.pk",
+    "riphah": "https://riphah.edu.pk",
+    "umt": "https://www.umt.edu.pk",
+    "ucp": "https://ucp.edu.pk",
+    "uol": "https://uol.edu.pk",
+    "superior": "https://superior.edu.pk",
+    "numl": "https://numl.edu.pk",
+    "ist": "https://www.ist.edu.pk",
+    "itu": "https://itu.edu.pk",
+    "habib": "https://habib.edu.pk",
+    "al-hamd": "https://aiu.edu.pk",
+    "bacha khan": "https://bkuc.edu.pk",
+    "balochistan university": "https://uob.edu.pk",
+}
+
 def get_university_link(name):
-    base = name.lower()
-
-    if "fast" in base:
-        return "https://nu.edu.pk/"
-
-    elif "comsats" in base:
-        return "https://www.comsats.edu.pk/"
-
-    elif "bahria" in base:
-        return "https://bahria.edu.pk/"
-
-    search_query = name.replace(" ", "+") + "+admissions+Pakistan"
-
+    base = (name or "").lower()
+    for key, domain in KNOWN_UNIVERSITY_DOMAINS.items():
+        if key in base:
+            return domain
+    search_query = (name or "University").replace(" ", "+") + "+Pakistan+official+website"
     return f"https://www.google.com/search?q={search_query}"
-
 
 # LOAD MODEL
 field_classifier = joblib.load(backend_dir / "field_classifier.pkl")
@@ -2010,7 +2044,31 @@ def admin_resource(resource):
             except Exception:
                 pass
 
-            records = activity_list
+            # Deduplicate activity records to prevent duplicate rows for admin actions
+            deduped_activity = []
+            for item in activity_list:
+                item_type = item.get("type")
+                details = item.get("details") or {}
+                uid = str(details.get("userId") or "")
+                email = str(details.get("email") or "").lower()
+
+                is_dup = False
+                for ex in deduped_activity:
+                    ex_type = ex.get("type")
+                    ex_details = ex.get("details") or {}
+                    ex_uid = str(ex_details.get("userId") or "")
+                    ex_email = str(ex_details.get("email") or "").lower()
+                    if item_type and ex_type and item_type == ex_type:
+                        if (uid and ex_uid and uid == ex_uid) or (email and ex_email and email == ex_email):
+                            is_dup = True
+                            if not ex_details.get("userName") and details.get("userName"):
+                                ex_details["userName"] = details.get("userName")
+                            if not ex_details.get("email") and details.get("email"):
+                                ex_details["email"] = details.get("email")
+                            break
+                if not is_dup:
+                    deduped_activity.append(item)
+            records = deduped_activity
         if resource in ("chatbot-interactions", "assessments", "activity"):
             def extract_sort_key(record):
                 val = record.get("createdAt") or record.get("created_at") or record.get("date") or record.get("timestamp") or ""
@@ -2589,10 +2647,11 @@ def predict():
                 "requirements": requirements,
                 "match_score": uni_score,
                 "why": uni_why,
-                "link":
-                row["url"]
-                if pd.notna(row["url"]) and row["url"]
-                else get_university_link(row["university"]),
+                "link": (
+                    get_university_link(row["university"])
+                    if not pd.notna(row["url"]) or not row["url"] or any(agg in str(row["url"]).lower() for agg in ["result.pk", "jobz.pk", "ilmkidunya", "eduvision", "moawin", "pmdc", ".pdf", "admission-guide", "merit-list"])
+                    else str(row["url"])
+                ),
                 "guidance": [
                     "Apply before deadline",
                     "Prepare required documents",

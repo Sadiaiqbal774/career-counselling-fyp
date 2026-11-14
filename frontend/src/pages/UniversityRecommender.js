@@ -7,64 +7,145 @@ import { readUserProfile, readUserQuizData } from "../data/userData";
 import { isItemBookmarked, toggleItemBookmark } from "../data/bookmarkData";
 import { formatApplyUrl } from "./ScholarshipFinder";
 
+// Known official homepages for Pakistani universities to prevent 404 / Document not found errors
+const KNOWN_UNIVERSITY_DOMAINS = {
+  "aga khan university": "https://www.aku.edu",
+  "air university": "https://www.au.edu.pk",
+  "fast": "https://nu.edu.pk",
+  "nuces": "https://nu.edu.pk",
+  "national university of computer": "https://nu.edu.pk",
+  "nust": "https://nust.edu.pk",
+  "national university of sciences and technology": "https://nust.edu.pk",
+  "lums": "https://lums.edu.pk",
+  "lahore university of management sciences": "https://lums.edu.pk",
+  "comsats": "https://www.comsats.edu.pk",
+  "quaid-i-azam": "https://qau.edu.pk",
+  "quaid-e-azam": "https://qau.edu.pk",
+  "punjab university": "https://pu.edu.pk",
+  "university of the punjab": "https://pu.edu.pk",
+  "uet lahore": "https://uet.edu.pk",
+  "university of engineering and technology, lahore": "https://uet.edu.pk",
+  "giki": "https://giki.edu.pk",
+  "ghulam ishaq khan": "https://giki.edu.pk",
+  "pieas": "https://www.pieas.edu.pk",
+  "bahria university": "https://bahria.edu.pk",
+  "iba karachi": "https://www.iba.edu.pk",
+  "institute of business administration": "https://www.iba.edu.pk",
+  "abbottabad university": "https://aust.edu.pk",
+  "abdul wali khan": "https://awkum.edu.pk",
+  "bahauddin zakariya": "https://www.bzu.edu.pk",
+  "buitems": "https://www.buitms.edu.pk",
+  "beaconhouse national": "https://www.bnu.edu.pk",
+  "allama iqbal open": "https://www.aiou.edu.pk",
+  "government college university": "https://www.gcu.edu.pk",
+  "gcu": "https://www.gcu.edu.pk",
+  "university of karachi": "https://uok.edu.pk",
+  "ned university": "https://www.neduet.edu.pk",
+  "dow university": "https://duhs.edu.pk",
+  "king edward": "https://kemu.edu.pk",
+  "riphah": "https://riphah.edu.pk",
+  "university of management and technology": "https://www.umt.edu.pk",
+  "umt": "https://www.umt.edu.pk",
+  "university of central punjab": "https://ucp.edu.pk",
+  "ucp": "https://ucp.edu.pk",
+  "university of lahore": "https://uol.edu.pk",
+  "uol": "https://uol.edu.pk",
+  "superior university": "https://superior.edu.pk",
+  "fatima jinnah women": "https://fjwu.edu.pk",
+  "lahore college for women": "https://www.lcwu.edu.pk",
+  "national university of modern languages": "https://numl.edu.pk",
+  "numl": "https://numl.edu.pk",
+  "institute of space technology": "https://www.ist.edu.pk",
+  "sukkur iba": "https://www.iba-suk.edu.pk",
+  "mehran university": "https://www.muet.edu.pk",
+  "university of peshawar": "https://uop.edu.pk",
+  "islamia college peshawar": "https://icp.edu.pk",
+  "hazara university": "https://hu.edu.pk",
+  "kohat university": "https://kust.edu.pk",
+  "university of malakand": "https://uom.edu.pk",
+  "university of swat": "https://uswat.edu.pk",
+  "karakoram international": "https://kiu.edu.pk",
+  "mirpur university": "https://must.edu.pk",
+  "university of azad jammu and kashmir": "https://ajku.edu.pk",
+  "information technology university": "https://itu.edu.pk",
+  "itu": "https://itu.edu.pk",
+  "habib university": "https://habib.edu.pk",
+  "national textile university": "https://ntu.edu.pk",
+  "ziauddin university": "https://zu.edu.pk",
+  "liaquat university": "https://lumhs.edu.pk",
+  "khyber medical": "https://kmu.edu.pk",
+  "al-hamd islamic university": "https://aiu.edu.pk",
+  "ali institute of education": "https://aie.edu.pk",
+  "bacha khan university": "https://bkuc.edu.pk",
+  "balochistan university": "https://uob.edu.pk",
+};
+
 export function formatUniversityLinks(rawUrl, uniName = "", programName = "") {
   const cleanUni = String(uniName || "").trim();
   const cleanProg = String(programName || "").trim();
+  const lowerUni = cleanUni.toLowerCase();
 
-  const isBrokenOrPdfOrAggregator = (u) => {
+  // 1. Check verified university official website dictionary
+  let knownOfficialSite = null;
+  for (const [key, domain] of Object.entries(KNOWN_UNIVERSITY_DOMAINS)) {
+    if (lowerUni.includes(key)) {
+      knownOfficialSite = domain;
+      break;
+    }
+  }
+
+  const isAggregatorOrBroken = (u) => {
     if (!u || typeof u !== "string") return true;
-    const lower = u.toLowerCase();
+    const l = u.toLowerCase();
     return (
-      lower.includes(".pdf") ||
-      lower.includes("result.pk") ||
-      lower.includes("jobz.pk") ||
-      lower.includes("ilmkidunya.com") ||
-      lower.includes("moawin.pk") ||
-      lower.includes("pmdc.org.pk") ||
-      lower.includes("facebook.com") ||
-      lower.includes("merit-lists") ||
-      lower.includes("merit-list")
+      l.includes(".pdf") ||
+      l.includes("result.pk") ||
+      l.includes("jobz.pk") ||
+      l.includes("ilmkidunya.com") ||
+      l.includes("eduvision.edu.pk") ||
+      l.includes("moawin.pk") ||
+      l.includes("pmdc.org.pk") ||
+      l.includes("facebook.com") ||
+      l.includes("merit-lists") ||
+      l.includes("merit-list") ||
+      l.includes("admission-guide") ||
+      l.includes("admission_details")
     );
   };
 
   const getDomainRoot = (u) => {
     try {
       const parsed = new URL(u.startsWith("http") ? u : `https://${u}`);
+      if (isAggregatorOrBroken(parsed.hostname)) return null;
+      // Strip obsolete/broken subpaths to prevent 404 Apache 'document not found' errors
       return `${parsed.protocol}//${parsed.hostname}`;
     } catch {
       return null;
     }
   };
 
-  let websiteUrl = rawUrl;
-  let applyUrl = "";
-
-  if (!rawUrl || isBrokenOrPdfOrAggregator(rawUrl)) {
-    const root = rawUrl ? getDomainRoot(rawUrl) : null;
-    const isAggregator = rawUrl && [
-      "result.pk",
-      "jobz.pk",
-      "ilmkidunya.com",
-      "moawin.pk",
-      "pmdc.org.pk",
-    ].some((agg) => rawUrl.toLowerCase().includes(agg));
-
-    if (root && !isAggregator) {
+  let websiteUrl = "";
+  if (knownOfficialSite) {
+    websiteUrl = knownOfficialSite;
+  } else if (rawUrl && !isAggregatorOrBroken(rawUrl)) {
+    const root = getDomainRoot(rawUrl);
+    if (root) {
       websiteUrl = root;
-    } else {
-      websiteUrl = `https://www.google.com/search?q=${encodeURIComponent(
-        (cleanUni || "University") + " Pakistan official website"
-      )}`;
     }
-    applyUrl = `https://www.google.com/search?q=${encodeURIComponent(
-      cleanUni + " " + (cleanProg || "") + " admissions apply online Pakistan"
-    )}`;
-  } else {
-    if (!websiteUrl.startsWith("http")) websiteUrl = `https://${websiteUrl}`;
-    applyUrl = `https://www.google.com/search?q=${encodeURIComponent(
-      cleanUni + " " + (cleanProg || "") + " admissions apply online"
+  }
+
+  // Fallback to Google Search for Official Website if unknown or aggregator
+  if (!websiteUrl) {
+    websiteUrl = `https://www.google.com/search?q=${encodeURIComponent(
+      (cleanUni || "University") + " Pakistan official website"
     )}`;
   }
+
+  // Direct admission application portal search query
+  const applyQuery = cleanProg
+    ? `${cleanUni} ${cleanProg} admissions apply online Pakistan`
+    : `${cleanUni} admissions apply online Pakistan`;
+  const applyUrl = `https://www.google.com/search?q=${encodeURIComponent(applyQuery)}`;
 
   return { websiteUrl, applyUrl };
 }

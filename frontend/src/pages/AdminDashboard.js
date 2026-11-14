@@ -489,6 +489,110 @@ function formatDayWeekday(isoDateStr) {
   return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()];
 }
 
+const ADMIN_ACTIONS_STORAGE_KEY = 'cg_admin_persisted_actions';
+
+function getRecordTimestampMs(record) {
+  if (!record) return 0;
+  const raw = record.createdAt || record.created_at || record.timestamp || record.date;
+  if (!raw) return 0;
+  const ms = new Date(raw).getTime();
+  return Number.isNaN(ms) ? 0 : ms;
+}
+
+function getRecordTargetKey(record) {
+  if (!record) return { email: '', uid: '' };
+  const d = record.details && typeof record.details === 'object' ? record.details : {};
+  const email = (record.targetUserEmail || record.userEmail || record.email || d.email || d.userEmail || '').trim().toLowerCase();
+  const uid = (record.targetUserId || record.userId || record.user_id || d.userId || d.user_id || '').trim().toLowerCase();
+  return { email, uid };
+}
+
+function deduplicateActivities(items) {
+  if (!Array.isArray(items)) return [];
+  const result = [];
+
+  for (const item of items) {
+    if (!item) continue;
+    const itemType = (item.type || item.eventType || '').trim();
+    const itemTime = getRecordTimestampMs(item);
+    const { email: itemEmail, uid: itemUid } = getRecordTargetKey(item);
+
+    const dupIndex = result.findIndex((existing) => {
+      // 1. Exact ID match
+      if (existing.id && item.id && existing.id === item.id) return true;
+
+      // 2. Same event type (e.g. admin_user_blocked, admin_user_unblocked, admin_user_updated, admin_user_deleted)
+      const existingType = (existing.type || existing.eventType || '').trim();
+      if (itemType && existingType && itemType === existingType) {
+        const { email: exEmail, uid: exUid } = getRecordTargetKey(existing);
+        const matchesTarget = (
+          (itemEmail && exEmail && itemEmail === exEmail) ||
+          (itemUid && exUid && itemUid === exUid)
+        );
+
+        if (matchesTarget) {
+          const exTime = getRecordTimestampMs(existing);
+          // If within 5 minutes (300,000 ms) of each other, consider it the same event
+          if (Math.abs(itemTime - exTime) < 300000) {
+            return true;
+          }
+        }
+      }
+      return false;
+    });
+
+    if (dupIndex >= 0) {
+      const existing = result[dupIndex];
+      // Merge records, favoring richer fields
+      result[dupIndex] = {
+        ...existing,
+        ...item,
+        details: {
+          ...(typeof existing.details === 'object' ? existing.details : {}),
+          ...(typeof item.details === 'object' ? item.details : {}),
+        },
+        description: item.description || existing.description,
+        action: item.action || existing.action,
+        targetUserEmail: item.targetUserEmail || existing.targetUserEmail || item.email || existing.email,
+        targetUserName: item.targetUserName || existing.targetUserName || item.userName || existing.userName,
+        targetUserId: item.targetUserId || existing.targetUserId || item.userId || existing.userId,
+        adminEmail: item.adminEmail || existing.adminEmail,
+        createdAt: existing.createdAt || item.createdAt,
+      };
+    } else {
+      result.push(item);
+    }
+  }
+
+  // Also clean up localStorage to remove any duplicate records that accumulated
+  try {
+    const persisted = result.filter((r) => String(r.id || '').startsWith('act_')).slice(0, 500);
+    localStorage.setItem(ADMIN_ACTIONS_STORAGE_KEY, JSON.stringify(persisted));
+  } catch (_) {}
+
+  return result.sort((a, b) => getRecordTimestampMs(b) - getRecordTimestampMs(a));
+}
+
+function getPersistedAdminActions() {
+  try {
+    const raw = localStorage.getItem(ADMIN_ACTIONS_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? deduplicateActivities(parsed) : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function persistAdminAction(action) {
+  try {
+    const existing = getPersistedAdminActions();
+    const updated = deduplicateActivities([action, ...existing]);
+    return updated;
+  } catch (_) {
+    return [];
+  }
+}
+
 function activitySummary(records) {
   const counts = {};
   const timelineCounts = {};
@@ -718,7 +822,8 @@ function DonutChart({ data, total, selectedDomain, onSelectDomain }) {
   );
 }
 
-function SystemReportsView({ records, users = [], assessments = [], chatbot = [], showHistory = true }) {
+function SystemReportsView({ records = [], users = [], assessments = [], chatbot = [], showHistory = true }) {
+  const dedupedRecords = deduplicateActivities(records);
   const [activeFilter, setActiveFilter] = useState('all');
   const [visibleHistoryCount, setVisibleHistoryCount] = useState(10);
   const [hoveredDay, setHoveredDay] = useState(null);
@@ -741,7 +846,7 @@ function SystemReportsView({ records, users = [], assessments = [], chatbot = []
     }
   };
 
-  const summary = activitySummary(records);
+  const summary = activitySummary(dedupedRecords);
   const maxTypeCount = summary.breakdown[0]?.[1] || 1;
   const maxTimelineCount = summary.maxTimelineTotal;
 
@@ -803,7 +908,7 @@ function SystemReportsView({ records, users = [], assessments = [], chatbot = []
     }
   };
 
-  const filteredRecords = records.filter((record) => {
+  const filteredRecords = dedupedRecords.filter((record) => {
     if (selectedDay) {
       const recDate = record.createdAt || record.created_at || record.timestamp || '';
       if (!recDate.startsWith(selectedDay)) return false;
@@ -2786,28 +2891,6 @@ function MonitoringTable({ tab, records, users = [], assessmentFilter: externalF
   return <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Event type</th><th>Timestamp</th><th>Details</th></tr></thead><tbody>{records.map((record) => <tr key={record.id}><td>{record.type || record.eventType || '-'}</td><td>{dateValue(record)}</td><td>{typeof record.details === 'object' ? JSON.stringify(record.details) : record.details || '-'}</td></tr>)}</tbody></table></div>;
 }
 
-const ADMIN_ACTIONS_STORAGE_KEY = 'cg_admin_persisted_actions';
-
-function getPersistedAdminActions() {
-  try {
-    const raw = localStorage.getItem(ADMIN_ACTIONS_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch (_) {
-    return [];
-  }
-}
-
-function persistAdminAction(action) {
-  try {
-    const existing = getPersistedAdminActions();
-    const updated = [action, ...existing.filter((a) => a.id !== action.id)].slice(0, 500);
-    localStorage.setItem(ADMIN_ACTIONS_STORAGE_KEY, JSON.stringify(updated));
-    return updated;
-  } catch (_) {
-    return [];
-  }
-}
-
 function AdminDashboard() {
   const navigate = useNavigate();
   const [tab, setTab] = useState(() => {
@@ -2915,10 +2998,7 @@ function AdminDashboard() {
       if (resource === 'activity') {
         const persistedActions = getPersistedAdminActions();
         const serverRecords = result.records || [];
-        const combined = [
-          ...persistedActions,
-          ...serverRecords.filter((sa) => !persistedActions.some((pa) => pa.id === sa.id || (pa.createdAt === sa.createdAt && pa.type === sa.type))),
-        ].sort((a, b) => timestampValue(b) - timestampValue(a));
+        const combined = deduplicateActivities([...persistedActions, ...serverRecords]);
         setRecords(combined);
         setDashboardData((prev) => ({ ...prev, activity: combined }));
         return;
@@ -2940,10 +3020,7 @@ function AdminDashboard() {
     setUsers(sortedUsers);
     const persistedActions = getPersistedAdminActions();
     const serverActivity = activity.records || [];
-    const combinedActivity = [
-      ...persistedActions,
-      ...serverActivity.filter((sa) => !persistedActions.some((pa) => pa.id === sa.id || (pa.createdAt === sa.createdAt && pa.type === sa.type))),
-    ].sort((a, b) => timestampValue(b) - timestampValue(a));
+    const combinedActivity = deduplicateActivities([...persistedActions, ...serverActivity]);
     setDashboardData({
       users: sortedUsers,
       scholarships: scholarships.records || [],
@@ -3041,9 +3118,9 @@ function AdminDashboard() {
       persistAdminAction(actionItem);
       setDashboardData((prev) => ({
         ...prev,
-        activity: [actionItem, ...(prev.activity || [])],
+        activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
       }));
-      setRecords((prev) => (tab === 'activity' ? [actionItem, ...prev] : prev));
+      setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
       setNotice(`User ${user.name || user.email} is now ${nextBlocked ? 'blocked' : 'active'}.`);
     } catch (toggleError) {
       setError(toggleError.message);
@@ -3087,9 +3164,9 @@ function AdminDashboard() {
         persistAdminAction(actionItem);
         setDashboardData((prev) => ({
           ...prev,
-          activity: [actionItem, ...(prev.activity || [])],
+          activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
         }));
-        setRecords((prev) => (tab === 'activity' ? [actionItem, ...prev] : prev));
+        setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
       }
       setEditingUser(null);
       setOriginalUser(null);
@@ -3223,9 +3300,9 @@ function AdminDashboard() {
         persistAdminAction(actionItem);
         setDashboardData((prev) => ({
           ...prev,
-          activity: [actionItem, ...(prev.activity || [])],
+          activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
         }));
-        setRecords((prev) => (tab === 'activity' ? [actionItem, ...prev] : prev));
+        setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
         setNotice('User deleted successfully.');
       } else if (target.type === 'record') {
         const record = target.payload;
@@ -3967,9 +4044,9 @@ function AdminDashboard() {
                             persistAdminAction(actionItem);
                             setDashboardData((prev) => ({
                               ...prev,
-                              activity: [actionItem, ...(prev.activity || [])],
+                              activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
                             }));
-                            setRecords((prev) => (tab === 'activity' ? [actionItem, ...prev] : prev));
+                            setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
                             setUserDeleteConfirmation(null);
                             setEditingUser(null);
                             setOriginalUser(null);
