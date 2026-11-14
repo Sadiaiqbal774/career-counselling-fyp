@@ -5,7 +5,18 @@ import supabase from "../lib/supabase";
 import { readUserProfile, readUserQuizData } from "../data/userData";
 import { isItemBookmarked, toggleItemBookmark } from "../data/bookmarkData";
 
-const API_URL = (process.env.REACT_APP_API_URL || "http://127.0.0.1:5000").trim().replace(/\\+$/,'');
+const BACKEND_FALLBACK = "https://career-counselling-fyp.onrender.com";
+
+const resolveApiUrl = () => {
+  const envUrl = (process.env.REACT_APP_API_URL || "").trim().replace(/\/+$/, '');
+  if (envUrl) return envUrl;
+  if (typeof window !== "undefined" && window.location && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    return BACKEND_FALLBACK;
+  }
+  return "http://127.0.0.1:5000";
+};
+
+const API_URL = resolveApiUrl();
 
 export function formatApplyUrl(url, scholarshipName = "") {
   const domainRedirects = {
@@ -95,24 +106,52 @@ function ScholarshipFinder() {
   const [quizScores, setQuizScores] = useState({});
   const [bookmarkTick, setBookmarkTick] = useState(0);
 
+  const applyCustomOrdering = (items) => {
+    const targetName = "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)";
+    const idx = items.findIndex((s) => s.name === targetName);
+    if (idx === -1) return items;
+    const desiredIdx = 175;
+    if (idx === desiredIdx) return items;
+    const newArr = [...items];
+    const [item] = newArr.splice(idx, 1);
+    if (desiredIdx >= newArr.length) {
+      newArr.push(item);
+    } else {
+      newArr.splice(desiredIdx, 0, item);
+    }
+    return newArr;
+  };
+
   const fetchScholarships = () => {
     setLoading(true);
     setFetchError(null);
-    fetch(`${API_URL}/scholarships`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
+
+    const tryFetch = (url) => {
+      return fetch(`${url}/scholarships`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        });
+    };
+
+    tryFetch(API_URL)
+      .catch((err) => {
+        if (API_URL !== BACKEND_FALLBACK) {
+          console.warn("Primary API URL failed, trying live Render fallback...", err);
+          return tryFetch(BACKEND_FALLBACK);
+        }
+        throw err;
       })
       .then((data) => {
+        let list = [];
         if (Array.isArray(data)) {
-          setScholarships(data);
+          list = data;
         } else if (data && Array.isArray(data.records)) {
-          setScholarships(data.records);
+          list = data.records;
         } else if (data && data.error) {
           throw new Error(data.error);
-        } else {
-          setScholarships([]);
         }
+        setScholarships(applyCustomOrdering(list));
       })
       .catch((err) => {
         console.error("Error fetching scholarships:", err);
@@ -121,24 +160,9 @@ function ScholarshipFinder() {
       .finally(() => setLoading(false));
   };
 
-
   useEffect(() => {
-    const targetName = "HEC Learning Opportunities Abroad (Chinese Govt, Commonwealth, Hungarian etc.)";
-    setScholarships((prev) => {
-      const idx = prev.findIndex((s) => s.name === targetName);
-      if (idx === -1) return prev; // not found
-      const desiredIdx = 175; // position 176 (0‑based)
-      if (idx === desiredIdx) return prev; // already at correct place
-      const newArr = [...prev];
-      const [item] = newArr.splice(idx, 1);
-      if (desiredIdx >= newArr.length) {
-        newArr.push(item);
-      } else {
-        newArr.splice(desiredIdx, 0, item);
-      }
-      return newArr;
-    });
-  }, [scholarships]);
+    fetchScholarships();
+  }, []);
 
   useEffect(() => {
     const localProfile = readUserProfile(currentUser?.id);
