@@ -69,7 +69,7 @@ function Result() {
               className="cg-back-nav-btn"
               onClick={() => navigate('/dashboard')}
             >
-              ← Back to dashboard
+              ← Back to Dashboard
             </button>
           </div>
           <section className="result-chart-card" style={{ textAlign: 'center', padding: '48px 24px', maxWidth: '520px', margin: '40px auto' }}>
@@ -187,7 +187,7 @@ function Result() {
             className="cg-back-nav-btn"
             onClick={() => navigate('/dashboard')}
           >
-            ← Back to dashboard
+            ← Back to Dashboard
           </button>
         </div>
 

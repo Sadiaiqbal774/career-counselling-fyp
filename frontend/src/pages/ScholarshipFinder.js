@@ -224,22 +224,6 @@ function ScholarshipFinder() {
   };
 
   const renderCard = (scholarship, key) => {
-  // Helper to delete a scholarship from the backend
-  const deleteScholarship = async (sch) => {
-    try {
-      const res = await fetch(`${API_URL}/admin/scholarships/${sch.id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      // Optimistically remove from UI
-      setScholarships((prev) => prev.filter((s) => s.id !== sch.id));
-    } catch (err) {
-      console.error('Error deleting scholarship:', err);
-      setFetchError('Failed to delete scholarship.');
-    }
-  };
-
     const eligibility = scholarshipEligibility(scholarship, marks);
     const isSaved = isItemBookmarked(currentUser?.id, "scholarships", scholarship);
     const badgeStyle = {
@@ -297,24 +281,8 @@ function ScholarshipFinder() {
             className="scholarship-apply-btn"
             style={{ flex: 1, marginTop: 0, textAlign: "center" }}
           >
-            Apply Now
+            Apply Now →
           </a>
-          <button
-            type="button"
-            onClick={() => deleteScholarship(scholarship)}
-            style={{
-              padding: "11px 16px",
-              borderRadius: "8px",
-              border: "1.5px solid #e53935",
-              background: "#ffebee",
-              color: "#b71c1c",
-              fontWeight: 600,
-              fontSize: "14px",
-              cursor: "pointer",
-              marginLeft: "8px",
-            }}
-            title="Delete scholarship"
-          >Delete</button>
           <button
             type="button"
             onClick={() => handleToggleBookmark(scholarship)}
@@ -354,13 +322,13 @@ function ScholarshipFinder() {
     <div className="scholarship-page">
       <div className="scholarship-header">
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "20px" }}>
+          <button type="button" onClick={() => navigate("/dashboard")} className="scholarship-nav-btn">← Back to Dashboard</button>
           <button type="button" onClick={() => navigate("/result")} className="scholarship-nav-btn">Back to results</button>
           <button type="button" onClick={() => navigate("/university-recommender")}
             style={{ padding: "9px 16px", border: "1px solid #c17b3f", borderRadius: "8px", background: "#c17b3f", color: "#fff", fontWeight: "600", cursor: "pointer" }}>
             University Recommender
           </button>
           <button type="button" onClick={() => navigate("/saved")} className="scholarship-nav-btn">⭐ Saved</button>
-          <button type="button" onClick={() => navigate("/dashboard")} className="scholarship-nav-btn">Dashboard</button>
         </div>
         <h1 className="scholarship-title"><span style={{ fontSize: "44px" }}>🎓</span>Scholarship Finder</h1>
         <p className="scholarship-subtitle">Find scholarships based on your academic background, marks, and interests.</p>

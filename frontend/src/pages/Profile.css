@@ -74,7 +74,10 @@
 .profile-feedback--error { background: #fbe5e3; color: #a52b22; }
 .profile-saved-panel { max-width: 640px; padding: 24px; border: 1px solid #b9dfc4; border-radius: 10px; background: #e8f4eb; color: #28734a; }
 .profile-saved-panel p { margin: 8px 0 0; }
-.profile-saved-panel .profile-save-button { background: #28734a; border-color: #28734a; }
+.profile-saved-panel .profile-save-button { background: #28734a; border-color: #28734a; color: #ffffff; font-weight: 700; }
+.profile-saved-panel .profile-save-button:hover { background: #1e5a39; }
+.profile-saved-panel .profile-back-button { background: #ffffff; border: 1.5px solid #28734a; color: #28734a; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
+.profile-saved-panel .profile-back-button:hover { background: #f0f7f2; }
 .profile-eyebrow { color: var(--accent, #7c5d42); text-transform: uppercase; letter-spacing: .12em; font-size: .7rem; font-weight: 700; }
 .profile-muted { color: var(--muted, #aaa); }
 
@@ -409,6 +412,52 @@ html.dark-mode .profile-back-button:hover,
 html.dark .profile-back-button:hover,
 :root[data-theme="dark"] .profile-back-button:hover {
   background: #2f231d !important;
+}
+
+/* Dark mode for profile-saved-panel and Go to Dashboard button */
+html.dark-mode .profile-saved-panel,
+html.dark .profile-saved-panel,
+:root[data-theme="dark"] .profile-saved-panel {
+  background: rgba(30, 41, 35, 0.95) !important;
+  border: 1px solid rgba(52, 211, 153, 0.35) !important;
+  color: #a7f3d0 !important;
+}
+
+html.dark-mode .profile-saved-panel p,
+html.dark .profile-saved-panel p,
+:root[data-theme="dark"] .profile-saved-panel p {
+  color: #d1fae5 !important;
+}
+
+html.dark-mode .profile-saved-panel .profile-save-button,
+html.dark .profile-saved-panel .profile-save-button,
+:root[data-theme="dark"] .profile-saved-panel .profile-save-button {
+  background: #2ea043 !important;
+  border-color: #2ea043 !important;
+  color: #ffffff !important;
+}
+
+html.dark-mode .profile-saved-panel .profile-save-button:hover,
+html.dark .profile-saved-panel .profile-save-button:hover,
+:root[data-theme="dark"] .profile-saved-panel .profile-save-button:hover {
+  background: #238636 !important;
+}
+
+html.dark-mode .profile-saved-panel .profile-back-button,
+html.dark .profile-saved-panel .profile-back-button,
+:root[data-theme="dark"] .profile-saved-panel .profile-back-button {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+html.dark-mode .profile-saved-panel .profile-back-button:hover,
+html.dark .profile-saved-panel .profile-back-button:hover,
+:root[data-theme="dark"] .profile-saved-panel .profile-back-button:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: #34d399 !important;
+  color: #34d399 !important;
 }
 
 html.dark-mode .profile-modal-card,

@@ -25,7 +25,28 @@
 }
 
 .result-back-nav {
-  margin-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.cg-back-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.cg-back-nav-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .result-report-section {

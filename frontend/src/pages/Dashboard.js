@@ -59,46 +59,6 @@ function Dashboard() {
               <span className="cg-badge-chip">Scholarship support</span>
               <span className="cg-badge-chip">Aptitude assessment</span>
             </div>
-
-            {/* Quick Actions Bar */}
-            <div className="cg-quick-actions-bar">
-              <button
-                type="button"
-                className="cg-action-btn cg-action-btn--primary"
-                onClick={() => navigate('/result')}
-              >
-                📊 View results
-              </button>
-              <button
-                type="button"
-                className="cg-action-btn cg-action-btn--secondary"
-                onClick={() => navigate('/general-quiz')}
-              >
-                {hasQuizResults ? '↻ Retake quiz' : '🚀 Take quiz'}
-              </button>
-              <button
-                type="button"
-                className="cg-action-btn cg-action-btn--ghost"
-                onClick={() => navigate('/university-recommender')}
-              >
-                🏛️ Universities
-              </button>
-              <button
-                type="button"
-                className="cg-action-btn cg-action-btn--ghost"
-                onClick={() => navigate('/scholarships')}
-              >
-                🎓 Scholarships
-              </button>
-              <button
-                type="button"
-                className="cg-action-btn cg-action-btn--saved"
-                onClick={() => navigate('/saved')}
-                title="View your saved universities and scholarships"
-              >
-                ⭐ Saved {savedCount > 0 ? `(${savedCount})` : ''}
-              </button>
-            </div>
           </div>
 
           <aside className="cg-dashboard-profile-box">
