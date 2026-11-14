@@ -150,7 +150,15 @@ export function formatUniversityLinks(rawUrl, uniName = "", programName = "") {
   return { websiteUrl, applyUrl };
 }
 
-const API_URL = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000').trim().replace(/\/+$/, '');
+const API_URL = (() => {
+  const envUrl = (process.env.REACT_APP_API_URL || '').trim().replace(/\/+$/, '');
+  if (!envUrl || envUrl.includes('example.com') || envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
+    if (typeof window !== 'undefined' && window.location && window.location.hostname && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
+      return 'https://career-counselling-fyp.onrender.com';
+    }
+  }
+  return envUrl || (typeof window !== 'undefined' && window.location && !window.location.hostname.includes('localhost') ? 'https://career-counselling-fyp.onrender.com' : 'http://127.0.0.1:5000');
+})();
 
 // ─── Google Font ───────────────────────────────────────────────────
 const fontLink = document.createElement("link");

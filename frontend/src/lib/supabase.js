@@ -1,7 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = (process.env.REACT_APP_SUPABASE_URL || '').trim();
-const supabaseAnonKey = (process.env.REACT_APP_SUPABASE_ANON_KEY || '').trim();
+const rawSupabaseUrl = (process.env.REACT_APP_SUPABASE_URL || '').trim();
+const rawSupabaseAnonKey = (process.env.REACT_APP_SUPABASE_ANON_KEY || '').trim();
+
+const supabaseUrl = (!rawSupabaseUrl || rawSupabaseUrl.includes('your-project') || rawSupabaseUrl.includes('invalid') || rawSupabaseUrl.includes('example'))
+  ? 'https://tcegfjhljwzypjrcplgz.supabase.co'
+  : rawSupabaseUrl;
+
+const supabaseAnonKey = (!rawSupabaseAnonKey || rawSupabaseAnonKey.includes('your-') || rawSupabaseAnonKey.includes('invalid') || rawSupabaseAnonKey.length < 20)
+  ? 'sb_publishable_KGz34OZIa1iKBnPdlGTroA_S2v433c6'
+  : rawSupabaseAnonKey;
 
 export function getSupabaseConfigError(url = supabaseUrl, anonKey = supabaseAnonKey) {
   if (!url || !anonKey) {

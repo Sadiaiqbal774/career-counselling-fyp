@@ -5,7 +5,15 @@ import { useNavigate } from 'react-router-dom';
 import { getAdminAccessToken, refreshAdminAccessToken, clearAdminSession } from '../lib/supabase';
 import './AdminDashboard.css';
 
-const API_URL = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000').trim().replace(/\/+$/, '');
+const API_URL = (() => {
+  const envUrl = (process.env.REACT_APP_API_URL || '').trim().replace(/\/+$/, '');
+  if (!envUrl || envUrl.includes('example.com') || envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
+    if (typeof window !== 'undefined' && window.location && window.location.hostname && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
+      return 'https://career-counselling-fyp.onrender.com';
+    }
+  }
+  return envUrl || (typeof window !== 'undefined' && window.location && !window.location.hostname.includes('localhost') ? 'https://career-counselling-fyp.onrender.com' : 'http://127.0.0.1:5000');
+})();
 
 const PAKISTAN_CITIES = [
   'Abbottabad', 'Attock', 'Awaran',
