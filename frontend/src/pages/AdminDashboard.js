@@ -167,8 +167,26 @@ function isHash(str) {
   return false;
 }
 
+export function isUserBlocked(user) {
+  if (!user) return false;
+  if (user.blocked === true || user.blocked === 'true') return true;
+  if (user.is_blocked === true || user.is_blocked === 'true') return true;
+  if (user.isBlocked === true || user.isBlocked === 'true') return true;
+  if (user.user_metadata?.is_blocked === true || user.user_metadata?.is_blocked === 'true') return true;
+  if (user.app_metadata?.is_blocked === true || user.app_metadata?.is_blocked === 'true') return true;
+  if (user.banned_until && user.banned_until !== 'none') {
+    try {
+      const banDate = new Date(user.banned_until);
+      if (!isNaN(banDate.getTime()) && banDate.getTime() > Date.now()) {
+        return true;
+      }
+    } catch (_) {}
+  }
+  return false;
+}
+
 function isUserActive(user) {
-  if (!user || user.blocked) return false;
+  if (!user || isUserBlocked(user)) return false;
   if (typeof user.isLoggedIn === 'boolean') return user.isLoggedIn;
   if (user.status === 'active') return true;
   if (user.status === 'passive') return false;
@@ -400,7 +418,7 @@ function exportUsersCsv(users) {
     user.email || '-',
     user.authProvider === 'google' ? 'Google' : 'Email',
     formatDateTime(user.lastSignInAt),
-    user.blocked ? 'Blocked' : (isUserActive(user) ? 'Active' : 'Inactive'),
+    isUserBlocked(user) ? 'Blocked' : (isUserActive(user) ? 'Active' : 'Inactive'),
   ]);
   exportToCsv(`users_report_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
 }
@@ -574,7 +592,11 @@ function deduplicateActivities(items) {
 
   // Also clean up localStorage to remove any duplicate records that accumulated
   try {
-    const persisted = result.filter((r) => String(r.id || '').startsWith('act_')).slice(0, 500);
+    const persisted = result.filter((r) => {
+      const id = String(r.id || '');
+      const type = String(r.type || r.eventType || '').toLowerCase();
+      return id.startsWith('act_') || type.startsWith('admin_') || type.includes('block') || type.includes('delete') || type.includes('unblock');
+    }).slice(0, 500);
     localStorage.setItem(ADMIN_ACTIONS_STORAGE_KEY, JSON.stringify(persisted));
   } catch (_) {}
 
@@ -595,6 +617,9 @@ function persistAdminAction(action) {
   try {
     const existing = getPersistedAdminActions();
     const updated = deduplicateActivities([action, ...existing]);
+    try {
+      localStorage.setItem(ADMIN_ACTIONS_STORAGE_KEY, JSON.stringify(updated.slice(0, 500)));
+    } catch (_) {}
     return updated;
   } catch (_) {
     return [];
@@ -622,7 +647,7 @@ function activitySummary(records) {
 
     if (type.includes('assessment')) assessmentCount += 1;
     else if (type.includes('chat')) chatbotCount += 1;
-    else if (type.startsWith('admin_user') || type.includes('block') || type.includes('delete')) adminCount += 1;
+    else if (type.startsWith('admin_') || type.includes('block') || type.includes('delete') || type.includes('unblock')) adminCount += 1;
     else if (type.includes('registered') || type.includes('login') || type.includes('user')) userCount += 1;
 
     const details = record.details;
@@ -652,7 +677,7 @@ function activitySummary(records) {
         if (type.includes('assessment')) timelineDetails[dayKey].assessments += 1;
         else if (type.includes('chat')) timelineDetails[dayKey].chatbot += 1;
         else if (type.includes('registered') || type.includes('login') || type.includes('user')) timelineDetails[dayKey].user += 1;
-        else if (type.startsWith('admin_user') || type.includes('block') || type.includes('delete')) timelineDetails[dayKey].admin += 1;
+        else if (type.startsWith('admin_') || type.includes('block') || type.includes('delete') || type.includes('unblock')) timelineDetails[dayKey].admin += 1;
       }
     }
     if (details && typeof details === 'object') {
@@ -746,19 +771,24 @@ function friendlyEventLabel(type) {
 }
 
 function eventTone(type) {
-  if (type.includes('registered') || type.includes('unblock')) return 'registered';
-  if (type.includes('login') || type.includes('update')) return 'login';
-  if (type.includes('assessment')) return 'assessment';
-  if (type.includes('chat')) return 'chatbot';
-  if (type.includes('block') || type.includes('delete')) return 'admin';
+  const t = String(type || '').toLowerCase();
+  if (t.includes('registered') || t.includes('unblock')) return 'registered';
+  if (t.includes('assessment')) return 'assessment';
+  if (t.includes('chat')) return 'chatbot';
+  if (t.includes('block') || t.includes('delete') || t.startsWith('admin_')) return 'admin';
   return 'login';
 }
 
 function eventCategoryMeta(type) {
-  if (type.includes('assessment')) return { key: 'assessments', label: 'Student Test', tone: 'assessment' };
-  if (type.includes('chat')) return { key: 'chatbot', label: 'AI Assistant', tone: 'chatbot' };
-  if (type.includes('block') || type.includes('unblock')) return { key: 'admin', label: 'Security Action', tone: 'admin' };
-  if (type.startsWith('admin_user')) return { key: 'admin', label: 'Admin Audit', tone: 'admin' };
+  const t = String(type || '').toLowerCase();
+  if (t.includes('assessment')) return { key: 'assessments', label: 'Student Test', tone: 'assessment' };
+  if (t.includes('chat')) return { key: 'chatbot', label: 'AI Assistant', tone: 'chatbot' };
+  if (t.startsWith('admin_') || t.includes('block') || t.includes('unblock') || t.includes('delete') || t.includes('admin')) {
+    return { key: 'admin', label: 'Admin Action', tone: 'admin' };
+  }
+  if (t.includes('registered') || t.includes('login') || t.includes('user')) {
+    return { key: 'user', label: 'User Activity', tone: 'login' };
+  }
   return { key: 'other', label: 'System Event', tone: 'login' };
 }
 
@@ -3105,13 +3135,27 @@ function AdminDashboard() {
 
   const toggleUserBlock = async (user) => {
     try {
-      const nextBlocked = !user.blocked;
+      const currentlyBlocked = isUserBlocked(user);
+      const nextBlocked = !currentlyBlocked;
       const result = await api(`/api/admin/users/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: user.name, email: user.email, blocked: nextBlocked }),
       });
-      setUsers((prevUsers) => prevUsers.map((entry) => (entry.id === user.id ? result.user : entry)));
+      const updatedUser = {
+        ...user,
+        ...(result?.user || {}),
+        blocked: nextBlocked,
+        is_blocked: nextBlocked,
+        isBlocked: nextBlocked,
+        banned_until: nextBlocked ? '2126-01-01T00:00:00Z' : null,
+        user_metadata: {
+          ...(user.user_metadata || {}),
+          ...(result?.user?.user_metadata || {}),
+          is_blocked: nextBlocked,
+        },
+      };
+      setUsers((prevUsers) => prevUsers.map((entry) => (String(entry.id) === String(user.id) ? updatedUser : entry)));
       const actionItem = {
         id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
         type: nextBlocked ? 'admin_user_blocked' : 'admin_user_unblocked',
@@ -3126,6 +3170,7 @@ function AdminDashboard() {
       persistAdminAction(actionItem);
       setDashboardData((prev) => ({
         ...prev,
+        users: (prev.users || []).map((entry) => (String(entry.id) === String(user.id) ? updatedUser : entry)),
         activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
       }));
       setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
@@ -3139,7 +3184,7 @@ function AdminDashboard() {
     editingUser && originalUser && (
       (editingUser.name || '').trim() !== (originalUser.name || '').trim() ||
       (editingUser.email || '').trim().toLowerCase() !== (originalUser.email || '').trim().toLowerCase() ||
-      Boolean(editingUser.blocked) !== Boolean(originalUser.blocked)
+      Boolean(isUserBlocked(editingUser)) !== Boolean(isUserBlocked(originalUser))
     )
   );
 
@@ -3150,15 +3195,47 @@ function AdminDashboard() {
     setModalError('');
     setModalNotice('');
     try {
+      const targetBlocked = Boolean(isUserBlocked(editingUser));
       const result = await api(`/api/admin/users/${editingUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editingUser.name, email: editingUser.email, blocked: Boolean(editingUser.blocked) }),
+        body: JSON.stringify({ name: editingUser.name, email: editingUser.email, blocked: targetBlocked }),
       });
-      setUsers((prevUsers) => prevUsers.map((user) => (user.id === result.user.id ? result.user : user)));
-      if (Boolean(editingUser.blocked) !== Boolean(originalUser?.blocked)) {
-        const nextBlocked = Boolean(editingUser.blocked);
+      const updatedUser = {
+        ...editingUser,
+        ...(result?.user || {}),
+        blocked: targetBlocked,
+        is_blocked: targetBlocked,
+        isBlocked: targetBlocked,
+        banned_until: targetBlocked ? '2126-01-01T00:00:00Z' : null,
+        user_metadata: {
+          ...(editingUser.user_metadata || {}),
+          ...(result?.user?.user_metadata || {}),
+          is_blocked: targetBlocked,
+        },
+      };
+      setUsers((prevUsers) => prevUsers.map((user) => (String(user.id) === String(editingUser.id) ? updatedUser : user)));
+      if (Boolean(isUserBlocked(editingUser)) !== Boolean(isUserBlocked(originalUser))) {
+        const nextBlocked = targetBlocked;
         const actionItem = {
+          id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          type: nextBlocked ? 'admin_user_blocked' : 'admin_user_unblocked',
+          details: {
+            userId: editingUser.id,
+            userName: editingUser.name,
+            email: editingUser.email,
+            action: nextBlocked ? 'Blocked account' : 'Unblocked account',
+          },
+          createdAt: new Date().toISOString(),
+        };
+        persistAdminAction(actionItem);
+        setDashboardData((prev) => ({
+          ...prev,
+          users: (prev.users || []).map((entry) => (String(entry.id) === String(editingUser.id) ? updatedUser : entry)),
+          activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
+        }));
+        setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
+      }
           id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
           type: nextBlocked ? 'admin_user_blocked' : 'admin_user_unblocked',
           details: {
@@ -3293,7 +3370,7 @@ function AdminDashboard() {
       if (target.type === 'user') {
         const user = target.payload;
         await api(`/api/admin/users/${user.id}`, { method: 'DELETE' });
-        setUsers((prevUsers) => prevUsers.filter((entry) => entry.id !== user.id));
+        setUsers((prevUsers) => prevUsers.filter((entry) => String(entry.id) !== String(user.id)));
         const actionItem = {
           id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
           type: 'admin_user_deleted',
@@ -3308,6 +3385,7 @@ function AdminDashboard() {
         persistAdminAction(actionItem);
         setDashboardData((prev) => ({
           ...prev,
+          users: (prev.users || []).filter((entry) => String(entry.id) !== String(user.id)),
           activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
         }));
         setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
@@ -3375,9 +3453,9 @@ function AdminDashboard() {
   };
 
   const filteredUsers = users.filter((u) => {
-    if (userFilter === 'active' && (!isUserActive(u) || u.blocked)) return false;
-    if (userFilter === 'passive' && (isUserActive(u) || u.blocked)) return false;
-    if (userFilter === 'blocked' && !u.blocked) return false;
+    if (userFilter === 'active' && (!isUserActive(u) || isUserBlocked(u))) return false;
+    if (userFilter === 'passive' && (isUserActive(u) || isUserBlocked(u))) return false;
+    if (userFilter === 'blocked' && !isUserBlocked(u)) return false;
     if (!userSearch.trim()) return true;
     const q = userSearch.toLowerCase();
     return (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q);
@@ -3395,9 +3473,9 @@ function AdminDashboard() {
     return userSortAsc ? timeA - timeB : timeB - timeA;
   });
 
-  const activeCount = users.filter((u) => !u.blocked && isUserActive(u)).length;
-  const passiveCount = users.filter((u) => !u.blocked && !isUserActive(u)).length;
-  const blockedCount = users.filter((u) => u.blocked).length;
+  const activeCount = users.filter((u) => !isUserBlocked(u) && isUserActive(u)).length;
+  const passiveCount = users.filter((u) => !isUserBlocked(u) && !isUserActive(u)).length;
+  const blockedCount = users.filter((u) => isUserBlocked(u)).length;
 
   const visibleRecords = activeResource === 'universities'
     ? records.filter((record) => universityMatches(record, universitySearch, universityCityFilter))
@@ -3700,8 +3778,8 @@ function AdminDashboard() {
                     <tr
                       key={user.id}
                       onClick={() => {
-                        setEditingUser({ ...user });
-                        setOriginalUser({ ...user });
+                        setEditingUser({ ...user, blocked: isUserBlocked(user) });
+                        setOriginalUser({ ...user, blocked: isUserBlocked(user) });
                         setModalError('');
                         setModalNotice('');
                       }}
@@ -3739,7 +3817,7 @@ function AdminDashboard() {
                       </td>
                       <td style={{ textAlign: 'center' }}>{formatDateTime(user.lastSignInAt)}</td>
                       <td style={{ textAlign: 'center' }}>
-                        {user.blocked ? (
+                        {isUserBlocked(user) ? (
                           <StatusPill tone="warn">Blocked</StatusPill>
                         ) : isUserActive(user) ? (
                           <StatusPill tone="good">Active</StatusPill>
@@ -3753,14 +3831,30 @@ function AdminDashboard() {
                             className="admin-action admin-action--user admin-action--edit"
                             type="button"
                             onClick={() => {
-                              setEditingUser({ ...user });
-                              setOriginalUser({ ...user });
+                              setEditingUser({ ...user, blocked: isUserBlocked(user) });
+                              setOriginalUser({ ...user, blocked: isUserBlocked(user) });
                               setModalError('');
                               setModalNotice('');
                             }}
                           >
                             Edit
                           </button>
+                          {!isUserAdmin(user) && !isSelfUser(user) && (
+                            <button
+                              className={`admin-action admin-action--user ${isUserBlocked(user) ? 'admin-action--unblock' : 'admin-action--block'}`}
+                              type="button"
+                              onClick={() => toggleUserBlock(user)}
+                              title={isUserBlocked(user) ? 'Unblock user' : 'Block user'}
+                              style={{
+                                marginLeft: '6px',
+                                background: isUserBlocked(user) ? '#f0fdf4' : '#fef2f2',
+                                color: isUserBlocked(user) ? '#166534' : '#991b1b',
+                                borderColor: isUserBlocked(user) ? '#bbf7d0' : '#fecaca',
+                              }}
+                            >
+                              {isUserBlocked(user) ? 'Unblock' : 'Block'}
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -3859,8 +3953,8 @@ function AdminDashboard() {
                     <label className="admin-modal-checkbox">
                       <input
                         type="checkbox"
-                        checked={Boolean(editingUser.blocked)}
-                        onChange={(event) => setEditingUser({ ...editingUser, blocked: event.target.checked })}
+                        checked={Boolean(isUserBlocked(editingUser))}
+                        onChange={(event) => setEditingUser({ ...editingUser, blocked: event.target.checked, is_blocked: event.target.checked })}
                         disabled={isSavingUser}
                       />
                       <span>Block account access (prevent user from signing in)</span>
@@ -4050,15 +4144,16 @@ function AdminDashboard() {
                               createdAt: new Date().toISOString(),
                             };
                             persistAdminAction(actionItem);
+                            setUsers((prevUsers) => prevUsers.filter((entry) => String(entry.id) !== String(target.id)));
                             setDashboardData((prev) => ({
                               ...prev,
+                              users: (prev.users || []).filter((entry) => String(entry.id) !== String(target.id)),
                               activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
                             }));
                             setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
                             setUserDeleteConfirmation(null);
                             setEditingUser(null);
                             setOriginalUser(null);
-                            await load('users');
                             setNotice(`User account "${target.name || target.email}" deleted successfully.`);
                           } catch (deleteErr) {
                             setUserDeleteConfirmation((prev) => ({

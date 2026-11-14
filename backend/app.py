@@ -523,13 +523,16 @@ def save_json_records(resource, records):
 
 def log_activity(activity_type, details=None):
     records = load_json_records("activity") or []
-    records.append({
-        "id": secrets.token_hex(8),
+    act_id = f"act_{secrets.token_hex(8)}"
+    new_entry = {
+        "id": act_id,
         "type": activity_type,
         "details": details or {},
         "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-    })
-    save_json_records("activity", records[-1000:])
+    }
+    records.insert(0, new_entry)
+    save_json_records("activity", records[:1000])
+    return new_entry
 
 
 def is_hash_like(val):
@@ -549,7 +552,7 @@ def get_all_known_users_map():
     # 1. Supabase users if configured (primary authority)
     if SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
         try:
-            for su in list_supabase_users():
+            for su in list_supabase_users(force_refresh=True):
                 sanitized = sanitize_supabase_user(su)
                 uid = str(sanitized.get("id"))
                 users_map[uid] = {
@@ -557,6 +560,9 @@ def get_all_known_users_map():
                     "name": sanitized.get("name") or sanitized.get("email"),
                     "email": sanitized.get("email"),
                     "createdAt": sanitized.get("createdAt"),
+                    "blocked": sanitized.get("blocked"),
+                    "is_blocked": sanitized.get("is_blocked"),
+                    "banned_until": sanitized.get("banned_until"),
                 }
         except Exception:
             pass
@@ -570,6 +576,8 @@ def get_all_known_users_map():
                 "id": uid,
                 "name": name,
                 "email": u.get("email", ""),
+                "blocked": bool(u.get("blocked") or u.get("is_blocked")),
+                "is_blocked": bool(u.get("blocked") or u.get("is_blocked")),
             }
 
     # 3. Historical activity users only if not already resolved
@@ -840,17 +848,39 @@ def sanitize_supabase_user(user):
     if email and email.strip().lower() == "shamamaaslam377@gmail.com":
         role = "student"
         is_admin_user = False
+
+    banned_until = user.get("banned_until")
+    is_banned = False
+    if banned_until and str(banned_until).strip().lower() not in ("none", "", "null", "false"):
+        try:
+            now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            is_banned = str(banned_until) > now_iso
+        except Exception:
+            is_banned = True
+
+    is_meta_blocked = bool(
+        metadata.get("is_blocked")
+        or app_metadata.get("is_blocked")
+        or user.get("blocked")
+        or user.get("is_blocked")
+    )
+    is_blocked = bool(is_banned or is_meta_blocked)
+
     return {
         "id": uid,
         "name": meta_name or "Student",
         "email": email,
         "authProvider": "google" if provider == "google" else "local",
-        "blocked": bool(user.get("banned_until") or (user.get("user_metadata") or {}).get("is_blocked")),
+        "blocked": is_blocked,
+        "is_blocked": is_blocked,
+        "isBlocked": is_blocked,
+        "banned_until": banned_until if is_blocked else None,
         "createdAt": user.get("created_at"),
         "emailConfirmed": bool(user.get("email_confirmed_at")),
         "lastSignInAt": last_sign_in,
         "isLoggedIn": is_user_logged_in(uid, email, last_sign_in),
         "app_metadata": app_metadata,
+        "user_metadata": metadata,
         "role": role,
         "isAdmin": is_admin_user,
     }
@@ -1765,7 +1795,7 @@ def admin_stats():
         return auth_error
 
     try:
-        users = [sanitize_supabase_user(entry) for entry in list_supabase_users()]
+        users = [sanitize_supabase_user(entry) for entry in list_supabase_users(force_refresh=True)]
     except (RuntimeError, Exception):
         users = [sanitize_user(entry) for entry in reversed(load_users())]
 
@@ -1836,12 +1866,15 @@ def admin_update_user(user_id):
             will_block = bool(payload["blocked"])
 
         user_meta = {**(current.get("user_metadata") or {}), "name": name}
+        app_meta = {**(current.get("app_metadata") or {})}
         if will_block is not None:
             user_meta["is_blocked"] = will_block
+            app_meta["is_blocked"] = will_block
 
         update_body = {
             "email": email,
             "user_metadata": user_meta,
+            "app_metadata": app_meta,
         }
         is_underlying_admin_email = bool(email and email.strip().lower() in [e.strip().lower() for e in admin_email_allowlist()])
         if will_block is not None:
@@ -1853,9 +1886,14 @@ def admin_update_user(user_id):
         updated = supabase_admin_request("PUT", f"/auth/v1/admin/users/{user_id}", body=update_body)
         invalidate_supabase_users_cache()
         if will_block is not None:
-            log_activity("admin_user_blocked" if will_block else "admin_user_unblocked", {"userId": user_id, "email": email, "userName": name})
+            log_activity("admin_user_blocked" if will_block else "admin_user_unblocked", {
+                "userId": user_id,
+                "email": email,
+                "userName": name,
+                "action": "Blocked account" if will_block else "Unblocked account",
+            })
         else:
-            log_activity("admin_user_updated", {"userId": user_id, "email": email, "userName": name})
+            log_activity("admin_user_updated", {"userId": user_id, "email": email, "userName": name, "action": "Updated user account"})
 
         return jsonify({"user": sanitize_supabase_user(updated)}), 200
     except Exception as error:
@@ -1895,7 +1933,7 @@ def admin_delete_user(user_id):
     if len(remaining_users) < len(users):
         save_users(remaining_users)
         invalidate_supabase_users_cache()
-        log_activity("admin_user_deleted", {"userId": user_id, "userName": user_name, "email": user_email})
+        log_activity("admin_user_deleted", {"userId": user_id, "userName": user_name, "email": user_email, "action": "Deleted user account"})
         return jsonify({"message": "User deleted successfully."}), 200
 
     # 2. Otherwise delete via Supabase if configured
@@ -1911,7 +1949,7 @@ def admin_delete_user(user_id):
             except Exception:
                 pass
 
-        log_activity("admin_user_deleted", {"userId": user_id, "userName": user_name, "email": user_email})
+        log_activity("admin_user_deleted", {"userId": user_id, "userName": user_name, "email": user_email, "action": "Deleted user account"})
         return jsonify({"message": "User deleted successfully."}), 200
     except Exception as error:
         return jsonify({"message": str(error)}), 500
@@ -2061,6 +2099,40 @@ def admin_resource(resource):
                         })
                         existing_reg_uids.add(uid)
                         existing_reg_emails.add(u_email)
+            except Exception:
+                pass
+
+            # 4. Dynamically synthesize admin user block events for any user who is currently blocked
+            try:
+                existing_block_uids = {
+                    str((item.get("details") or {}).get("userId") or (item.get("details") or {}).get("user_id") or "")
+                    for item in activity_list
+                    if item.get("type") in ("admin_user_blocked", "user_blocked")
+                }
+                existing_block_emails = {
+                    str((item.get("details") or {}).get("email") or "").strip().lower()
+                    for item in activity_list
+                    if item.get("type") in ("admin_user_blocked", "user_blocked")
+                }
+                for uid, uinfo in user_map.items():
+                    if uinfo.get("blocked") or uinfo.get("is_blocked"):
+                        u_email = str(uinfo.get("email") or "").strip().lower()
+                        if uid not in existing_block_uids and (not u_email or u_email not in existing_block_emails):
+                            block_event_id = f"act_block_{uid}"
+                            activity_list.append({
+                                "id": block_event_id,
+                                "type": "admin_user_blocked",
+                                "details": {
+                                    "userId": uid,
+                                    "userName": uinfo.get("name") or "Student",
+                                    "email": uinfo.get("email"),
+                                    "action": "Blocked account",
+                                },
+                                "createdAt": uinfo.get("createdAt") or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                            })
+                            existing_block_uids.add(uid)
+                            if u_email:
+                                existing_block_emails.add(u_email)
             except Exception:
                 pass
 
