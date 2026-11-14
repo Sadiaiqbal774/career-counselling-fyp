@@ -64,13 +64,7 @@ function Result() {
       <div className="result-page">
         <div className="page-container">
           <div className="result-back-nav">
-            <button
-              type="button"
-              className="cg-back-nav-btn"
-              onClick={() => navigate('/dashboard')}
-            >
-              ← Back to Dashboard
-            </button>
+
           </div>
           <section className="result-chart-card" style={{ textAlign: 'center', padding: '48px 24px', maxWidth: '520px', margin: '40px auto' }}>
             <div style={{ fontSize: '3rem', marginBottom: '14px' }}>📊</div>
@@ -180,16 +174,7 @@ function Result() {
     <div className="result-page">
       <div className="page-container result-page-container">
 
-        {/* Back navigation button inside page container */}
-        <div className="result-back-nav">
-          <button
-            type="button"
-            className="cg-back-nav-btn"
-            onClick={() => navigate('/dashboard')}
-          >
-            ← Back to Dashboard
-          </button>
-        </div>
+
 
         {/* PRINTABLE REPORT SECTION */}
         <div id="career-assessment-report-section" className="result-report-section">

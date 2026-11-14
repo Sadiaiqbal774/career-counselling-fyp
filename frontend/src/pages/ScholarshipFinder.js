@@ -244,15 +244,20 @@ function ScholarshipFinder() {
 
     return (
       <div key={key} className="scholarship-card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px 12px", marginBottom: "12px", flexWrap: "wrap" }}>
-          <h2 className="scholarship-card-title" style={{ flex: "1 1 180px", minWidth: 0, margin: 0, wordBreak: "break-word" }}>
+        {/* Uniform Title container */}
+        <div className="scholarship-card-title-wrap">
+          <h2 className="scholarship-card-title" title={scholarship.name}>
             {scholarship.name}
           </h2>
+        </div>
+
+        {/* Badge Row - Fixed uniform position across all cards */}
+        <div className="scholarship-card-badge-row">
           <span
             className="scholarship-card-badge"
             style={{
               ...badgeStyle,
-              padding: "4px 10px",
+              padding: "4px 12px",
               borderRadius: "999px",
               fontSize: "12px",
               fontWeight: 700,
@@ -261,24 +266,30 @@ function ScholarshipFinder() {
               alignItems: "center",
               justifyContent: "center",
               textAlign: "center",
-              maxWidth: "100%",
-              wordBreak: "break-word",
             }}
           >
             {badgeLabel}
           </span>
         </div>
-        {scholarship.provider && (
-          <div className="scholarship-card-meta"><strong>Provider:</strong> {scholarship.provider}</div>
-        )}
-        <div className="scholarship-card-meta"><strong>Minimum Percentage:</strong> {scholarship.min_percentage ?? "N/A"}%</div>
-        {scholarship.provinces && (
-          <div className="scholarship-card-meta"><strong>Region:</strong> {scholarship.provinces}</div>
-        )}
-        <div className="scholarship-card-meta" style={{ marginBottom: "20px" }}>
-          <strong>Field:</strong> {scholarship.field}
+
+        {/* Uniform Meta information list */}
+        <div className="scholarship-card-meta-list">
+          <div className="scholarship-card-meta">
+            <strong>Provider:</strong> <span>{scholarship.provider || "Government / Academic Organization"}</span>
+          </div>
+          <div className="scholarship-card-meta">
+            <strong>Minimum Percentage:</strong> <span>{scholarship.min_percentage != null ? `${scholarship.min_percentage}%` : "N/A"}</span>
+          </div>
+          <div className="scholarship-card-meta">
+            <strong>Region:</strong> <span>{scholarship.provinces || "Federal / National"}</span>
+          </div>
+          <div className="scholarship-card-meta">
+            <strong>Field:</strong> <span>{scholarship.field || "General / All Disciplines"}</span>
+          </div>
         </div>
-        <div style={{ display: "flex", gap: "10px", marginTop: "auto", alignItems: "center" }}>
+
+        {/* Card Actions pinned to bottom */}
+        <div className="scholarship-card-actions">
           <a
             href={formatApplyUrl(scholarship.link || scholarship.source_url, scholarship.name)}
             target="_blank"
@@ -327,7 +338,7 @@ function ScholarshipFinder() {
     <div className="scholarship-page">
       <div className="scholarship-header">
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "20px" }}>
-          <button type="button" onClick={() => navigate("/dashboard")} className="scholarship-nav-btn">← Back to Dashboard</button>
+          
           <button type="button" onClick={() => navigate("/result")} className="scholarship-nav-btn">Back to results</button>
           <button type="button" onClick={() => navigate("/university-recommender")}
             style={{ padding: "9px 16px", border: "1px solid #c17b3f", borderRadius: "8px", background: "#c17b3f", color: "#fff", fontWeight: "600", cursor: "pointer" }}>
