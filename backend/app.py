@@ -609,17 +609,20 @@ def get_all_known_users_map():
         except Exception:
             pass
 
-    # 2. Local users from users.json
+    # 2. Local users from users.json (authoritative for local/seeded users)
     for u in load_users():
         uid = str(u.get("id"))
         if uid not in users_map:
             name = u.get("name") or (u.get("email", "").split("@")[0] if u.get("email") else "Student")
+            is_bl = bool(u.get("blocked", False))
             users_map[uid] = {
                 "id": uid,
                 "name": name,
                 "email": u.get("email", ""),
-                "blocked": bool(u.get("blocked") or u.get("is_blocked")),
-                "is_blocked": bool(u.get("blocked") or u.get("is_blocked")),
+                "blocked": is_bl,
+                "is_blocked": is_bl,
+                "isBlocked": is_bl,
+                "banned_until": "2126-01-01T00:00:00Z" if is_bl else None,
             }
 
     # 3. Historical activity users only if not already resolved
@@ -631,7 +634,6 @@ def get_all_known_users_map():
                 with seed_act_file.open("r", encoding="utf-8") as f:
                     activity = json.load(f)
         for entry in activity:
-            t = entry.get("type")
             details = entry.get("details")
             if isinstance(details, dict):
                 uid = details.get("userId")
@@ -646,16 +648,9 @@ def get_all_known_users_map():
                         "createdAt": entry.get("createdAt") or "2026-11-04T05:32:42Z",
                         "blocked": False,
                         "is_blocked": False,
+                        "isBlocked": False,
+                        "banned_until": None,
                     }
-                # Check for block action records
-                if t in ("admin_user_blocked", "user_blocked"):
-                    target_u = users_map.get(str(uid)) if uid else None
-                    if not target_u and email:
-                        target_u = next((u for u in users_map.values() if str(u.get("email", "")).strip().lower() == email.strip().lower()), None)
-                    if target_u:
-                        target_u["blocked"] = True
-                        target_u["is_blocked"] = True
-                        target_u["banned_until"] = "2126-01-01T00:00:00Z"
     except Exception:
         pass
 
@@ -1932,19 +1927,6 @@ def admin_stats():
             if ku_email:
                 existing_emails.add(ku_email)
 
-    # Ensure any user who is marked blocked in known_map or has a block record is correctly marked
-    for u in users:
-        uid = str(u.get("id"))
-        u_email = str(u.get("email") or "").strip().lower()
-        ku = known_map.get(uid) or (next((k for k in known_map.values() if str(k.get("email", "")).strip().lower() == u_email), None) if u_email else None)
-        if ku and (ku.get("blocked") or ku.get("is_blocked")):
-            u["blocked"] = True
-            u["is_blocked"] = True
-            u["isBlocked"] = True
-            u["status"] = "blocked"
-            if not u.get("banned_until"):
-                u["banned_until"] = "2126-01-01T00:00:00Z"
-
     # Admin accounts are never part of the student / registered user store
     admin_un = (ADMIN_USERNAME or "admin").strip().lower()
     users = [
@@ -1990,11 +1972,23 @@ def admin_update_user(user_id):
     if local_user:
         local_user["name"] = name
         local_user["email"] = email
-        if "blocked" in payload:
-            local_user["blocked"] = bool(payload["blocked"])
+        will_block = bool(payload["blocked"]) if "blocked" in payload else None
+        if will_block is not None:
+            local_user["blocked"] = will_block
+            local_user["is_blocked"] = will_block
+            local_user["isBlocked"] = will_block
+            local_user["banned_until"] = "2126-01-01T00:00:00Z" if will_block else None
         save_users(users)
         invalidate_supabase_users_cache()
-        log_activity("admin_user_updated", {"userId": user_id, "email": email})
+        if will_block is not None:
+            log_activity("admin_user_blocked" if will_block else "admin_user_unblocked", {
+                "userId": user_id,
+                "email": email,
+                "userName": name,
+                "action": "Blocked account" if will_block else "Unblocked account",
+            })
+        else:
+            log_activity("admin_user_updated", {"userId": user_id, "email": email, "userName": name, "action": "Updated user account"})
         return jsonify({"user": sanitize_user(local_user)}), 200
 
     # 2. Otherwise update via Supabase if configured

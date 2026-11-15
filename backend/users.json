@@ -3,11 +3,12 @@
     "id": "f93d5804-b24b-4a59-989d-a766a57e0c89",
     "name": "Dania Aslam",
     "email": "d63018553@gmail.com",
-    "blocked": true,
-    "is_blocked": true,
-    "isBlocked": true,
+    "blocked": false,
+    "is_blocked": false,
+    "isBlocked": false,
     "createdAt": "2026-11-04T05:32:42Z",
-    "authProvider": "local"
+    "authProvider": "local",
+    "banned_until": null
   },
   {
     "id": "c8850537-241b-4a54-bdf2-8b92d8d18092",

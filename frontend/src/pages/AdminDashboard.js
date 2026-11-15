@@ -185,6 +185,26 @@ export function isUserBlocked(user) {
   return false;
 }
 
+export function prepareUserForEdit(user) {
+  if (!user) return null;
+  const isBlocked = Boolean(isUserBlocked(user));
+  return {
+    ...user,
+    blocked: isBlocked,
+    is_blocked: isBlocked,
+    isBlocked: isBlocked,
+    banned_until: isBlocked ? user.banned_until || '2126-01-01T00:00:00Z' : null,
+    user_metadata: {
+      ...(user.user_metadata || {}),
+      is_blocked: isBlocked,
+    },
+    app_metadata: {
+      ...(user.app_metadata || {}),
+      is_blocked: isBlocked,
+    },
+  };
+}
+
 function isUserActive(user) {
   if (!user || isUserBlocked(user)) return false;
   if (typeof user.isLoggedIn === 'boolean') return user.isLoggedIn;
@@ -3184,7 +3204,7 @@ function AdminDashboard() {
     editingUser && originalUser && (
       (editingUser.name || '').trim() !== (originalUser.name || '').trim() ||
       (editingUser.email || '').trim().toLowerCase() !== (originalUser.email || '').trim().toLowerCase() ||
-      Boolean(isUserBlocked(editingUser)) !== Boolean(isUserBlocked(originalUser))
+      Boolean(editingUser.blocked) !== Boolean(originalUser.blocked)
     )
   );
 
@@ -3195,7 +3215,7 @@ function AdminDashboard() {
     setModalError('');
     setModalNotice('');
     try {
-      const targetBlocked = Boolean(isUserBlocked(editingUser));
+      const targetBlocked = Boolean(editingUser.blocked);
       const result = await api(`/api/admin/users/${editingUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -3213,9 +3233,14 @@ function AdminDashboard() {
           ...(result?.user?.user_metadata || {}),
           is_blocked: targetBlocked,
         },
+        app_metadata: {
+          ...(editingUser.app_metadata || {}),
+          ...(result?.user?.app_metadata || {}),
+          is_blocked: targetBlocked,
+        },
       };
       setUsers((prevUsers) => prevUsers.map((user) => (String(user.id) === String(editingUser.id) ? updatedUser : user)));
-      if (Boolean(isUserBlocked(editingUser)) !== Boolean(isUserBlocked(originalUser))) {
+      if (Boolean(editingUser.blocked) !== Boolean(originalUser.blocked)) {
         const nextBlocked = targetBlocked;
         const actionItem = {
           id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -3238,7 +3263,7 @@ function AdminDashboard() {
       }
       setEditingUser(null);
       setOriginalUser(null);
-      setNotice('User updated successfully.');
+      setNotice(`User ${editingUser.name || editingUser.email} is now ${targetBlocked ? 'blocked' : 'active'}.`);
     } catch (saveError) {
       setModalError(saveError.message || 'Failed to update user.');
     } finally {
@@ -3761,8 +3786,9 @@ function AdminDashboard() {
                     <tr
                       key={user.id}
                       onClick={() => {
-                        setEditingUser({ ...user, blocked: isUserBlocked(user) });
-                        setOriginalUser({ ...user, blocked: isUserBlocked(user) });
+                        const prepared = prepareUserForEdit(user);
+                        setEditingUser(prepared);
+                        setOriginalUser(prepared);
                         setModalError('');
                         setModalNotice('');
                       }}
@@ -3814,8 +3840,9 @@ function AdminDashboard() {
                             className="admin-action admin-action--user admin-action--edit"
                             type="button"
                             onClick={() => {
-                              setEditingUser({ ...user, blocked: isUserBlocked(user) });
-                              setOriginalUser({ ...user, blocked: isUserBlocked(user) });
+                              const prepared = prepareUserForEdit(user);
+                              setEditingUser(prepared);
+                              setOriginalUser(prepared);
                               setModalError('');
                               setModalNotice('');
                             }}
@@ -3936,8 +3963,25 @@ function AdminDashboard() {
                     <label className="admin-modal-checkbox">
                       <input
                         type="checkbox"
-                        checked={Boolean(isUserBlocked(editingUser))}
-                        onChange={(event) => setEditingUser({ ...editingUser, blocked: event.target.checked, is_blocked: event.target.checked })}
+                        checked={Boolean(editingUser.blocked)}
+                        onChange={(event) => {
+                          const isChecked = event.target.checked;
+                          setEditingUser({
+                            ...editingUser,
+                            blocked: isChecked,
+                            is_blocked: isChecked,
+                            isBlocked: isChecked,
+                            banned_until: isChecked ? '2126-01-01T00:00:00Z' : null,
+                            user_metadata: {
+                              ...(editingUser.user_metadata || {}),
+                              is_blocked: isChecked,
+                            },
+                            app_metadata: {
+                              ...(editingUser.app_metadata || {}),
+                              is_blocked: isChecked,
+                            },
+                          });
+                        }}
                         disabled={isSavingUser}
                       />
                       <span>Block account access (prevent user from signing in)</span>
