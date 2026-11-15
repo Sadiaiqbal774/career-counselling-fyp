@@ -1300,15 +1300,9 @@ def register():
     security_question = (payload.get("securityQuestion") or "").strip()
     security_answer = (payload.get("securityAnswer") or "").strip()
 
-    if not all([
-        name,
-        email,
-        password,
-        security_question,
-        security_answer
-    ]):
+    if not all([name, email, password]):
         return jsonify({
-            "message": "All fields are required."
+            "message": "Name, email, and password are required."
         }), 400
 
     if not is_valid_email(email):
@@ -1342,16 +1336,18 @@ def register():
         token = secrets.token_urlsafe(32)
         password_salt = secrets.token_bytes(16)
         password_ciphertext = _pending_password_cipher().encrypt(password.encode("utf-8")).decode("ascii")
+        sec_answer_cipher = (
+            _pending_password_cipher().encrypt(security_answer.encode("utf-8")).decode("ascii")
+            if security_answer else ""
+        )
         pending_body = {
             "name": name,
             "email": email,
             "password_ciphertext": password_ciphertext,
             "password_salt": password_salt.hex(),
             "password_hash": _pending_password_hash(password, password_salt),
-            "security_question": security_question,
-            "security_answer_ciphertext": _pending_password_cipher().encrypt(
-                security_answer.encode("utf-8")
-            ).decode("ascii"),
+            "security_question": security_question or "",
+            "security_answer_ciphertext": sec_answer_cipher,
             "token_hash": hash_text(token),
             "expires_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + PENDING_REGISTRATION_TTL)),
         }
@@ -1449,23 +1445,27 @@ def verify_registration():
                 "user_metadata": {"name": pending["name"]},
             },
         )
-        security_answer = _pending_password_cipher().decrypt(
-            pending["security_answer_ciphertext"].encode("ascii")
-        ).decode("utf-8")
-        salt = secrets.token_hex(16)
-        supabase_admin_request(
-            "POST",
-            "/rest/v1/recovery_questions",
-            body={
-                "user_id": user["id"],
-                "email": pending["email"],
-                "question": pending["security_question"],
-                "answer_salt": salt,
-                "answer_hash": _recovery_answer_hash(security_answer, salt),
-                "failed_attempts": 0,
-                "reset_token_used": False,
-            },
-        )
+        if pending.get("security_answer_ciphertext"):
+            try:
+                security_answer = _pending_password_cipher().decrypt(
+                    pending["security_answer_ciphertext"].encode("ascii")
+                ).decode("utf-8")
+                salt = secrets.token_hex(16)
+                supabase_admin_request(
+                    "POST",
+                    "/rest/v1/recovery_questions",
+                    body={
+                        "user_id": user["id"],
+                        "email": pending["email"],
+                        "question": pending.get("security_question") or "",
+                        "answer_salt": salt,
+                        "answer_hash": _recovery_answer_hash(security_answer, salt),
+                        "failed_attempts": 0,
+                        "reset_token_used": False,
+                    },
+                )
+            except Exception:
+                pass
     except (RuntimeError, InvalidToken, UnicodeDecodeError, ValueError) as error:
         return jsonify({"message": str(error) or "Unable to verify the registration."}), 503
     return jsonify({"message": "Email verified. Your account is ready to use."}), 201

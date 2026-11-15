@@ -159,16 +159,18 @@ export function AuthProvider({ children }) {
       throw new Error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
     }
 
+    const payload = {
+      name: name.trim(),
+      email: normalizedEmail,
+      password,
+    };
+    if (recoveryQuestion) payload.securityQuestion = recoveryQuestion;
+    if (recoveryAnswer) payload.securityAnswer = recoveryAnswer;
+
     const response = await fetch(`${API_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: name.trim(),
-        email: normalizedEmail,
-        password,
-        securityQuestion: recoveryQuestion,
-        securityAnswer: recoveryAnswer,
-      }),
+      body: JSON.stringify(payload),
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.message || 'Unable to start registration.');
