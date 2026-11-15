@@ -1,0 +1,42 @@
+[
+  {
+    "id": "f93d5804-b24b-4a59-989d-a766a57e0c89",
+    "name": "Dania Aslam",
+    "email": "d63018553@gmail.com",
+    "blocked": true,
+    "is_blocked": true,
+    "isBlocked": true,
+    "createdAt": "2026-11-04T05:32:42Z",
+    "authProvider": "local"
+  },
+  {
+    "id": "c8850537-241b-4a54-bdf2-8b92d8d18092",
+    "name": "Shamama Aslam",
+    "email": "shamamaaslam377@gmail.com",
+    "blocked": false,
+    "is_blocked": false,
+    "isBlocked": false,
+    "createdAt": "2026-11-04T21:28:04Z",
+    "authProvider": "local"
+  },
+  {
+    "id": "318ce83f-def7-4ac4-8e43-40a7d2885e58",
+    "name": "Asma Afzal",
+    "email": "asmaafzalaf31@gmail.com",
+    "blocked": false,
+    "is_blocked": false,
+    "isBlocked": false,
+    "createdAt": "2026-11-04T14:08:46Z",
+    "authProvider": "local"
+  },
+  {
+    "id": "e5c38724-42d9-4605-bdd1-28c60b98901b",
+    "name": "Annaya Khan",
+    "email": "annaya45@gmail.com",
+    "blocked": false,
+    "is_blocked": false,
+    "isBlocked": false,
+    "createdAt": "2026-11-04T18:40:00Z",
+    "authProvider": "local"
+  }
+]

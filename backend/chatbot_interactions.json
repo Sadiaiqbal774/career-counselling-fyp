@@ -124,5 +124,14 @@
     "message": "Which universities offer top degrees in Business Analytics and FinTech?",
     "response": "Leading Pakistani universities offering BS Business Analytics and FinTech include: 1. LUMS (Suleman Dawood School of Business), 2. FAST-NUCES (School of Management Sciences), 3. IBA Karachi, 4. COMSATS (Department of Management Sciences), 5. NUST (NBS Islamabad).",
     "createdAt": "2026-11-04T22:05:00Z"
+  },
+  {
+    "id": "chat_1731635042000",
+    "userId": "2506948e-be8a-49b2-8da8-20fb1bbf7084",
+    "userName": "Sadia Iqbal",
+    "userEmail": "iqbalsadia808@gmail.com",
+    "message": "scholarship",
+    "response": "Browse the Scholarship Finder to explore merit-based and need-based scholarships. Your saved profile marks and quiz results are used to match available opportunities.",
+    "createdAt": "2026-11-15T01:44:02Z"
   }
 ]

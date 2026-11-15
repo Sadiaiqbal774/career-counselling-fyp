@@ -15,6 +15,6 @@ build/
 *.pyc
 .claude/
 # Local user data
-backend/users.json
+# backend/users.json
 
 !frontend/.env.production

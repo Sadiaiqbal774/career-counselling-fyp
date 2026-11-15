@@ -256,6 +256,15 @@ function ChatbotWidget() {
     setDraft('');
 
     const token = await getAccessToken();
+    const resolvedUserId = currentUser?.id || null;
+    let resolvedUserName = currentUser?.name || currentUser?.displayName;
+    if (!resolvedUserName || resolvedUserName === 'Student' || resolvedUserName === 'Visitor') {
+      if (currentUser?.email) {
+        resolvedUserName = currentUser.email.split('@')[0];
+      }
+    }
+    const resolvedUserEmail = currentUser?.email || null;
+
     fetch(`${API_URL}/api/chatbot/interactions`, {
       method: 'POST',
       headers: {
@@ -264,7 +273,10 @@ function ChatbotWidget() {
       },
       body: JSON.stringify({
         message: text,
-        response: reply
+        response: reply,
+        userId: resolvedUserId,
+        userName: resolvedUserName || (resolvedUserId ? 'Student' : 'Visitor'),
+        userEmail: resolvedUserEmail,
       }),
     }).catch(() => {});
   };
