@@ -731,17 +731,12 @@ def get_deleted_user_keys():
     deleted_uids = set()
     deleted_emails = set()
 
-    # 1. From deleted_users.json store (active deletion tombstones only)
+    # Read from deleted_users.json store (active deletion tombstones)
     try:
         deleted_records = load_json_records("deleted_users") or []
         for d in deleted_records:
             uid = str(d.get("userId") or "").strip()
             em = str(d.get("email") or "").strip().lower()
-            # If user is currently active or logged in, they are not deleted
-            if uid and is_user_logged_in(uid, em):
-                continue
-            if em and is_user_logged_in(uid, em):
-                continue
             if uid:
                 deleted_uids.add(uid)
             if em:
@@ -852,37 +847,6 @@ def get_all_known_users_map(force_refresh=False):
                 "isBlocked": is_bl,
                 "banned_until": "2126-01-01T00:00:00Z" if is_bl else None,
             }
-
-    # 3. Historical activity users only if not already resolved and NOT deleted
-    try:
-        activity = load_json_records("activity") or []
-        if not activity:
-            seed_act_file = backend_dir / "system_activity.json"
-            if seed_act_file.exists():
-                with seed_act_file.open("r", encoding="utf-8") as f:
-                    activity = json.load(f)
-        for entry in activity:
-            details = entry.get("details")
-            if isinstance(details, dict):
-                uid = str(details.get("userId") or "")
-                email = str(details.get("email") or "").strip().lower()
-                if uid in deleted_uids or email in deleted_emails:
-                    continue
-                if uid and uid not in users_map and email:
-                    local = email.split("@")[0].replace(".", " ")
-                    name = " ".join(part.capitalize() for part in local.split())
-                    users_map[uid] = {
-                        "id": uid,
-                        "name": details.get("userName") or name,
-                        "email": email,
-                        "createdAt": entry.get("createdAt") or "2026-11-04T05:32:42Z",
-                        "blocked": False,
-                        "is_blocked": False,
-                        "isBlocked": False,
-                        "banned_until": None,
-                    }
-    except Exception:
-        pass
 
     _known_users_cache["data"] = dict(users_map)
     _known_users_cache["timestamp"] = now
@@ -1455,6 +1419,8 @@ def verify_registration():
                 "user_metadata": {"name": pending["name"]},
             },
         )
+        unrecord_deleted_user(user.get("id"), pending["email"])
+        invalidate_known_users_cache()
         if pending.get("security_answer_ciphertext"):
             try:
                 security_answer = _pending_password_cipher().decrypt(
@@ -1489,6 +1455,14 @@ def auth_presence():
     status = (payload.get("status") or "active").strip().lower()
     is_active = (status == "active")
 
+    deleted_uids, deleted_emails = get_deleted_user_keys()
+    if (user_id and user_id in deleted_uids) or (email and email in deleted_emails):
+        # Account is deleted by admin! Purge from presence so it never appears
+        for key in (user_id, email):
+            if key:
+                active_user_presence.pop(key, None)
+        return jsonify({"status": "deleted", "active": False}), 200
+
     now = time.time()
     for key in (user_id, email):
         if key:
@@ -1496,9 +1470,6 @@ def auth_presence():
                 "last_seen": now if is_active else 0,
                 "logged_in": is_active,
             }
-    if is_active:
-        unrecord_deleted_user(user_id, email)
-        invalidate_known_users_cache()
     return jsonify({"status": "ok", "active": is_active}), 200
 
 
@@ -1907,6 +1878,8 @@ def set_password():
         }
         users.append(user)
         save_users(users)
+        unrecord_deleted_user(user["id"], email)
+        invalidate_known_users_cache()
         return jsonify({"message": "Password set successfully.", "user": user}), 200
 
     user["passwordHash"] = hash_text(new_password)
@@ -2154,86 +2127,58 @@ def admin_stats():
     except (RuntimeError, Exception):
         users = [sanitize_user(entry) for entry in reversed(load_users())]
 
-    # Merge local and known users from users.json and get_all_known_users_map()
-    known_map = get_all_known_users_map()
+    # Merge local registered users from users.json if not already in list
     existing_uids = {str(u.get("id")) for u in users}
     existing_emails = {str(u.get("email")).strip().lower() for u in users if u.get("email")}
 
-    for uid, ku in known_map.items():
-        ku_email = str(ku.get("email") or "").strip().lower()
-        if uid not in existing_uids and (not ku_email or ku_email not in existing_emails):
-            is_bl = bool(ku.get("blocked") or ku.get("is_blocked"))
-            users.append({
-                "id": uid,
-                "name": ku.get("name") or "Student",
-                "email": ku.get("email") or "",
-                "authProvider": "local",
-                "blocked": is_bl,
-                "is_blocked": is_bl,
-                "isBlocked": is_bl,
-                "banned_until": "2126-01-01T00:00:00Z" if is_bl else None,
-                "createdAt": ku.get("createdAt") or "2026-11-04T05:32:42Z",
-                "emailConfirmed": True,
-                "lastSignInAt": ku.get("lastSignInAt"),
-                "isLoggedIn": is_user_logged_in(uid, ku.get("email")),
-                "status": "blocked" if is_bl else ("active" if is_user_logged_in(uid, ku.get("email")) else "passive"),
-                "role": "student",
-            })
-            existing_uids.add(uid)
-            if ku_email:
-                existing_emails.add(ku_email)
+    for u in load_users():
+        u_id = str(u.get("id"))
+        u_em = str(u.get("email") or "").strip().lower()
+        if u_id not in existing_uids and (not u_em or u_em not in existing_emails):
+            sanitized = sanitize_user(u)
+            users.append(sanitized)
+            existing_uids.add(u_id)
+            if u_em:
+                existing_emails.add(u_em)
 
-    # 3. Add any currently active user from active_user_presence not already in users list
-    now_ts = time.time()
-    for pres_key, pres_val in active_user_presence.items():
-        if isinstance(pres_val, dict) and pres_val.get("logged_in") and (now_ts - pres_val.get("last_seen", 0) < 180):
-            pk_str = str(pres_key).strip().lower()
-            in_list = any(str(u.get("id")).lower() == pk_str or str(u.get("email", "")).strip().lower() == pk_str for u in users)
-            if not in_list and "@" in pk_str:
-                local_name = pk_str.split("@")[0].replace(".", " ").title()
-                users.append({
-                    "id": f"user_{secrets.token_hex(6)}",
-                    "name": local_name,
-                    "email": pk_str,
-                    "authProvider": "local",
-                    "blocked": False,
-                    "is_blocked": False,
-                    "isBlocked": False,
-                    "createdAt": datetime.now(timezone.utc).isoformat(),
-                    "emailConfirmed": True,
-                    "isLoggedIn": True,
-                    "status": "active",
-                    "role": "student",
-                })
+    # Strictly filter out deleted users and admin accounts
+    deleted_uids, deleted_emails = get_deleted_user_keys()
+    admin_un = (ADMIN_USERNAME or "admin").strip().lower()
+    valid_users = []
 
-    # Update live login/active state for all users
     for user in users:
         u_id = str(user.get("id") or "")
         u_em = str(user.get("email") or "").strip().lower()
-        if is_user_logged_in(u_id, u_em):
-            user["isLoggedIn"] = True
-            if not user.get("blocked"):
-                user["status"] = "active"
+        u_name = str(user.get("name") or "").strip().lower()
 
-    # Admin accounts and deleted accounts are never part of the student / registered user store
-    deleted_uids, deleted_emails = get_deleted_user_keys()
-    admin_un = (ADMIN_USERNAME or "admin").strip().lower()
-    users = [
-        user for user in users
+        # If deleted by admin, exclude completely!
+        if u_id in deleted_uids or (u_em and u_em in deleted_emails):
+            continue
+
+        # If admin account, exclude
         if (
-            (user.get("isLoggedIn") or (str(user.get("id")) not in deleted_uids and str(user.get("email", "")).strip().lower() not in deleted_emails))
-        )
-        and user.get("name", "").strip().lower() != admin_un
-        and user.get("email", "").strip().lower() != admin_un
-        and not user.get("email", "").strip().lower().startswith(f"{admin_un}@")
-        and not user.get("name", "").strip().lower().startswith(f"{admin_un} ")
-        and user.get("email", "").strip().lower() != "admin@careerguide.internal"
-    ]
+            u_name == admin_un
+            or u_em == admin_un
+            or u_em.startswith(f"{admin_un}@")
+            or u_name.startswith(f"{admin_un} ")
+            or u_em == "admin@careerguide.internal"
+        ):
+            continue
+
+        # Set live login presence state
+        logged_in = is_user_logged_in(u_id, u_em, user.get("lastSignInAt"))
+        user["isLoggedIn"] = logged_in
+        if not user.get("blocked"):
+            user["status"] = "active" if logged_in else "passive"
+
+        valid_users.append(user)
+
+    users = valid_users
 
     return jsonify({
         "totalUsers": len(users),
-        "localUsers": sum(user["authProvider"] == "local" for user in users),
-        "googleUsers": sum(user["authProvider"] == "google" for user in users),
+        "localUsers": sum(user.get("authProvider") == "local" for user in users),
+        "googleUsers": sum(user.get("authProvider") == "google" for user in users),
         "users": users,
         "adminEmails": list(admin_email_allowlist()),
     }), 200
@@ -2413,14 +2358,15 @@ def admin_delete_user(user_id):
     if refusal:
         return refusal
 
-    # 1. Resolve user email and name from local users, Supabase, or known users map
-    user_name = None
-    user_email = None
+    # 1. Resolve user email and name from payload, local users, Supabase, or known users map
+    payload = request.get_json(silent=True) or {}
+    user_name = (payload.get("name") or "").strip()
+    user_email = (payload.get("email") or "").strip().lower()
     users = load_users()
     local_target = next((entry for entry in users if str(entry.get("id")) == str(user_id)), None)
     if local_target:
-        user_name = local_target.get("name")
-        user_email = local_target.get("email")
+        user_name = user_name or local_target.get("name")
+        user_email = user_email or local_target.get("email")
 
     if (not user_email or not user_name) and SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
         try:
@@ -2437,14 +2383,25 @@ def admin_delete_user(user_id):
             user_email = user_email or known_map[str(user_id)].get("email")
             user_name = user_name or known_map[str(user_id)].get("name")
 
+    uid_str = str(user_id).strip()
+    em_str = str(user_email or "").strip().lower()
+
+    # Kill live sessions and presence immediately so user is totally logged out
+    for k in [uid_str, em_str]:
+        if k:
+            active_user_presence.pop(k, None)
+    for tok, sess_uid in list(active_sessions.items()):
+        if str(sess_uid) == uid_str:
+            del active_sessions[tok]
+
     # 2. Permanently record deletion in deleted_users.json
     record_deleted_user(user_id, user_email, user_name)
 
     # 3. Remove from local users.json if present
     remaining_users = [
         entry for entry in users
-        if str(entry.get("id")) != str(user_id)
-        and (not user_email or str(entry.get("email", "")).strip().lower() != str(user_email).strip().lower())
+        if str(entry.get("id")) != uid_str
+        and (not em_str or str(entry.get("email", "")).strip().lower() != em_str)
     ]
     if len(remaining_users) < len(users):
         save_users(remaining_users)
@@ -2462,6 +2419,7 @@ def admin_delete_user(user_id):
                 pass
 
     invalidate_supabase_users_cache()
+    invalidate_known_users_cache()
 
     # 5. Log activity
     log_activity("admin_user_deleted", {

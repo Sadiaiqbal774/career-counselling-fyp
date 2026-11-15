@@ -3061,20 +3061,16 @@ function AdminDashboard() {
   const applyUserOverrides = (rawUsers, activityList = []) => {
     const persistedActions = getPersistedAdminActions();
     const allActions = [...persistedActions, ...(activityList || [])];
-    const deletedUids = new Set();
-    const deletedEmails = new Set();
+
+    // Find the latest admin_user_deleted timestamp for each userId and email
+    const latestDeleteTime = {};
     allActions.forEach((a) => {
       if (a && a.type === 'admin_user_deleted' && a.details) {
-        if (a.details.userId) deletedUids.add(String(a.details.userId));
-        if (a.details.email) deletedEmails.add(String(a.details.email).trim().toLowerCase());
-      }
-    });
-
-    // If any user is currently logged in or active, clear them from deletion filters
-    (rawUsers || []).forEach((u) => {
-      if (u && (u.isLoggedIn || u.status === 'active')) {
-        if (u.id) deletedUids.delete(String(u.id));
-        if (u.email) deletedEmails.delete(String(u.email).trim().toLowerCase());
+        const actionTime = new Date(a.createdAt || 0).getTime();
+        const uid = a.details.userId ? String(a.details.userId) : null;
+        const email = a.details.email ? String(a.details.email).trim().toLowerCase() : null;
+        if (uid) latestDeleteTime[uid] = Math.max(latestDeleteTime[uid] || 0, actionTime);
+        if (email) latestDeleteTime[email] = Math.max(latestDeleteTime[email] || 0, actionTime);
       }
     });
 
@@ -3096,14 +3092,34 @@ function AdminDashboard() {
       .filter((u) => {
         const uid = String(u.id);
         const email = String(u.email || '').trim().toLowerCase();
-        if (u.isLoggedIn || u.status === 'active') {
+        const delTime = Math.max(latestDeleteTime[uid] || 0, email ? (latestDeleteTime[email] || 0) : 0);
+        if (!delTime) {
+          // User has never been deleted
           return true;
         }
-        return !deletedUids.has(uid) && (!email || !deletedEmails.has(email));
+
+        // Account was deleted by admin!
+        // ONLY allow them to appear if they actively logged in or re-registered AFTER the deletion!
+        const lastSignInTime = u.lastSignInAt ? new Date(u.lastSignInAt).getTime() : 0;
+        const userCreatedTime = u.createdAt ? new Date(u.createdAt).getTime() : 0;
+        const recentActivity = Math.max(lastSignInTime, userCreatedTime);
+
+        if (recentActivity > delTime) {
+          return true;
+        }
+
+        // Otherwise, they remain deleted: completely remove from Users table!
+        return false;
       })
       .map((u) => {
         const uid = String(u.id);
-        const isActive = Boolean(u.isLoggedIn || u.status === 'active');
+        const email = String(u.email || '').trim().toLowerCase();
+        const delTime = Math.max(latestDeleteTime[uid] || 0, email ? (latestDeleteTime[email] || 0) : 0);
+        const lastSignInTime = u.lastSignInAt ? new Date(u.lastSignInAt).getTime() : 0;
+        const userCreatedTime = u.createdAt ? new Date(u.createdAt).getTime() : 0;
+        const reauthenticated = delTime > 0 && Math.max(lastSignInTime, userCreatedTime) > delTime;
+        const isActive = Boolean(u.isLoggedIn || (reauthenticated && u.status === 'active'));
+
         if (latestActions[uid]) {
           const isBl = latestActions[uid].blocked;
           return {
@@ -3116,14 +3132,11 @@ function AdminDashboard() {
             status: isBl ? 'blocked' : (isActive ? 'active' : 'passive'),
           };
         }
-        if (isActive) {
-          return {
-            ...u,
-            isLoggedIn: true,
-            status: u.blocked ? 'blocked' : 'active',
-          };
-        }
-        return u;
+        return {
+          ...u,
+          isLoggedIn: isActive,
+          status: u.blocked ? 'blocked' : (isActive ? 'active' : 'passive'),
+        };
       })
       .sort((a, b) => timestampValue(b) - timestampValue(a));
   };
@@ -3491,7 +3504,11 @@ function AdminDashboard() {
     try {
       if (target.type === 'user') {
         const user = target.payload;
-        await api(`/api/admin/users/${user.id}`, { method: 'DELETE' });
+        await api(`/api/admin/users/${user.id}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user.email, name: user.name }),
+        });
         setUsers((prevUsers) => prevUsers.filter((entry) => String(entry.id) !== String(user.id)));
         const actionItem = {
           id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -4290,7 +4307,11 @@ function AdminDashboard() {
                           const target = userDeleteConfirmation.user;
                           setUserDeleteConfirmation((prev) => ({ ...prev, isDeleting: true, error: '' }));
                           try {
-                            await api(`/api/admin/users/${target.id}`, { method: 'DELETE' });
+                            await api(`/api/admin/users/${target.id}`, {
+                              method: 'DELETE',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ email: target.email, name: target.name }),
+                            });
                             const actionItem = {
                               id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
                               type: 'admin_user_deleted',
