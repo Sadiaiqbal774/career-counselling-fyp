@@ -249,19 +249,78 @@ def is_strong_password(password):
     )
 
 
+def get_supabase_storage_client():
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        return None
+    return {
+        "url": SUPABASE_URL.rstrip("/"),
+        "key": SUPABASE_SERVICE_ROLE_KEY
+    }
+
+
+def read_supabase_storage_object(filename):
+    client = get_supabase_storage_client()
+    if not client:
+        return None
+    url = f"{client['url']}/storage/v1/object/admin_store/{filename}"
+    headers = {
+        "apikey": client["key"],
+        "Authorization": f"Bearer {client['key']}"
+    }
+    req = Request(url, headers=headers)
+    try:
+        with urlopen(req, timeout=5) as resp:
+            return resp.read().decode("utf-8")
+    except Exception:
+        return None
+
+
+def write_supabase_storage_object(filename, data_str):
+    client = get_supabase_storage_client()
+    if not client:
+        return False
+    url = f"{client['url']}/storage/v1/object/admin_store/{filename}"
+    headers = {
+        "apikey": client["key"],
+        "Authorization": f"Bearer {client['key']}",
+        "Content-Type": "application/json" if filename.endswith(".json") else "text/csv; charset=utf-8",
+        "x-upsert": "true"
+    }
+    req = Request(url, headers=headers, data=data_str.encode("utf-8"), method="POST")
+    try:
+        with urlopen(req, timeout=5) as resp:
+            return True
+    except Exception as e:
+        print(f"Error persisting {filename} to Supabase storage: {e}")
+        return False
+
+
 def load_users():
+    remote_data = read_supabase_storage_object("users.json")
+    if remote_data:
+        try:
+            records = json.loads(remote_data)
+            if isinstance(records, list):
+                return records
+        except Exception:
+            pass
+
     if not users_file.exists():
         return []
 
     try:
         with users_file.open("r", encoding="utf-8") as file:
-            return json.load(file)
-
+            records = json.load(file)
+            result = records if isinstance(records, list) else []
+            if result:
+                write_supabase_storage_object("users.json", json.dumps(result, indent=2))
+            return result
     except json.JSONDecodeError:
         return []
 
 
 def save_users(users):
+    write_supabase_storage_object("users.json", json.dumps(users, indent=2))
     with users_file.open("w", encoding="utf-8") as file:
         json.dump(users, file, indent=2)
 
@@ -449,6 +508,15 @@ def get_admin_csv(resource):
 
 
 def load_admin_records(resource):
+    remote_data = read_supabase_storage_object(f"{resource}.json")
+    if remote_data:
+        try:
+            records = json.loads(remote_data)
+            if isinstance(records, list) and records:
+                return records
+        except Exception:
+            pass
+
     resource_file = get_admin_csv(resource)
     if resource_file is None:
         return None
@@ -457,24 +525,28 @@ def load_admin_records(resource):
         for index, row in enumerate(csv.DictReader(file)):
             rec_id = str(row.get("id") or (index + 1))
             records.append({"id": rec_id, **row})
+        if records:
+            write_supabase_storage_object(f"{resource}.json", json.dumps(records, indent=2))
         return records
 
 
 def save_admin_records(resource, records):
+    write_supabase_storage_object(f"{resource}.json", json.dumps(records, indent=2))
     resource_file = get_admin_csv(resource)
-    if records:
-        columns = []
-        for record in records:
-            for key in record:
-                if key != "id" and key not in columns:
-                    columns.append(key)
-    else:
-        with resource_file.open("r", encoding="utf-8-sig", newline="") as file:
-            columns = next(csv.reader(file), [])
-    with resource_file.open("w", encoding="utf-8", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=columns)
-        writer.writeheader()
-        writer.writerows({key: record.get(key, "") for key in columns} for record in records)
+    if resource_file:
+        if records:
+            columns = []
+            for record in records:
+                for key in record:
+                    if key != "id" and key not in columns:
+                        columns.append(key)
+        else:
+            with resource_file.open("r", encoding="utf-8-sig", newline="") as file:
+                columns = next(csv.reader(file), [])
+        with resource_file.open("w", encoding="utf-8", newline="") as file:
+            writer = csv.DictWriter(file, fieldnames=columns)
+            writer.writeheader()
+            writer.writerows({key: record.get(key, "") for key in columns} for record in records)
 
 
 def load_universities_with_programs():
@@ -555,6 +627,7 @@ def load_university_programs_df():
 
 
 def save_universities(records):
+    write_supabase_storage_object("universities.json", json.dumps(records, indent=2))
     fields = ["id", "name", "city", "province", "sector", "website_url"]
     with admin_csv_resources["universities"].open("w", encoding="utf-8", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=fields)
@@ -566,18 +639,36 @@ def load_json_records(resource):
     resource_file = admin_json_resources.get(resource)
     if resource_file is None:
         return None
+
+    filename = f"{resource}.json"
+    remote_data = read_supabase_storage_object(filename)
+    if remote_data:
+        try:
+            records = json.loads(remote_data)
+            if isinstance(records, list):
+                return records
+        except Exception:
+            pass
+
     try:
         with resource_file.open("r", encoding="utf-8") as file:
             records = json.load(file)
-            return records if isinstance(records, list) else []
+            result = records if isinstance(records, list) else []
+            if result:
+                write_supabase_storage_object(filename, json.dumps(result, indent=2))
+            return result
     except (FileNotFoundError, json.JSONDecodeError):
         return []
 
 
 def save_json_records(resource, records):
-    resource_file = admin_json_resources[resource]
-    with resource_file.open("w", encoding="utf-8") as file:
-        json.dump(records, file, indent=2)
+    data_str = json.dumps(records, indent=2)
+    filename = f"{resource}.json"
+    write_supabase_storage_object(filename, data_str)
+    resource_file = admin_json_resources.get(resource)
+    if resource_file:
+        with resource_file.open("w", encoding="utf-8") as file:
+            file.write(data_str)
 
 
 def log_activity(activity_type, details=None):
@@ -2523,7 +2614,15 @@ def admin_resource(resource):
         record = {column: str(payload.get(column, "")) for column in columns}
         records.append({"id": str(len(records)), **record})
         save_admin_records(resource, records)
-    return jsonify({"record": records[-1]}), 201
+    created_rec = records[-1]
+    item_title = created_rec.get("name") or created_rec.get("title") or created_rec.get("field") or created_rec.get("degree_name") or f"Record {created_rec.get('id')}"
+    log_activity(f"admin_{resource}_added", {
+        "resource": resource,
+        "recordId": str(created_rec.get("id")),
+        "title": str(item_title),
+        "action": f"Added {resource.rstrip('s')} {item_title}"
+    })
+    return jsonify({"record": created_rec}), 201
 
 
 @app.route("/api/admin/<resource>/<record_id>", methods=["PUT", "DELETE"])
@@ -2543,13 +2642,20 @@ def admin_update_resource(resource, record_id):
     if record_index is None:
         return jsonify({"message": "Record not found."}), 404
     if request.method == "DELETE":
-        records.pop(record_index)
+        deleted_record = records.pop(record_index)
         (save_json_records if resource in admin_json_resources else save_admin_records)(resource, records)
         if resource == "universities":
             programs = load_admin_records("programs") or []
             remaining_programs = [program for program in programs if str(program.get("university_id")) != record_id]
             if len(remaining_programs) != len(programs):
                 save_admin_records("programs", remaining_programs)
+        item_title = deleted_record.get("name") or deleted_record.get("title") or deleted_record.get("field") or f"Record {record_id}"
+        log_activity(f"admin_{resource}_deleted", {
+            "resource": resource,
+            "recordId": str(record_id),
+            "title": str(item_title),
+            "action": f"Deleted {resource.rstrip('s')} {item_title}"
+        })
         return jsonify({"message": "Record deleted successfully."}), 200
 
     payload = request.get_json(silent=True)
@@ -2597,6 +2703,13 @@ def admin_update_resource(resource, record_id):
         updated = {column: str(payload.get(column, "")) for column in columns}
         records[record_index] = {"id": record_id, **updated}
         save_admin_records(resource, records)
+    item_title = payload.get("name") or payload.get("title") or payload.get("field") or f"Record {record_id}"
+    log_activity(f"admin_{resource}_updated", {
+        "resource": resource,
+        "recordId": str(record_id),
+        "title": str(item_title),
+        "action": f"Updated {resource.rstrip('s')} {item_title}"
+    })
     return jsonify({"record": records[record_index]}), 200
 
 
@@ -2625,6 +2738,13 @@ def admin_programs(university_id):
     }
     programs.append(program)
     save_admin_records("programs", programs)
+    log_activity("admin_programs_added", {
+        "resource": "programs",
+        "universityId": university_id,
+        "recordId": str(program["id"]),
+        "title": program["degree_name"],
+        "action": f"Added program {program['degree_name']}"
+    })
     return jsonify({"program": program}), 201
 
 
@@ -2638,8 +2758,15 @@ def admin_program(university_id, program_id):
     if program_index is None:
         return jsonify({"message": "Program not found."}), 404
     if request.method == "DELETE":
-        programs.pop(program_index)
+        deleted_prog = programs.pop(program_index)
         save_admin_records("programs", programs)
+        log_activity("admin_programs_deleted", {
+            "resource": "programs",
+            "universityId": university_id,
+            "recordId": program_id,
+            "title": deleted_prog.get("degree_name", "Program"),
+            "action": f"Deleted program {deleted_prog.get('degree_name', 'Program')}"
+        })
         return jsonify({"message": "Program deleted successfully."}), 200
     payload = request.get_json(silent=True) or {}
     if not payload.get("degree_name"):
@@ -2647,6 +2774,16 @@ def admin_program(university_id, program_id):
     programs[program_index]["degree_name"] = str(payload["degree_name"])
     programs[program_index]["merit_formula"] = str(payload.get("merit_formula", ""))
     programs[program_index]["eligibility_pct"] = non_negative_numeric_string(payload.get("eligibility_pct", ""))
+    programs[program_index]["url"] = str(payload.get("url", ""))
+    save_admin_records("programs", programs)
+    log_activity("admin_programs_updated", {
+        "resource": "programs",
+        "universityId": university_id,
+        "recordId": program_id,
+        "title": programs[program_index]["degree_name"],
+        "action": f"Updated program {programs[program_index]['degree_name']}"
+    })
+    return jsonify({"program": programs[program_index]}), 200
     programs[program_index]["url"] = str(payload.get("url", ""))
     save_admin_records("programs", programs)
     return jsonify({"program": programs[program_index]}), 200

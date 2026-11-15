@@ -665,10 +665,11 @@ function activitySummary(records) {
     const type = record.type || record.eventType || 'unknown';
     counts[type] = (counts[type] || 0) + 1;
 
-    if (type.includes('assessment')) assessmentCount += 1;
-    else if (type.includes('chat')) chatbotCount += 1;
-    else if (type.startsWith('admin_') || type.includes('block') || type.includes('delete') || type.includes('unblock')) adminCount += 1;
-    else if (type.includes('registered') || type.includes('login') || type.includes('user')) userCount += 1;
+    const cat = eventCategoryMeta(type).key;
+    if (cat === 'admin') adminCount += 1;
+    else if (cat === 'assessments') assessmentCount += 1;
+    else if (cat === 'chatbot') chatbotCount += 1;
+    else userCount += 1;
 
     const details = record.details;
     if (type === 'assessment_completed' && details && typeof details === 'object') {
@@ -688,16 +689,17 @@ function activitySummary(records) {
     const timestamp = new Date(dateStr).getTime();
     if (!Number.isNaN(timestamp)) {
       if (now - timestamp <= 24 * 60 * 60 * 1000) last24h += 1;
-      const dayKey = dateStr.slice(0, 10);
+      const recDate = new Date(timestamp);
+      const dayKey = `${recDate.getFullYear()}-${String(recDate.getMonth() + 1).padStart(2, '0')}-${String(recDate.getDate()).padStart(2, '0')}`;
       if (dayKey) {
         timelineCounts[dayKey] = (timelineCounts[dayKey] || 0) + 1;
         if (!timelineDetails[dayKey]) {
           timelineDetails[dayKey] = { assessments: 0, chatbot: 0, user: 0, admin: 0 };
         }
-        if (type.includes('assessment')) timelineDetails[dayKey].assessments += 1;
-        else if (type.includes('chat')) timelineDetails[dayKey].chatbot += 1;
-        else if (type.includes('registered') || type.includes('login') || type.includes('user')) timelineDetails[dayKey].user += 1;
-        else if (type.startsWith('admin_') || type.includes('block') || type.includes('delete') || type.includes('unblock')) timelineDetails[dayKey].admin += 1;
+        if (cat === 'admin') timelineDetails[dayKey].admin += 1;
+        else if (cat === 'assessments') timelineDetails[dayKey].assessments += 1;
+        else if (cat === 'chatbot') timelineDetails[dayKey].chatbot += 1;
+        else timelineDetails[dayKey].user += 1;
       }
     }
     if (details && typeof details === 'object') {
@@ -715,7 +717,7 @@ function activitySummary(records) {
   const daysToShow = 7;
   for (let i = daysToShow - 1; i >= 0; i--) {
     const targetDate = new Date(now - i * 24 * 60 * 60 * 1000);
-    const dayKey = targetDate.toISOString().slice(0, 10);
+    const dayKey = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
     const total = timelineCounts[dayKey] || 0;
     const details = timelineDetails[dayKey] || { assessments: 0, chatbot: 0, user: 0, admin: 0 };
     timeline.push({
@@ -786,16 +788,31 @@ function friendlyEventLabel(type) {
     admin_user_unblocked: 'Account Unblocked',
     admin_user_updated: 'User Account Updated',
     admin_user_deleted: 'User Account Deleted',
+    admin_universities_added: 'University Added',
+    admin_universities_updated: 'University Updated',
+    admin_universities_deleted: 'University Deleted',
+    admin_scholarships_added: 'Scholarship Added',
+    admin_scholarships_updated: 'Scholarship Updated',
+    admin_scholarships_deleted: 'Scholarship Deleted',
+    admin_eligibility_added: 'Eligibility Criteria Added',
+    admin_eligibility_updated: 'Eligibility Criteria Updated',
+    admin_eligibility_deleted: 'Eligibility Criteria Deleted',
+    admin_programs_added: 'Degree Program Added',
+    admin_programs_updated: 'Degree Program Updated',
+    admin_programs_deleted: 'Degree Program Deleted',
+    admin_chatbot_responses_added: 'Chatbot FAQ Added',
+    admin_chatbot_responses_updated: 'Chatbot FAQ Updated',
+    admin_chatbot_responses_deleted: 'Chatbot FAQ Deleted',
   };
-  return map[type] || type.replace(/_/g, ' ');
+  return map[type] || type.replace(/^admin_/, '').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function eventTone(type) {
   const t = String(type || '').toLowerCase();
+  if (t.startsWith('admin_') || t.includes('block') || t.includes('delete') || t.includes('unblock')) return 'admin';
   if (t.includes('registered') || t.includes('unblock')) return 'registered';
   if (t.includes('assessment')) return 'assessment';
   if (t.includes('chat')) return 'chatbot';
-  if (t.includes('block') || t.includes('delete') || t.startsWith('admin_')) return 'admin';
   return 'login';
 }
 
@@ -3243,7 +3260,11 @@ function AdminDashboard() {
         },
       };
       setUsers((prevUsers) => prevUsers.map((user) => (String(user.id) === String(editingUser.id) ? updatedUser : user)));
-      if (Boolean(editingUser.blocked) !== Boolean(originalUser.blocked)) {
+      const blockedChanged = Boolean(editingUser.blocked) !== Boolean(originalUser.blocked);
+      const nameChanged = (editingUser.name || '').trim() !== (originalUser.name || '').trim();
+      const emailChanged = (editingUser.email || '').trim().toLowerCase() !== (originalUser.email || '').trim().toLowerCase();
+
+      if (blockedChanged) {
         const nextBlocked = targetBlocked;
         const actionItem = {
           id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -3263,10 +3284,26 @@ function AdminDashboard() {
           activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
         }));
         setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
+      } else if (nameChanged || emailChanged) {
+        const actionItem = {
+          id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          type: 'admin_user_updated',
+          details: {
+            userId: editingUser.id,
+            userName: editingUser.name,
+            email: editingUser.email,
+            action: `Updated user account (${editingUser.name})`,
+          },
+          createdAt: new Date().toISOString(),
+        };
+        persistAdminAction(actionItem);
+        setDashboardData((prev) => ({
+          ...prev,
+          users: (prev.users || []).map((entry) => (String(entry.id) === String(editingUser.id) ? updatedUser : entry)),
+          activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
+        }));
+        setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
       }
-      const blockedChanged = Boolean(editingUser.blocked) !== Boolean(originalUser.blocked);
-      const nameChanged = (editingUser.name || '').trim() !== (originalUser.name || '').trim();
-      const emailChanged = (editingUser.email || '').trim().toLowerCase() !== (originalUser.email || '').trim().toLowerCase();
 
       setEditingUser(null);
       setOriginalUser(null);
@@ -3327,6 +3364,23 @@ function AdminDashboard() {
         setRecords((prev) => prev.map((r) => (String(r.id) === String(tempId) ? { ...r, ...res.record } : r)));
       }
       setNewUniversityPrograms([]);
+      const actionItem = {
+        id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        type: wasEditing ? `admin_${activeResource}_updated` : `admin_${activeResource}_added`,
+        details: {
+          resource: activeResource,
+          recordId: wasEditing ? editingId : (res?.record?.id || tempId),
+          title: data.name || data.title || data.field || displayName(data),
+          action: wasEditing ? `Updated ${itemLabel} "${data.name || data.title || data.field || displayName(data)}"` : `Added ${itemLabel} "${data.name || data.title || data.field || displayName(data)}"`,
+        },
+        createdAt: new Date().toISOString(),
+      };
+      persistAdminAction(actionItem);
+      setDashboardData((prev) => ({
+        ...prev,
+        activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
+      }));
+      setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
     } catch (saveError) {
       setRecords(previousRecords);
       setError(saveError.message);
@@ -3365,6 +3419,23 @@ function AdminDashboard() {
       setShowProgramForm(false);
       setFormResetKey((key) => key + 1);
       setNotice(wasEditing ? 'Program updated successfully.' : 'Program added successfully.');
+      const actionItem = {
+        id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        type: wasEditing ? 'admin_programs_updated' : 'admin_programs_added',
+        details: {
+          resource: 'programs',
+          universityId: editingRecord.id,
+          title: data.degree_name,
+          action: wasEditing ? `Updated degree program "${data.degree_name}"` : `Added degree program "${data.degree_name}"`,
+        },
+        createdAt: new Date().toISOString(),
+      };
+      persistAdminAction(actionItem);
+      setDashboardData((prev) => ({
+        ...prev,
+        activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
+      }));
+      setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
     } catch (saveError) {
       setError(saveError.message);
     }
@@ -3416,6 +3487,23 @@ function AdminDashboard() {
         // Optimistically delete immediately so the user doesn't wait
         setRecords((prev) => prev.filter((r) => String(r.id) !== String(record.id)));
         setNotice(`${itemLabel} deleted successfully.`);
+        const actionItem = {
+          id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          type: `admin_${activeResource}_deleted`,
+          details: {
+            resource: activeResource,
+            recordId: record.id,
+            title: record.name || record.title || record.field || displayName(record),
+            action: `Deleted ${itemLabel} "${record.name || record.title || record.field || displayName(record)}"`,
+          },
+          createdAt: new Date().toISOString(),
+        };
+        persistAdminAction(actionItem);
+        setDashboardData((prev) => ({
+          ...prev,
+          activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
+        }));
+        setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
         try {
           await api(`/api/admin/${activeResource}/${record.id}`, { method: 'DELETE' });
         } catch (deleteError) {
@@ -3430,6 +3518,23 @@ function AdminDashboard() {
         const updated = (await api('/api/admin/universities')).records.find((u) => String(u.id) === String(editingRecord.id));
         setEditingRecord(updated);
         setNotice('Program deleted.');
+        const actionItem = {
+          id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          type: 'admin_programs_deleted',
+          details: {
+            resource: 'programs',
+            universityId: editingRecord.id,
+            title: program.degree_name,
+            action: `Deleted degree program "${program.degree_name}"`,
+          },
+          createdAt: new Date().toISOString(),
+        };
+        persistAdminAction(actionItem);
+        setDashboardData((prev) => ({
+          ...prev,
+          activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
+        }));
+        setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
       }
     } catch (deleteError) {
       setError(deleteError.message);
