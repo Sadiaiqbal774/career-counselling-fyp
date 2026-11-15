@@ -578,8 +578,8 @@ function deduplicateActivities(items) {
 
         if (matchesTarget) {
           const exTime = getRecordTimestampMs(existing);
-          // If within 5 minutes (300,000 ms) of each other, consider it the same event
-          if (Math.abs(itemTime - exTime) < 300000) {
+          // If within 3 seconds (3,000 ms) of each other, consider it the same event (sync between optimistic local write and backend server response)
+          if (Math.abs(itemTime - exTime) < 3000) {
             return true;
           }
         }

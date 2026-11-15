@@ -249,6 +249,17 @@ def is_strong_password(password):
     )
 
 
+_supabase_storage_cache = {}  # {filename: {"data": str, "timestamp": float}}
+
+
+def invalidate_storage_cache(filename=None):
+    global _supabase_storage_cache
+    if filename:
+        _supabase_storage_cache.pop(filename, None)
+    else:
+        _supabase_storage_cache.clear()
+
+
 def get_supabase_storage_client():
     if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
         return None
@@ -258,7 +269,13 @@ def get_supabase_storage_client():
     }
 
 
-def read_supabase_storage_object(filename):
+def read_supabase_storage_object(filename, max_age_seconds=45):
+    global _supabase_storage_cache
+    now = time.time()
+    cached = _supabase_storage_cache.get(filename)
+    if cached and (now - cached.get("timestamp", 0) < max_age_seconds):
+        return cached.get("data")
+
     client = get_supabase_storage_client()
     if not client:
         return None
@@ -269,13 +286,20 @@ def read_supabase_storage_object(filename):
     }
     req = Request(url, headers=headers)
     try:
-        with urlopen(req, timeout=5) as resp:
-            return resp.read().decode("utf-8")
+        with urlopen(req, timeout=4) as resp:
+            data = resp.read().decode("utf-8")
+            _supabase_storage_cache[filename] = {"data": data, "timestamp": now}
+            return data
     except Exception:
+        if cached:
+            return cached.get("data")
         return None
 
 
 def write_supabase_storage_object(filename, data_str):
+    global _supabase_storage_cache
+    _supabase_storage_cache[filename] = {"data": data_str, "timestamp": time.time()}
+
     client = get_supabase_storage_client()
     if not client:
         return False
@@ -754,14 +778,28 @@ def record_deleted_user(user_id, email="", name=""):
         print(f"Error saving deleted user record: {e}")
 
 
-def get_all_known_users_map():
+_known_users_cache = {"data": None, "timestamp": 0}
+
+
+def invalidate_known_users_cache():
+    global _known_users_cache
+    _known_users_cache["data"] = None
+    _known_users_cache["timestamp"] = 0
+
+
+def get_all_known_users_map(force_refresh=False):
+    global _known_users_cache
+    now = time.time()
+    if not force_refresh and _known_users_cache["data"] is not None and (now - _known_users_cache["timestamp"] < 45):
+        return dict(_known_users_cache["data"])
+
     users_map = {}
     deleted_uids, deleted_emails = get_deleted_user_keys()
 
     # 1. Supabase users if configured (primary authority)
     if SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
         try:
-            for su in list_supabase_users(force_refresh=True):
+            for su in list_supabase_users(force_refresh=force_refresh):
                 sanitized = sanitize_supabase_user(su)
                 uid = str(sanitized.get("id"))
                 u_email = str(sanitized.get("email") or "").strip().lower()
@@ -829,6 +867,8 @@ def get_all_known_users_map():
     except Exception:
         pass
 
+    _known_users_cache["data"] = dict(users_map)
+    _known_users_cache["timestamp"] = now
     return users_map
 
 
@@ -851,7 +891,21 @@ def resolve_user_display_name(uid, fallback=None, explicit_name=None, email=None
     return fallback or "Student"
 
 
-def load_supabase_quiz_scores():
+_quiz_scores_cache = {"data": None, "timestamp": 0}
+
+
+def invalidate_quiz_scores_cache():
+    global _quiz_scores_cache
+    _quiz_scores_cache["data"] = None
+    _quiz_scores_cache["timestamp"] = 0
+
+
+def load_supabase_quiz_scores(force_refresh=False):
+    global _quiz_scores_cache
+    now = time.time()
+    if not force_refresh and _quiz_scores_cache["data"] is not None and (now - _quiz_scores_cache["timestamp"] < 45):
+        return list(_quiz_scores_cache["data"])
+
     supabase_url = os.environ.get("SUPABASE_URL", "").strip().rstrip("/") or SUPABASE_URL
     service_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").strip() or SUPABASE_SERVICE_ROLE_KEY
     if not supabase_url or not service_key:
@@ -945,6 +999,8 @@ def load_supabase_quiz_scores():
             "createdAt": record.get("saved_at") or record.get("created_at") or record.get("createdAt"),
         })
 
+    _quiz_scores_cache["data"] = list(enriched)
+    _quiz_scores_cache["timestamp"] = now
     return enriched
 
 
@@ -1034,6 +1090,7 @@ def invalidate_supabase_users_cache():
     global _supabase_users_cache
     _supabase_users_cache["data"] = None
     _supabase_users_cache["timestamp"] = 0
+    invalidate_known_users_cache()
 
 
 def list_supabase_users(force_refresh=False):
@@ -2069,7 +2126,7 @@ def admin_stats():
         return auth_error
 
     try:
-        users = [sanitize_supabase_user(entry) for entry in list_supabase_users(force_refresh=True)]
+        users = [sanitize_supabase_user(entry) for entry in list_supabase_users(force_refresh=False)]
     except (RuntimeError, Exception):
         users = [sanitize_user(entry) for entry in reversed(load_users())]
 
@@ -2148,6 +2205,7 @@ def admin_update_user(user_id):
     users = load_users()
     local_user = next((entry for entry in users if str(entry.get("id")) == str(user_id)), None)
     if local_user:
+        was_blocked = bool(local_user.get("blocked") or local_user.get("is_blocked") or local_user.get("isBlocked") or local_user.get("banned_until"))
         local_user["name"] = name
         local_user["email"] = email
         will_block = bool(payload["blocked"]) if "blocked" in payload else None
@@ -2158,7 +2216,9 @@ def admin_update_user(user_id):
             local_user["banned_until"] = "2126-01-01T00:00:00Z" if will_block else None
         save_users(users)
         invalidate_supabase_users_cache()
-        if will_block is not None:
+
+        blocked_status_changed = (will_block is not None and will_block != was_blocked)
+        if blocked_status_changed:
             log_activity("admin_user_blocked" if will_block else "admin_user_unblocked", {
                 "userId": user_id,
                 "email": email,
@@ -2166,7 +2226,12 @@ def admin_update_user(user_id):
                 "action": "Blocked account" if will_block else "Unblocked account",
             })
         else:
-            log_activity("admin_user_updated", {"userId": user_id, "email": email, "userName": name, "action": "Updated user account"})
+            log_activity("admin_user_updated", {
+                "userId": user_id,
+                "email": email,
+                "userName": name,
+                "action": f"Updated user account ({name})" if name else "Updated user account",
+            })
         return jsonify({"user": sanitize_user(local_user)}), 200
 
     # 2. Otherwise update via Supabase if configured
@@ -2178,6 +2243,14 @@ def admin_update_user(user_id):
         current = supabase_admin_request("GET", f"/auth/v1/admin/users/{user_id}")
         if not current or not current.get("id"):
             raise ValueError("User not found in Supabase")
+
+        banned_val = current.get("banned_until")
+        was_banned = bool(banned_val and not str(banned_val).startswith("0001"))
+        was_blocked = bool(
+            was_banned or
+            (current.get("user_metadata") or {}).get("is_blocked") or
+            (current.get("app_metadata") or {}).get("is_blocked")
+        )
 
         will_block = None
         if "blocked" in payload:
@@ -2217,7 +2290,8 @@ def admin_update_user(user_id):
                 local_u["banned_until"] = "2126-01-01T00:00:00Z" if will_block else None
             save_users(users)
 
-        if will_block is not None:
+        blocked_status_changed = (will_block is not None and will_block != was_blocked)
+        if blocked_status_changed:
             log_activity("admin_user_blocked" if will_block else "admin_user_unblocked", {
                 "userId": user_id,
                 "email": email,
@@ -2225,13 +2299,19 @@ def admin_update_user(user_id):
                 "action": "Blocked account" if will_block else "Unblocked account",
             })
         else:
-            log_activity("admin_user_updated", {"userId": user_id, "email": email, "userName": name, "action": "Updated user account"})
+            log_activity("admin_user_updated", {
+                "userId": user_id,
+                "email": email,
+                "userName": name,
+                "action": f"Updated user account ({name})" if name else "Updated user account",
+            })
 
         return jsonify({"user": sanitize_supabase_user(updated)}), 200
     except Exception as error:
         # Fallback to local users store if user is not in Supabase (e.g. Dania or seeded users)
         users = load_users()
         local_user = next((entry for entry in users if str(entry.get("id")) == str(user_id)), None)
+        was_blocked = bool(local_user.get("blocked") or local_user.get("is_blocked") or local_user.get("isBlocked") or local_user.get("banned_until")) if local_user else False
         if not local_user:
             local_user = {"id": str(user_id), "name": name, "email": email}
             users.append(local_user)
@@ -2245,7 +2325,9 @@ def admin_update_user(user_id):
             local_user["banned_until"] = "2126-01-01T00:00:00Z" if will_block else None
         save_users(users)
         invalidate_supabase_users_cache()
-        if will_block is not None:
+
+        blocked_status_changed = (will_block is not None and will_block != was_blocked)
+        if blocked_status_changed:
             log_activity("admin_user_blocked" if will_block else "admin_user_unblocked", {
                 "userId": user_id,
                 "email": email,
@@ -2253,7 +2335,12 @@ def admin_update_user(user_id):
                 "action": "Blocked account" if will_block else "Unblocked account",
             })
         else:
-            log_activity("admin_user_updated", {"userId": user_id, "email": email, "userName": name, "action": "Updated user account"})
+            log_activity("admin_user_updated", {
+                "userId": user_id,
+                "email": email,
+                "userName": name,
+                "action": f"Updated user account ({name})" if name else "Updated user account",
+            })
         return jsonify({"user": sanitize_user(local_user)}), 200
 
 
