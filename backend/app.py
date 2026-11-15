@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 import csv
 import smtplib
 from email.message import EmailMessage
+from email.utils import formataddr
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
@@ -148,7 +149,10 @@ def _send_verification_email(email, name, token):
     verification_url = f"{FRONTEND_URL}/login?verification_token={quote(token, safe='')}"
     message = EmailMessage()
     message["Subject"] = "Verify your CareerGuide account"
-    message["From"] = os.environ.get("SMTP_FROM_EMAIL", user).strip()
+    message["From"] = formataddr((
+        os.environ.get("SMTP_FROM_NAME", "CareerGuide").strip(),
+        os.environ.get("SMTP_FROM_EMAIL", user).strip(),
+    ))
     message["To"] = email
     message.set_content(
         f"Hi {name},\n\nVerify your CareerGuide account within one hour:\n{verification_url}\n\n"
@@ -186,7 +190,10 @@ def _send_password_reset_email(email, name, reset_url):
     recipient_name = name or (email.split("@")[0].replace(".", " ").capitalize() if email else "User")
     message = EmailMessage()
     message["Subject"] = "Reset your CareerGuide password"
-    message["From"] = os.environ.get("SMTP_FROM_EMAIL", user).strip()
+    message["From"] = formataddr((
+        os.environ.get("SMTP_FROM_NAME", "CareerGuide").strip(),
+        os.environ.get("SMTP_FROM_EMAIL", user).strip(),
+    ))
     message["To"] = email
     message.set_content(
         f"Hi {recipient_name},\n\n"
