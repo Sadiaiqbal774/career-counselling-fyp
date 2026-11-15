@@ -3070,6 +3070,14 @@ function AdminDashboard() {
       }
     });
 
+    // If any user is currently logged in or active, clear them from deletion filters
+    (rawUsers || []).forEach((u) => {
+      if (u && (u.isLoggedIn || u.status === 'active')) {
+        if (u.id) deletedUids.delete(String(u.id));
+        if (u.email) deletedEmails.delete(String(u.email).trim().toLowerCase());
+      }
+    });
+
     const latestActions = {};
     allActions.forEach((a) => {
       if (a && (a.type === 'admin_user_blocked' || a.type === 'admin_user_unblocked') && a.details?.userId) {
@@ -3088,10 +3096,14 @@ function AdminDashboard() {
       .filter((u) => {
         const uid = String(u.id);
         const email = String(u.email || '').trim().toLowerCase();
+        if (u.isLoggedIn || u.status === 'active') {
+          return true;
+        }
         return !deletedUids.has(uid) && (!email || !deletedEmails.has(email));
       })
       .map((u) => {
         const uid = String(u.id);
+        const isActive = Boolean(u.isLoggedIn || u.status === 'active');
         if (latestActions[uid]) {
           const isBl = latestActions[uid].blocked;
           return {
@@ -3100,7 +3112,15 @@ function AdminDashboard() {
             is_blocked: isBl,
             isBlocked: isBl,
             banned_until: isBl ? (u.banned_until || '2126-01-01T00:00:00Z') : null,
-            status: isBl ? 'blocked' : (u.isLoggedIn ? 'active' : 'passive'),
+            isLoggedIn: isActive,
+            status: isBl ? 'blocked' : (isActive ? 'active' : 'passive'),
+          };
+        }
+        if (isActive) {
+          return {
+            ...u,
+            isLoggedIn: true,
+            status: u.blocked ? 'blocked' : 'active',
           };
         }
         return u;
