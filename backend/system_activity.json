@@ -1,5 +1,16 @@
 [
   {
+    "id": "act_e2109307a455a875",
+    "type": "admin_user_unblocked",
+    "details": {
+      "userId": "f93d5804-b24b-4a59-989d-a766a57e0c89",
+      "email": "d63018553@gmail.com",
+      "userName": "Dania Aslam",
+      "action": "Unblocked account"
+    },
+    "createdAt": "2026-11-15T11:20:25Z"
+  },
+  {
     "id": "act_5947718bc9a38b87",
     "type": "admin_user_unblocked",
     "details": {

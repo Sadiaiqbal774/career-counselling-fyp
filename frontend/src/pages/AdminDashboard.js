@@ -3039,17 +3039,67 @@ function AdminDashboard() {
     if (!response.ok) throw new Error(result.message || 'Request failed.');
     return result;
   };
+  const applyUserOverrides = (rawUsers, activityList = []) => {
+    const persistedActions = getPersistedAdminActions();
+    const allActions = [...persistedActions, ...(activityList || [])];
+    const deletedUids = new Set();
+    const deletedEmails = new Set();
+    allActions.forEach((a) => {
+      if (a && a.type === 'admin_user_deleted' && a.details) {
+        if (a.details.userId) deletedUids.add(String(a.details.userId));
+        if (a.details.email) deletedEmails.add(String(a.details.email).trim().toLowerCase());
+      }
+    });
+
+    const latestActions = {};
+    allActions.forEach((a) => {
+      if (a && (a.type === 'admin_user_blocked' || a.type === 'admin_user_unblocked') && a.details?.userId) {
+        const uid = String(a.details.userId);
+        const actionTime = new Date(a.createdAt || 0).getTime();
+        if (!latestActions[uid] || actionTime > latestActions[uid].time) {
+          latestActions[uid] = {
+            blocked: a.type === 'admin_user_blocked',
+            time: actionTime,
+          };
+        }
+      }
+    });
+
+    return (rawUsers || [])
+      .filter((u) => {
+        const uid = String(u.id);
+        const email = String(u.email || '').trim().toLowerCase();
+        return !deletedUids.has(uid) && (!email || !deletedEmails.has(email));
+      })
+      .map((u) => {
+        const uid = String(u.id);
+        if (latestActions[uid]) {
+          const isBl = latestActions[uid].blocked;
+          return {
+            ...u,
+            blocked: isBl,
+            is_blocked: isBl,
+            isBlocked: isBl,
+            banned_until: isBl ? (u.banned_until || '2126-01-01T00:00:00Z') : null,
+            status: isBl ? 'blocked' : (u.isLoggedIn ? 'active' : 'passive'),
+          };
+        }
+        return u;
+      })
+      .sort((a, b) => timestampValue(b) - timestampValue(a));
+  };
+
   const load = async (resource) => {
     if (resource === 'users') {
       const result = await api('/api/admin/stats');
       if (Array.isArray(result.adminEmails)) {
         setAdminEmailsList(result.adminEmails.map((e) => String(e).toLowerCase()));
       }
-      setUsers((result.users || []).sort((a, b) => timestampValue(b) - timestampValue(a)));
+      setUsers(applyUserOverrides(result.users || []));
     } else {
       if (users.length === 0) {
         api('/api/admin/stats').then((res) => {
-          if (res.users) setUsers((res.users || []).sort((a, b) => timestampValue(b) - timestampValue(a)));
+          if (res.users) setUsers(applyUserOverrides(res.users || []));
         }).catch(() => {});
       }
       const result = await api(`/api/admin/${resource}`);
@@ -3074,13 +3124,13 @@ function AdminDashboard() {
       api('/api/admin/activity').catch(() => ({ records: [] })),
       api('/api/admin/chatbot-interactions').catch(() => ({ records: [] })),
     ]);
-    const sortedUsers = (stats.users || []).sort((a, b) => timestampValue(b) - timestampValue(a));
-    setUsers(sortedUsers);
     const persistedActions = getPersistedAdminActions();
     const serverActivity = activity.records || [];
     const combinedActivity = deduplicateActivities([...persistedActions, ...serverActivity]);
+    const processedUsers = applyUserOverrides(stats.users || [], combinedActivity);
+    setUsers(processedUsers);
     setDashboardData({
-      users: sortedUsers,
+      users: processedUsers,
       scholarships: scholarships.records || [],
       universities: universities.records || [],
       eligibility: eligibility.records || [],

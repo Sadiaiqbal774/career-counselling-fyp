@@ -10,6 +10,7 @@ import secrets
 import re
 import os
 import time
+from datetime import datetime, timezone
 import csv
 import smtplib
 from email.message import EmailMessage
@@ -57,9 +58,10 @@ admin_json_resources = {
     "chatbot-responses": backend_dir / "chatbot_responses.json",
     "eligibility": backend_dir / "eligibility_criteria.json",
     "activity": backend_dir / "system_activity.json",
+    "deleted_users": backend_dir / "deleted_users.json",
 }
 # These resources are monitoring/audit logs, not admin-managed content — never deletable.
-read_only_admin_resources = {"chatbot-interactions", "activity"}
+read_only_admin_resources = {"chatbot-interactions", "activity", "deleted_users"}
 
 # Percentages and money caps entered by admins must never be negative.
 non_negative_numeric_fields = ("income_cap_pkr", "min_merit_pct", "minimumMarks")
@@ -279,6 +281,17 @@ def is_user_logged_in(user_id, email, last_sign_in_at=None):
     # No presence entry means the user is not actively on the website
     return False
 
+
+def to_bool(val):
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, (int, float)):
+        return val != 0
+    if isinstance(val, str):
+        return val.strip().lower() in ("true", "1", "yes", "t")
+    return False
+
+
 def sanitize_user(user):
     uid = user["id"]
     email = user["email"]
@@ -288,13 +301,17 @@ def sanitize_user(user):
     if email and email.strip().lower() == "shamamaaslam377@gmail.com":
         role = "student"
         is_admin_user = False
+    is_bl = to_bool(user.get("blocked")) or to_bool(user.get("is_blocked")) or to_bool(user.get("isBlocked"))
     return {
         "id": uid,
         "name": user["name"],
         "email": email,
         "authProvider": user.get("authProvider", "local"),
         "hasPassword": bool(user.get("passwordHash")),
-        "blocked": bool(user.get("blocked", False)),
+        "blocked": is_bl,
+        "is_blocked": is_bl,
+        "isBlocked": is_bl,
+        "banned_until": "2126-01-01T00:00:00Z" if is_bl else None,
         "emailConfirmed": bool(user.get("emailConfirmed", user.get("email_confirmed_at"))),
         "createdAt": user.get("createdAt"),
         "lastSignInAt": user.get("lastSignInAt"),
@@ -588,8 +605,67 @@ def is_hash_like(val):
     return False
 
 
+def get_deleted_user_keys():
+    deleted_uids = set()
+    deleted_emails = set()
+
+    # 1. From deleted_users.json store
+    try:
+        deleted_records = load_json_records("deleted_users") or []
+        for d in deleted_records:
+            if d.get("userId"):
+                deleted_uids.add(str(d.get("userId")))
+            if d.get("email"):
+                deleted_emails.add(str(d.get("email")).strip().lower())
+    except Exception:
+        pass
+
+    # 2. From system_activity.json / activity logs
+    try:
+        activity = load_json_records("activity") or []
+        if not activity:
+            seed_act = backend_dir / "system_activity.json"
+            if seed_act.exists():
+                with seed_act.open("r", encoding="utf-8") as f:
+                    activity = json.load(f)
+        for entry in activity:
+            if entry.get("type") in ("admin_user_deleted", "user_deleted"):
+                d = entry.get("details") or {}
+                if d.get("userId"):
+                    deleted_uids.add(str(d.get("userId")))
+                if d.get("email"):
+                    deleted_emails.add(str(d.get("email")).strip().lower())
+    except Exception:
+        pass
+
+    return deleted_uids, deleted_emails
+
+
+def record_deleted_user(user_id, email="", name=""):
+    try:
+        deleted = load_json_records("deleted_users") or []
+        uid_str = str(user_id) if user_id else ""
+        em_str = str(email).strip().lower() if email else ""
+        exists = any(
+            (uid_str and str(d.get("userId")) == uid_str) or
+            (em_str and str(d.get("email", "")).strip().lower() == em_str)
+            for d in deleted
+        )
+        if not exists:
+            deleted.append({
+                "userId": uid_str,
+                "email": em_str,
+                "name": str(name) if name else "",
+                "deletedAt": datetime.now(timezone.utc).isoformat()
+            })
+            save_json_records("deleted_users", deleted)
+    except Exception as e:
+        print(f"Error saving deleted user record: {e}")
+
+
 def get_all_known_users_map():
     users_map = {}
+    deleted_uids, deleted_emails = get_deleted_user_keys()
 
     # 1. Supabase users if configured (primary authority)
     if SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
@@ -597,6 +673,9 @@ def get_all_known_users_map():
             for su in list_supabase_users(force_refresh=True):
                 sanitized = sanitize_supabase_user(su)
                 uid = str(sanitized.get("id"))
+                u_email = str(sanitized.get("email") or "").strip().lower()
+                if uid in deleted_uids or (u_email and u_email in deleted_emails):
+                    continue
                 users_map[uid] = {
                     "id": uid,
                     "name": sanitized.get("name") or sanitized.get("email"),
@@ -612,6 +691,9 @@ def get_all_known_users_map():
     # 2. Local users from users.json (authoritative for local/seeded users)
     for u in load_users():
         uid = str(u.get("id"))
+        u_email = str(u.get("email") or "").strip().lower()
+        if uid in deleted_uids or (u_email and u_email in deleted_emails):
+            continue
         if uid not in users_map:
             name = u.get("name") or (u.get("email", "").split("@")[0] if u.get("email") else "Student")
             is_bl = bool(u.get("blocked", False))
@@ -625,7 +707,7 @@ def get_all_known_users_map():
                 "banned_until": "2126-01-01T00:00:00Z" if is_bl else None,
             }
 
-    # 3. Historical activity users only if not already resolved
+    # 3. Historical activity users only if not already resolved and NOT deleted
     try:
         activity = load_json_records("activity") or []
         if not activity:
@@ -636,13 +718,15 @@ def get_all_known_users_map():
         for entry in activity:
             details = entry.get("details")
             if isinstance(details, dict):
-                uid = details.get("userId")
-                email = details.get("email")
-                if uid and str(uid) not in users_map and email:
+                uid = str(details.get("userId") or "")
+                email = str(details.get("email") or "").strip().lower()
+                if uid in deleted_uids or email in deleted_emails:
+                    continue
+                if uid and uid not in users_map and email:
                     local = email.split("@")[0].replace(".", " ")
                     name = " ".join(part.capitalize() for part in local.split())
-                    users_map[str(uid)] = {
-                        "id": str(uid),
+                    users_map[uid] = {
+                        "id": uid,
                         "name": details.get("userName") or name,
                         "email": email,
                         "createdAt": entry.get("createdAt") or "2026-11-04T05:32:42Z",
@@ -911,13 +995,13 @@ def sanitize_supabase_user(user):
             now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
             is_banned = str(banned_until) > now_iso
         except Exception:
-            is_banned = True
+            is_banned = False
 
     is_meta_blocked = bool(
-        metadata.get("is_blocked")
-        or app_metadata.get("is_blocked")
-        or user.get("blocked")
-        or user.get("is_blocked")
+        to_bool(metadata.get("is_blocked"))
+        or to_bool(app_metadata.get("is_blocked"))
+        or to_bool(user.get("blocked"))
+        or to_bool(user.get("is_blocked"))
     )
     is_blocked = bool(is_banned or is_meta_blocked)
 
@@ -1927,11 +2011,14 @@ def admin_stats():
             if ku_email:
                 existing_emails.add(ku_email)
 
-    # Admin accounts are never part of the student / registered user store
+    # Admin accounts and deleted accounts are never part of the student / registered user store
+    deleted_uids, deleted_emails = get_deleted_user_keys()
     admin_un = (ADMIN_USERNAME or "admin").strip().lower()
     users = [
         user for user in users
-        if user.get("name", "").strip().lower() != admin_un
+        if str(user.get("id")) not in deleted_uids
+        and str(user.get("email", "")).strip().lower() not in deleted_emails
+        and user.get("name", "").strip().lower() != admin_un
         and user.get("email", "").strip().lower() != admin_un
         and not user.get("email", "").strip().lower().startswith(f"{admin_un}@")
         and not user.get("name", "").strip().lower().startswith(f"{admin_un} ")
@@ -2025,6 +2112,20 @@ def admin_update_user(user_id):
 
         updated = supabase_admin_request("PUT", f"/auth/v1/admin/users/{user_id}", body=update_body)
         invalidate_supabase_users_cache()
+
+        # Also sync to local users.json if present
+        users = load_users()
+        local_u = next((entry for entry in users if str(entry.get("id")) == str(user_id) or (email and str(entry.get("email", "")).lower() == email.lower())), None)
+        if local_u:
+            local_u["name"] = name
+            local_u["email"] = email
+            if will_block is not None:
+                local_u["blocked"] = will_block
+                local_u["is_blocked"] = will_block
+                local_u["isBlocked"] = will_block
+                local_u["banned_until"] = "2126-01-01T00:00:00Z" if will_block else None
+            save_users(users)
+
         if will_block is not None:
             log_activity("admin_user_blocked" if will_block else "admin_user_unblocked", {
                 "userId": user_id,
@@ -2050,6 +2151,7 @@ def admin_update_user(user_id):
             local_user["blocked"] = will_block
             local_user["is_blocked"] = will_block
             local_user["isBlocked"] = will_block
+            local_user["banned_until"] = "2126-01-01T00:00:00Z" if will_block else None
         save_users(users)
         invalidate_supabase_users_cache()
         if will_block is not None:
@@ -2076,7 +2178,7 @@ def admin_delete_user(user_id):
     if refusal:
         return refusal
 
-    # 1. First check if user exists in local users.json store
+    # 1. Resolve user email and name from local users, Supabase, or known users map
     user_name = None
     user_email = None
     users = load_users()
@@ -2084,39 +2186,57 @@ def admin_delete_user(user_id):
     if local_target:
         user_name = local_target.get("name")
         user_email = local_target.get("email")
-    elif SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
+
+    if (not user_email or not user_name) and SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
         try:
             curr = supabase_admin_request("GET", f"/auth/v1/admin/users/{user_id}")
             if curr:
-                user_email = curr.get("email")
-                user_name = (curr.get("user_metadata") or {}).get("name")
+                user_email = user_email or curr.get("email")
+                user_name = user_name or (curr.get("user_metadata") or {}).get("name")
         except Exception:
             pass
 
-    remaining_users = [entry for entry in users if str(entry.get("id")) != str(user_id)]
+    if not user_email or not user_name:
+        known_map = get_all_known_users_map()
+        if str(user_id) in known_map:
+            user_email = user_email or known_map[str(user_id)].get("email")
+            user_name = user_name or known_map[str(user_id)].get("name")
+
+    # 2. Permanently record deletion in deleted_users.json
+    record_deleted_user(user_id, user_email, user_name)
+
+    # 3. Remove from local users.json if present
+    remaining_users = [
+        entry for entry in users
+        if str(entry.get("id")) != str(user_id)
+        and (not user_email or str(entry.get("email", "")).strip().lower() != str(user_email).strip().lower())
+    ]
     if len(remaining_users) < len(users):
         save_users(remaining_users)
-        invalidate_supabase_users_cache()
-        log_activity("admin_user_deleted", {"userId": user_id, "userName": user_name, "email": user_email, "action": "Deleted user account"})
-        return jsonify({"message": "User deleted successfully."}), 200
 
-    # 2. Otherwise delete via Supabase if configured
-    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-        return jsonify({"message": "User not found."}), 404
-
-    try:
-        supabase_admin_request("DELETE", f"/auth/v1/admin/users/{user_id}")
-        invalidate_supabase_users_cache()
+    # 4. Remove from Supabase if configured
+    if SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
+        try:
+            supabase_admin_request("DELETE", f"/auth/v1/admin/users/{user_id}")
+        except Exception:
+            pass
         for resource in ("profiles", "quiz_scores"):
             try:
                 supabase_admin_request("DELETE", f"/rest/v1/{resource}", params={"user_id" if resource == "quiz_scores" else "id": f"eq.{user_id}"})
             except Exception:
                 pass
 
-        log_activity("admin_user_deleted", {"userId": user_id, "userName": user_name, "email": user_email, "action": "Deleted user account"})
-        return jsonify({"message": "User deleted successfully."}), 200
-    except Exception as error:
-        return jsonify({"message": str(error)}), 500
+    invalidate_supabase_users_cache()
+
+    # 5. Log activity
+    log_activity("admin_user_deleted", {
+        "userId": str(user_id),
+        "userName": user_name or "Student",
+        "email": user_email or "",
+        "action": "Deleted user account",
+    })
+
+    return jsonify({"message": "User deleted successfully."}), 200
 
 
 @app.route("/api/admin/assessments", methods=["GET"])
