@@ -577,9 +577,11 @@ function deduplicateActivities(items) {
         );
 
         if (matchesTarget) {
+          const itemAction = (item.action || item.details?.action || item.details?.userName || item.userName || '').trim();
+          const exAction = (existing.action || existing.details?.action || existing.details?.userName || existing.userName || '').trim();
           const exTime = getRecordTimestampMs(existing);
-          // If within 3 seconds (3,000 ms) of each other, consider it the same event (sync between optimistic local write and backend server response)
-          if (Math.abs(itemTime - exTime) < 3000) {
+          // Only deduplicate if identical action text/name AND within 3 seconds (sync between optimistic local write and backend server response)
+          if (itemAction && exAction && itemAction === exAction && Math.abs(itemTime - exTime) < 3000) {
             return true;
           }
         }
@@ -3269,6 +3271,10 @@ function AdminDashboard() {
         const actionItem = {
           id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
           type: nextBlocked ? 'admin_user_blocked' : 'admin_user_unblocked',
+          userName: editingUser.name,
+          userEmail: editingUser.email,
+          userId: editingUser.id,
+          action: nextBlocked ? 'Blocked account' : 'Unblocked account',
           details: {
             userId: editingUser.id,
             userName: editingUser.name,
@@ -3284,10 +3290,16 @@ function AdminDashboard() {
           activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
         }));
         setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
-      } else if (nameChanged || emailChanged) {
+      }
+
+      if (nameChanged || emailChanged || !blockedChanged) {
         const actionItem = {
           id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
           type: 'admin_user_updated',
+          userName: editingUser.name,
+          userEmail: editingUser.email,
+          userId: editingUser.id,
+          action: `Updated user account (${editingUser.name})`,
           details: {
             userId: editingUser.id,
             userName: editingUser.name,

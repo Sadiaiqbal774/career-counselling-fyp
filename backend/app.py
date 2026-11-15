@@ -2610,30 +2610,16 @@ def admin_resource(resource):
             except Exception:
                 pass
 
-            # Deduplicate activity records to prevent duplicate rows for admin actions
+            # Only deduplicate by exact record ID to prevent duplicate rows in activity feed
             deduped_activity = []
+            seen_act_ids = set()
             for item in activity_list:
-                item_type = item.get("type")
-                details = item.get("details") or {}
-                uid = str(details.get("userId") or "")
-                email = str(details.get("email") or "").lower()
-
-                is_dup = False
-                for ex in deduped_activity:
-                    ex_type = ex.get("type")
-                    ex_details = ex.get("details") or {}
-                    ex_uid = str(ex_details.get("userId") or "")
-                    ex_email = str(ex_details.get("email") or "").lower()
-                    if item_type and ex_type and item_type == ex_type:
-                        if (uid and ex_uid and uid == ex_uid) or (email and ex_email and email == ex_email):
-                            is_dup = True
-                            if not ex_details.get("userName") and details.get("userName"):
-                                ex_details["userName"] = details.get("userName")
-                            if not ex_details.get("email") and details.get("email"):
-                                ex_details["email"] = details.get("email")
-                            break
-                if not is_dup:
-                    deduped_activity.append(item)
+                act_id = str(item.get("id") or "")
+                if act_id:
+                    if act_id in seen_act_ids:
+                        continue
+                    seen_act_ids.add(act_id)
+                deduped_activity.append(item)
             records = deduped_activity
         if resource in ("chatbot-interactions", "assessments", "activity"):
             def extract_sort_key(record):
