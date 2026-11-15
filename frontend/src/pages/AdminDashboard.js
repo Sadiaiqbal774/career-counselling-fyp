@@ -3203,53 +3203,6 @@ function AdminDashboard() {
     load(view === 'log' ? 'chatbot-interactions' : 'chatbot-responses').catch((loadError) => setError(loadError.message));
   };
 
-  const toggleUserBlock = async (user) => {
-    try {
-      const currentlyBlocked = isUserBlocked(user);
-      const nextBlocked = !currentlyBlocked;
-      const result = await api(`/api/admin/users/${user.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: user.name, email: user.email, blocked: nextBlocked }),
-      });
-      const updatedUser = {
-        ...user,
-        ...(result?.user || {}),
-        blocked: nextBlocked,
-        is_blocked: nextBlocked,
-        isBlocked: nextBlocked,
-        banned_until: nextBlocked ? '2126-01-01T00:00:00Z' : null,
-        user_metadata: {
-          ...(user.user_metadata || {}),
-          ...(result?.user?.user_metadata || {}),
-          is_blocked: nextBlocked,
-        },
-      };
-      setUsers((prevUsers) => prevUsers.map((entry) => (String(entry.id) === String(user.id) ? updatedUser : entry)));
-      const actionItem = {
-        id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-        type: nextBlocked ? 'admin_user_blocked' : 'admin_user_unblocked',
-        details: {
-          userId: user.id,
-          userName: user.name,
-          email: user.email,
-          action: nextBlocked ? 'Blocked account' : 'Unblocked account',
-        },
-        createdAt: new Date().toISOString(),
-      };
-      persistAdminAction(actionItem);
-      setDashboardData((prev) => ({
-        ...prev,
-        users: (prev.users || []).map((entry) => (String(entry.id) === String(user.id) ? updatedUser : entry)),
-        activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
-      }));
-      setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
-      setNotice(`User ${user.name || user.email} is now ${nextBlocked ? 'blocked' : 'active'}.`);
-    } catch (toggleError) {
-      setError(toggleError.message);
-    }
-  };
-
   const isUserChanged = Boolean(
     editingUser && originalUser && (
       (editingUser.name || '').trim() !== (originalUser.name || '').trim() ||
@@ -3311,9 +3264,17 @@ function AdminDashboard() {
         }));
         setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
       }
+      const blockedChanged = Boolean(editingUser.blocked) !== Boolean(originalUser.blocked);
+      const nameChanged = (editingUser.name || '').trim() !== (originalUser.name || '').trim();
+      const emailChanged = (editingUser.email || '').trim().toLowerCase() !== (originalUser.email || '').trim().toLowerCase();
+
       setEditingUser(null);
       setOriginalUser(null);
-      setNotice(`User ${editingUser.name || editingUser.email} is now ${targetBlocked ? 'blocked' : 'active'}.`);
+      if (blockedChanged && !nameChanged && !emailChanged) {
+        setNotice(`User "${editingUser.name || editingUser.email}" is now ${targetBlocked ? 'blocked' : 'unblocked'}.`);
+      } else {
+        setNotice(`User "${editingUser.name || editingUser.email}" updated successfully.`);
+      }
     } catch (saveError) {
       setModalError(saveError.message || 'Failed to update user.');
     } finally {
@@ -3899,22 +3860,6 @@ function AdminDashboard() {
                           >
                             Edit
                           </button>
-                          {!isUserAdmin(user) && !isSelfUser(user) && (
-                            <button
-                              className={`admin-action admin-action--user ${isUserBlocked(user) ? 'admin-action--unblock' : 'admin-action--block'}`}
-                              type="button"
-                              onClick={() => toggleUserBlock(user)}
-                              title={isUserBlocked(user) ? 'Unblock user' : 'Block user'}
-                              style={{
-                                marginLeft: '6px',
-                                background: isUserBlocked(user) ? '#f0fdf4' : '#fef2f2',
-                                color: isUserBlocked(user) ? '#166534' : '#991b1b',
-                                borderColor: isUserBlocked(user) ? '#bbf7d0' : '#fecaca',
-                              }}
-                            >
-                              {isUserBlocked(user) ? 'Unblock' : 'Block'}
-                            </button>
-                          )}
                         </div>
                       </td>
                     </tr>
