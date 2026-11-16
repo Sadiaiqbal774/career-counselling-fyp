@@ -958,7 +958,7 @@ def invalidate_quiz_scores_cache():
 def load_supabase_quiz_scores(force_refresh=False):
     global _quiz_scores_cache
     now = time.time()
-    if not force_refresh and _quiz_scores_cache["data"] is not None and (now - _quiz_scores_cache["timestamp"] < 45):
+    if not force_refresh and _quiz_scores_cache["data"] is not None and (now - _quiz_scores_cache["timestamp"] < 10):
         return list(_quiz_scores_cache["data"])
 
     supabase_url = os.environ.get("SUPABASE_URL", "").strip().rstrip("/") or SUPABASE_URL
@@ -1054,7 +1054,7 @@ def load_supabase_quiz_scores(force_refresh=False):
                 "entryTest": profile.get("entry_test") if profile else None,
                 "entryTestScore": profile.get("entry_test_score") if profile else None,
             } if profile else None,
-            "createdAt": record.get("saved_at") or record.get("created_at") or record.get("createdAt"),
+            "createdAt": record.get("updated_at") or record.get("saved_at") or record.get("created_at") or record.get("createdAt"),
         })
 
     _quiz_scores_cache["data"] = list(enriched)
@@ -2740,7 +2740,7 @@ def admin_resource(resource):
                                 "matchedField": highest_cat or sa.get("highest_category"),
                                 "source": sa.get("source", "career_quiz"),
                             },
-                            "createdAt": sa.get("createdAt") or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                            "createdAt": sa.get("createdAt") or sa.get("updated_at") or sa.get("saved_at"),
                         })
                         existing_act_ids.add(event_id)
             except Exception:
