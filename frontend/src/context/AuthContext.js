@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import supabase, { ensureSupabaseConfigured, getSupabaseConfigError } from '../lib/supabase';
 import { hasPassword, isStrongPassword } from '../lib/authHelpers';
+import { saveUserProfile } from '../data/userData';
 
 const AuthContext = createContext(null);
 const API_URL = (() => {
@@ -72,6 +73,35 @@ export function AuthProvider({ children }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: mapped.id, email: mapped.email, status: 'active' }),
         }).catch(() => {});
+
+        // Fetch and cache user profile from Supabase so it's immediately available across devices
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', mapped.id)
+          .maybeSingle()
+          .then(({ data: sp }) => {
+            if (sp) {
+              const loaded = {
+                fullName: mapped.name || sp.full_name || '',
+                email: mapped.email || sp.email || '',
+                phone: sp.phone || '',
+                city: sp.city || '',
+                school: sp.school || '',
+                marks: sp.marks !== null && sp.marks !== undefined ? String(sp.marks) : '',
+                intermediateMarks: sp.intermediate_marks !== null && sp.intermediate_marks !== undefined ? String(sp.intermediate_marks) : '',
+                intermediateGroup: sp.intermediate_group || 'Pre-Engineering',
+                entryTest: sp.entry_test || 'None',
+                entryTestScore: sp.entry_test_score ? String(sp.entry_test_score) : '',
+                academicLevel: ['Matric', 'Intermediate'].includes(sp.academic_level) ? sp.academic_level : 'Intermediate',
+                preferredField: sp.preferred_field || 'Technology',
+                interests: sp.interests || '',
+                notes: sp.notes || '',
+              };
+              saveUserProfile(mapped.id, loaded);
+            }
+          })
+          .catch(() => {});
       }
     };
 
@@ -121,33 +151,51 @@ export function AuthProvider({ children }) {
       } catch (_) {}
     };
 
-    // Heartbeat every 20 seconds as long as student is logged in
+    // Heartbeat every 20 seconds as long as student is logged in and page is visible
     const interval = setInterval(() => {
-      if (shouldPingActiveUser(currentUser)) {
+      if (shouldPingActiveUser(currentUser) && document.visibilityState === 'visible') {
         pingStatus('active');
       }
     }, 20000);
 
-    const handleUnload = () => {
-      if (currentUser?.id || currentUser?.email) {
-        try {
-          if (navigator.sendBeacon) {
-            const blob = new Blob([JSON.stringify({ userId: currentUser.id, email: currentUser.email, status: 'passive' })], {
-              type: 'application/json',
-            });
-            navigator.sendBeacon(`${API_URL}/api/auth/presence`, blob);
-          } else {
-            pingStatus('passive');
-          }
-        } catch (_) {}
+    const sendPassive = () => {
+      if (!currentUser?.id && !currentUser?.email) return;
+      try {
+        const payloadStr = JSON.stringify({ userId: currentUser.id, email: currentUser.email, status: 'passive' });
+        if (navigator.sendBeacon) {
+          // text/plain Blob avoids CORS preflight OPTIONS request so beacon sends instantly during tab close
+          const blob = new Blob([payloadStr], { type: 'text/plain' });
+          navigator.sendBeacon(`${API_URL}/api/auth/presence`, blob);
+        } else {
+          fetch(`${API_URL}/api/auth/presence`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payloadStr,
+            keepalive: true,
+          }).catch(() => {});
+        }
+      } catch (_) {}
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        sendPassive();
+      } else if (document.visibilityState === 'visible') {
+        if (shouldPingActiveUser(currentUser)) {
+          pingStatus('active');
+        }
       }
     };
 
-    window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener('beforeunload', sendPassive);
+    window.addEventListener('pagehide', sendPassive);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       clearInterval(interval);
-      window.removeEventListener('beforeunload', handleUnload);
+      window.removeEventListener('beforeunload', sendPassive);
+      window.removeEventListener('pagehide', sendPassive);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [currentUser?.id, currentUser?.email]);
 

@@ -3208,13 +3208,20 @@ function AdminDashboard() {
     }
   }, []);
 
-  // Auto-refresh users every 15 seconds when on the users tab so active/passive status is always live
+  // Auto-refresh users every 10 seconds when on the users tab so active/passive status is always live
   useEffect(() => {
-    if (tab !== 'users') return;
-    const interval = setInterval(() => {
-      load('users').catch(() => {});
-    }, 15000);
-    return () => clearInterval(interval);
+    if (tab === 'users') {
+      const interval = setInterval(() => {
+        load('users').catch(() => {});
+      }, 10000);
+      return () => clearInterval(interval);
+    }
+    if (tab === 'dashboard') {
+      const interval = setInterval(() => {
+        loadDashboard().catch(() => {});
+      }, 15000);
+      return () => clearInterval(interval);
+    }
   }, [tab]);
   // Large record sets (200+ universities/scholarships) rendered in full make the page tall
   // enough to break browser rendering, so lists are paged; reset to page one on list/search change.

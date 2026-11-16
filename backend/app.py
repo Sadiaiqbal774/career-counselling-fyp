@@ -98,6 +98,7 @@ admin_sessions = {}
 password_reset_tokens = {}
 # The admin username is public configuration; the password is verified by Supabase Auth.
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "").strip() or "admin"
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Admin@123").strip() or "Admin@123"
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "").strip()
 ADMIN_SESSION_TTL = 60 * 60 * 8
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
@@ -364,8 +365,8 @@ def is_user_logged_in(user_id, email, last_sign_in_at=None):
     if presence:
         if not presence.get("logged_in"):
             return False
-        # Active only if a live heartbeat was received within the last 180 seconds
-        if now - presence.get("last_seen", 0) < 180:
+        # Active only if a live heartbeat was received within the last 60 seconds
+        if now - presence.get("last_seen", 0) < 60:
             return True
         return False
     # No presence entry means the user is not actively on the website
@@ -1449,7 +1450,16 @@ def verify_registration():
 
 @app.route("/api/auth/presence", methods=["POST"])
 def auth_presence():
-    payload = request.get_json(silent=True) or {}
+    payload = request.get_json(silent=True)
+    if not payload and request.data:
+        try:
+            payload = json.loads(request.data.decode("utf-8"))
+        except Exception:
+            pass
+    if not payload and request.form:
+        payload = request.form.to_dict()
+    payload = payload or {}
+
     user_id = str(payload.get("userId") or "").strip()
     email = str(payload.get("email") or "").strip().lower()
     status = (payload.get("status") or "active").strip().lower()
@@ -1979,10 +1989,16 @@ def admin_login():
     if input_un not in valid_usernames:
         return jsonify({"message": "Invalid admin username or password. Username must be 'admin' or your admin email."}), 401
 
-    admin_target_email = "admin@careerguide.internal"
+    if input_un in {e.strip().lower() for e in admin_emails}:
+        admin_target_email = input_un
+    else:
+        admin_target_email = "admin@careerguide.internal"
+        # For system admin username ("admin"), strictly verify against ADMIN_PASSWORD
+        if password != ADMIN_PASSWORD:
+            return jsonify({"message": "Invalid admin username or password."}), 401
 
     # Automatically provision / sync system admin in Supabase Auth via service role
-    if SUPABASE_SERVICE_ROLE_KEY:
+    if SUPABASE_SERVICE_ROLE_KEY and admin_target_email == "admin@careerguide.internal":
         try:
             all_users = list_supabase_users(force_refresh=True)
             admin_user = next((u for u in all_users if str(u.get("email", "")).strip().lower() == admin_target_email), None)
@@ -1992,7 +2008,7 @@ def admin_login():
                     "/auth/v1/admin/users",
                     body={
                         "email": admin_target_email,
-                        "password": password,
+                        "password": ADMIN_PASSWORD,
                         "email_confirm": True,
                         "app_metadata": {"role": "admin"},
                         "user_metadata": {"name": "Administrator"}
@@ -2004,7 +2020,7 @@ def admin_login():
                     "PUT",
                     f"/auth/v1/admin/users/{admin_user['id']}",
                     body={
-                        "password": password,
+                        "password": ADMIN_PASSWORD,
                         "ban_duration": "none",
                         "email_confirm": True,
                         "app_metadata": {**(admin_user.get("app_metadata") or {}), "role": "admin"}
@@ -2038,29 +2054,7 @@ def admin_login():
         except Exception:
             pass
 
-        # If token exchange failed, ensure password update and retry once
-        if SUPABASE_SERVICE_ROLE_KEY:
-            try:
-                all_users = list_supabase_users(force_refresh=True)
-                admin_user = next((u for u in all_users if str(u.get("email", "")).strip().lower() == admin_target_email), None)
-                if admin_user and admin_user.get("id"):
-                    supabase_admin_request(
-                        "PUT",
-                        f"/auth/v1/admin/users/{admin_user['id']}",
-                        body={
-                            "password": password,
-                            "ban_duration": "none",
-                            "app_metadata": {**(admin_user.get("app_metadata") or {}), "role": "admin"}
-                        }
-                    )
-                    invalidate_supabase_users_cache()
-                    with urlopen(auth_request, timeout=15) as retry_response:
-                        session = json.loads(retry_response.read().decode("utf-8"))
-            except Exception:
-                session = None
-
-        if not session:
-            return jsonify({"message": "Invalid admin username or password."}), 401
+        return jsonify({"message": "Invalid admin username or password."}), 401
     except (URLError, TimeoutError, ValueError, OSError):
         return jsonify({"message": "Authentication service timeout. Please try again."}), 504
 

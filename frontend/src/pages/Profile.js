@@ -157,23 +157,27 @@ function Profile() {
             return;
           }
 
-          setProfile((prev) => ({
-            ...prev,
-            fullName: currentUser.name || savedProfile.full_name || prev.fullName || '',
-            email: currentUser.email || savedProfile.email || prev.email || '',
+          const resolvedProfile = {
+            fullName: currentUser.name || savedProfile.full_name || '',
+            email: currentUser.email || savedProfile.email || '',
             phone: savedProfile.phone || '',
             city: savedProfile.city || '',
             school: savedProfile.school || '',
-            marks: savedProfile.marks !== null && savedProfile.marks !== undefined ? savedProfile.marks : '',
-            intermediateMarks: savedProfile.intermediate_marks !== null && savedProfile.intermediate_marks !== undefined ? savedProfile.intermediate_marks : '',
+            marks: savedProfile.marks !== null && savedProfile.marks !== undefined ? String(savedProfile.marks) : '',
+            intermediateMarks: savedProfile.intermediate_marks !== null && savedProfile.intermediate_marks !== undefined ? String(savedProfile.intermediate_marks) : '',
             intermediateGroup: savedProfile.intermediate_group || 'Pre-Engineering',
             entryTest: savedProfile.entry_test || 'None',
-            entryTestScore: savedProfile.entry_test_score || '',
+            entryTestScore: savedProfile.entry_test_score ? String(savedProfile.entry_test_score) : '',
             academicLevel: ['Matric', 'Intermediate'].includes(savedProfile.academic_level) ? savedProfile.academic_level : 'Intermediate',
             preferredField: savedProfile.preferred_field || 'Technology',
             interests: savedProfile.interests || '',
             notes: savedProfile.notes || '',
+          };
+          setProfile((prev) => ({
+            ...prev,
+            ...resolvedProfile,
           }));
+          saveUserProfile(currentUser.id, resolvedProfile);
         }
       } catch {
         // Local profile remains primary fallback
@@ -265,29 +269,32 @@ function Profile() {
     setProfileSaved(true);
     toast.success('Profile saved successfully! Your details are ready across all modules.');
 
-    // Background online sync attempt
+    // Online cloud sync to Supabase (ensuring no NULL values violate table schema)
     try {
       const profilePayload = {
         id: currentUser.id,
-        full_name: profile.fullName,
-        email: profile.email,
-        phone: profile.phone,
-        city: profile.city,
-        school: profile.school,
-        marks: profile.marks ? Number(profile.marks) : null,
-        intermediate_marks: profile.intermediateMarks ? Number(profile.intermediateMarks) : null,
-        intermediate_group: profile.intermediateGroup,
-        entry_test: profile.entryTest,
-        entry_test_score: profile.entryTest !== 'None' && profile.entryTestScore ? Number(profile.entryTestScore) : null,
-        academic_level: profile.academicLevel,
-        preferred_field: profile.preferredField,
-        interests: profile.interests,
-        notes: profile.notes,
+        full_name: String(profile.fullName || currentUser.name || '').trim(),
+        email: String(profile.email || currentUser.email || '').trim(),
+        phone: String(profile.phone || '').trim(),
+        city: String(profile.city || '').trim(),
+        school: String(profile.school || '').trim(),
+        marks: String(profile.marks !== null && profile.marks !== undefined ? profile.marks : '').trim(),
+        intermediate_marks: String(profile.intermediateMarks !== null && profile.intermediateMarks !== undefined ? profile.intermediateMarks : '').trim(),
+        intermediate_group: String(profile.intermediateGroup || 'Pre-Engineering'),
+        entry_test: String(profile.entryTest || 'None'),
+        entry_test_score: String(profile.entryTest !== 'None' && profile.entryTestScore ? profile.entryTestScore : '').trim(),
+        academic_level: String(profile.academicLevel || 'Intermediate'),
+        preferred_field: String(profile.preferredField || 'Technology'),
+        interests: String(profile.interests || '').trim(),
+        notes: String(profile.notes || '').trim(),
         updated_at: new Date().toISOString(),
       };
-      await supabase.from('profiles').upsert(profilePayload);
-    } catch {
-      // Offline fallback silent sync
+      const { error: syncError } = await supabase.from('profiles').upsert(profilePayload);
+      if (syncError) {
+        console.warn('Supabase profile sync warning:', syncError);
+      }
+    } catch (syncErr) {
+      console.warn('Supabase profile sync failed:', syncErr);
     }
   };
 
