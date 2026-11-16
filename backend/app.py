@@ -2713,9 +2713,21 @@ def admin_resource(resource):
                     uid_for_id = sa.get("userId") or ""
                     source_for_id = sa.get("source", "quiz")
                     event_id = f"act_quiz_{raw_id}" if raw_id else f"act_quiz_{source_for_id}_{uid_for_id}"
-                    # Skip quiz_scores rows with no career result — they are incomplete/raw saves
-                    if not sa.get("recommendation") and not sa.get("highest_category") and sa.get("source") == "quiz_scores":
-                        continue
+                    # For quiz_scores rows, derive highest_category from scores if missing
+                    highest_cat = sa.get("highest_category")
+                    recommendation = sa.get("recommendation")
+                    if not highest_cat:
+                        raw_scores = sa.get("scores") or {}
+                        if raw_scores:
+                            highest_cat = max(raw_scores, key=lambda k: raw_scores[k]) if raw_scores else None
+                    if not recommendation and highest_cat:
+                        career_map = {
+                            "Technology": "Software Developer or IT Specialist",
+                            "Medical": "Doctor, Nurse, or Healthcare Professional",
+                            "Business": "Business Analyst, Marketer, or Entrepreneur",
+                            "Arts": "Graphic Designer, Artist, or Creative Professional",
+                        }
+                        recommendation = career_map.get(highest_cat, highest_cat)
                     if event_id not in existing_act_ids:
                         activity_list.append({
                             "id": event_id,
@@ -2724,8 +2736,8 @@ def admin_resource(resource):
                                 "userId": sa.get("userId"),
                                 "userName": sa.get("userName"),
                                 "email": sa.get("userEmail"),
-                                "career": sa.get("recommendation"),
-                                "matchedField": sa.get("highest_category"),
+                                "career": recommendation or sa.get("recommendation"),
+                                "matchedField": highest_cat or sa.get("highest_category"),
                                 "source": sa.get("source", "career_quiz"),
                             },
                             "createdAt": sa.get("createdAt") or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),

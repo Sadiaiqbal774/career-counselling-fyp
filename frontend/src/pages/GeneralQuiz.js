@@ -68,10 +68,19 @@ function GeneralQuiz() {
       // Save to Supabase first (await so data is committed before navigation)
       if (currentUser?.id) {
         try {
+          const highestCategory = topCategories[0] || null;
+          const careerMap = {
+            Technology: 'Software Developer or IT Specialist',
+            Medical: 'Doctor, Nurse, or Healthcare Professional',
+            Business: 'Business Analyst, Marketer, or Entrepreneur',
+            Arts: 'Graphic Designer, Artist, or Creative Professional',
+          };
           await supabase.from('quiz_scores').upsert({
             user_id: currentUser.id,
             scores: updatedScores,
             top_categories: topCategories,
+            highest_category: highestCategory,
+            recommendation: highestCategory ? (careerMap[highestCategory] || highestCategory) : null,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' });
         } catch (_) {}
