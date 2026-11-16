@@ -98,7 +98,7 @@ admin_sessions = {}
 password_reset_tokens = {}
 # The admin username is public configuration; the password is verified by Supabase Auth.
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "").strip() or "admin"
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Admin@123").strip() or "Admin@123"
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123").strip() or "admin123"
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "").strip()
 ADMIN_SESSION_TTL = 60 * 60 * 8
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
@@ -133,11 +133,14 @@ def _pending_password_cipher():
 
 
 def _cleanup_pending_registrations():
-    supabase_admin_request(
-        "DELETE",
-        "/rest/v1/pending_registrations",
-        params={"expires_at": f"lt.{time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}"},
-    )
+    try:
+        supabase_admin_request(
+            "DELETE",
+            "/rest/v1/pending_registrations",
+            params={"expires_at": f"lt.{time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}"},
+        )
+    except Exception:
+        pass
 
 
 def _send_verification_email(email, name, token):
@@ -147,29 +150,70 @@ def _send_verification_email(email, name, token):
     if not host or not user or not password:
         raise RuntimeError("Brevo SMTP is not configured.")
 
-    verification_url = f"{FRONTEND_URL}/login?verification_token={quote(token, safe='')}"
+    frontend_base = os.environ.get("FRONTEND_URL", "https://career-counselling-fyp-sand.vercel.app").strip().rstrip("/")
+    verification_url = f"{frontend_base}/login?verification_token={quote(token, safe='')}"
+    from_name = os.environ.get("SMTP_FROM_NAME", "CareerGuide").strip() or "CareerGuide"
+    from_email = os.environ.get("SMTP_FROM_EMAIL", user).strip() or user
+
     message = EmailMessage()
     message["Subject"] = "Verify your CareerGuide account"
-    message["From"] = formataddr((
-        os.environ.get("SMTP_FROM_NAME", "CareerGuide").strip(),
-        os.environ.get("SMTP_FROM_EMAIL", user).strip(),
-    ))
+    message["From"] = formataddr((from_name, from_email))
     message["To"] = email
-    message.set_content(
-        f"Hi {name},\n\nVerify your CareerGuide account within one hour:\n{verification_url}\n\n"
-        "This link can only be used once."
-    )
 
-    raw_port = int(os.environ.get("SMTP_PORT", "2525"))
+    text_body = (
+        f"Hi {name},\n\n"
+        f"Thank you for registering with CareerGuide!\n\n"
+        f"Please verify your email address by clicking the link below:\n"
+        f"{verification_url}\n\n"
+        f"This link is valid for 1 hour and can only be used once.\n\n"
+        f"If you did not create an account, please ignore this email.\n\n"
+        f"Best regards,\nCareerGuide Team"
+    )
+    message.set_content(text_body)
+
+    html_body = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #fdfbf7; color: #2d2a26; margin: 0; padding: 24px; }}
+    .card {{ max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 12px; border: 1px solid #e7e2d9; padding: 32px 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }}
+    .brand {{ font-size: 20px; font-weight: 700; color: #694a38; margin-bottom: 20px; }}
+    h1 {{ font-size: 22px; color: #1e1b18; margin: 0 0 16px; font-weight: 700; }}
+    p {{ font-size: 15px; line-height: 1.6; color: #57534e; margin: 0 0 20px; }}
+    .btn {{ display: inline-block; background-color: #694a38; color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 15px; margin: 10px 0 24px; }}
+    .footer {{ font-size: 13px; color: #a8a29e; border-top: 1px solid #f0ece1; padding-top: 16px; margin-top: 24px; }}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">CareerGuide</div>
+    <h1>Verify your email address</h1>
+    <p>Hi {name},</p>
+    <p>Thank you for creating an account. Please click the button below to verify your email address and activate your account:</p>
+    <div>
+      <a href="{verification_url}" class="btn" target="_blank" style="color: #ffffff;">Verify Email Address</a>
+    </div>
+    <p style="font-size: 13px; color: #78716c;">Or copy and paste this link into your browser:<br><a href="{verification_url}" style="color: #694a38; word-break: break-all;">{verification_url}</a></p>
+    <div class="footer">
+      This link will expire in 1 hour. If you didn't create an account, you can safely ignore this email.
+    </div>
+  </div>
+</body>
+</html>
+"""
+    message.add_alternative(html_body, subtype="html")
+
+    raw_port = int(os.environ.get("SMTP_PORT", "587"))
     ports_to_try = [raw_port]
-    for fallback_p in [2525, 587]:
+    for fallback_p in [587, 2525]:
         if fallback_p not in ports_to_try:
             ports_to_try.append(fallback_p)
 
     last_exc = None
     for p in ports_to_try:
         try:
-            with smtplib.SMTP(host, p, timeout=12) as smtp:
+            with smtplib.SMTP(host, p, timeout=8) as smtp:
                 smtp.starttls()
                 smtp.login(user, password)
                 smtp.send_message(message)
@@ -205,23 +249,23 @@ def _send_password_reset_email(email, name, reset_url):
         f"Best regards,\nCareerGuide Security Team"
     )
 
-    raw_port = int(os.environ.get("SMTP_PORT", "2525"))
+    raw_port = int(os.environ.get("SMTP_PORT", "587"))
     ports_to_try = [raw_port]
-    for fallback_p in [2525, 587]:
+    for fallback_p in [587, 2525]:
         if fallback_p not in ports_to_try:
             ports_to_try.append(fallback_p)
 
     last_exc = None
     for p in ports_to_try:
         try:
-            with smtplib.SMTP(host, p, timeout=12) as smtp:
+            with smtplib.SMTP(host, p, timeout=8) as smtp:
                 smtp.starttls()
                 smtp.login(user, password)
                 smtp.send_message(message)
                 return
         except Exception as e:
             last_exc = e
-            app.logger.warning("SMTP reset password attempt on port %s failed: %s", p, e)
+            app.logger.warning("SMTP attempt on port %s failed: %s", p, e)
 
     raise RuntimeError(f"Unable to send password reset email via Brevo ({last_exc}).")
 
@@ -1289,6 +1333,10 @@ def register():
         return jsonify({"message": "Registration service is not configured."}), 503
 
     try:
+        # Fast check if user already exists in Supabase Auth
+        if any((user.get("email") or "").strip().lower() == email for user in list_supabase_users()):
+            return jsonify({"message": "An account with this email already exists."}), 409
+
         # Clean up any leftover pending registrations for this email
         try:
             supabase_admin_request(
@@ -1299,89 +1347,83 @@ def register():
         except Exception:
             pass
 
-        if any((user.get("email") or "").strip().lower() == email for user in list_supabase_users(force_refresh=True)):
-            return jsonify({"message": "An account with this email already exists."}), 409
+        # Prepare pending verification record
+        token = secrets.token_urlsafe(32)
+        salt = secrets.token_hex(16)
+        password_salt_bytes = bytes.fromhex(salt)
+        password_hash = _pending_password_hash(password, password_salt_bytes)
+        password_ciphertext = _pending_password_cipher().encrypt(password.encode("utf-8")).decode("ascii")
 
-        # Direct account creation in Supabase Auth (Functional Requirement FR-01, TC-01)
-        user = supabase_admin_request(
-            "POST",
-            "/auth/v1/admin/users",
-            body={
-                "email": email,
-                "password": password,
-                "email_confirm": True,
-                "user_metadata": {"name": name},
-            },
-        )
-        user_id = user.get("id") if isinstance(user, dict) else None
-        if not user_id:
-            return jsonify({"message": "Failed to create user account."}), 500
-
-        unrecord_deleted_user(user_id, email)
-        invalidate_known_users_cache()
-
-        # Initialize profile in public.profiles table
-        try:
-            now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-            supabase_admin_request(
-                "POST",
-                "/rest/v1/profiles",
-                body={
-                    "id": user_id,
-                    "full_name": name,
-                    "email": email,
-                    "phone": "",
-                    "city": "",
-                    "academic_level": "",
-                    "school": "",
-                    "marks": "",
-                    "intermediate_group": "",
-                    "intermediate_marks": "",
-                    "entry_test": "",
-                    "entry_test_score": "",
-                    "preferred_field": "",
-                    "interests": "",
-                    "notes": "",
-                    "updated_at": now_iso,
-                },
-                extra_headers={"Prefer": "resolution=merge-duplicates,return=minimal"},
-            )
-        except Exception as prof_err:
-            app.logger.warning("Profile init on register: %s", prof_err)
-
-        # Store security question if provided
+        security_answer_cipher = ""
         if security_question and security_answer:
+            security_answer_cipher = _pending_password_cipher().encrypt(
+                security_answer.encode("utf-8")
+            ).decode("ascii")
+
+        pending_record = {
+            "name": name,
+            "email": email,
+            "password_hash": password_hash,
+            "password_salt": salt,
+            "password_ciphertext": password_ciphertext,
+            "security_question": security_question or "",
+            "security_answer_ciphertext": security_answer_cipher,
+            "token_hash": hash_text(token),
+            "expires_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + PENDING_REGISTRATION_TTL)),
+        }
+
+        supabase_admin_request(
+            "POST",
+            "/rest/v1/pending_registrations",
+            body=pending_record,
+            extra_headers={"Prefer": "return=minimal"},
+        )
+
+        # Deliver verification email via Brevo SMTP (fast on port 587)
+        try:
+            _send_verification_email(email, name, token)
+        except Exception as mail_err:
+            app.logger.error("Failed to send verification email: %s", mail_err)
             try:
-                salt = secrets.token_hex(16)
                 supabase_admin_request(
-                    "POST",
-                    "/rest/v1/recovery_questions",
-                    body={
-                        "user_id": user_id,
-                        "email": email,
-                        "question": security_question,
-                        "answer_salt": salt,
-                        "answer_hash": _recovery_answer_hash(security_answer, salt),
-                        "failed_attempts": 0,
-                        "reset_token_used": False,
-                    },
-                    extra_headers={"Prefer": "resolution=merge-duplicates,return=minimal"},
+                    "DELETE",
+                    "/rest/v1/pending_registrations",
+                    params={"email": f"eq.{email}"},
                 )
-            except Exception as sec_err:
-                app.logger.warning("Recovery question init on register: %s", sec_err)
+            except Exception:
+                pass
+            return jsonify({"message": f"Unable to deliver verification email: {str(mail_err)}. Please try again."}), 503
 
         return jsonify({
             "success": True,
-            "requiresEmailVerification": False,
-            "message": "Registration Successful",
+            "requiresEmailVerification": True,
+            "message": "A verification email has been sent. Please check your inbox (and Spam) to verify your account.",
             "email": email,
-            "user": {"id": user_id, "email": email, "name": name}
-        }), 201
+        }), 202
+
     except RuntimeError as error:
         return jsonify({"message": str(error)}), 503
     except Exception as error:
         app.logger.exception("Registration error: %s", error)
         return jsonify({"message": f"Registration failed: {str(error)}"}), 500
+
+
+@app.route("/api/auth/check-pending", methods=["GET"])
+def check_pending_registration():
+    email = (request.args.get("email") or "").strip().lower()
+    if not email:
+        return jsonify({"pending": False}), 200
+    try:
+        rows = supabase_admin_request(
+            "GET",
+            "/rest/v1/pending_registrations",
+            params={"email": f"eq.{email}", "select": "id,expires_at", "limit": 1},
+        )
+        if rows:
+            return jsonify({"pending": True}), 200
+    except Exception:
+        pass
+    return jsonify({"pending": False}), 200
 
 
 @app.route("/api/auth/resend-verification", methods=["POST"])
@@ -1411,11 +1453,11 @@ def resend_registration_verification():
                 _send_verification_email(email, rows[0]["name"], token)
             except Exception:
                 pass
-            return jsonify({"message": "A new verification email has been sent."}), 200
+            return jsonify({"message": "A new verification email has been sent. Please check your inbox (and Spam)."}), 200
 
-        existing = [u for u in list_supabase_users(force_refresh=True) if (u.get("email") or "").strip().lower() == email]
+        existing = [u for u in list_supabase_users() if (u.get("email") or "").strip().lower() == email]
         if existing:
-            return jsonify({"message": "Your account is active and verified! You can sign in right now."}), 200
+            return jsonify({"message": "Your account is already verified! You can sign in right now."}), 200
 
         return jsonify({"message": "Account not found. Please register to create an account."}), 404
     except Exception as error:
@@ -1459,9 +1501,41 @@ def verify_registration():
                 "user_metadata": {"name": pending["name"]},
             },
         )
-        unrecord_deleted_user(user.get("id"), pending["email"])
+        user_id = user.get("id") if isinstance(user, dict) else None
+        unrecord_deleted_user(user_id, pending["email"])
         invalidate_known_users_cache()
-        if pending.get("security_answer_ciphertext"):
+
+        # Initialize profile in public.profiles table
+        if user_id:
+            try:
+                now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                supabase_admin_request(
+                    "POST",
+                    "/rest/v1/profiles",
+                    body={
+                        "id": user_id,
+                        "full_name": pending.get("name") or "",
+                        "email": pending["email"],
+                        "phone": "",
+                        "city": "",
+                        "academic_level": "",
+                        "school": "",
+                        "marks": "",
+                        "intermediate_group": "",
+                        "intermediate_marks": "",
+                        "entry_test": "",
+                        "entry_test_score": "",
+                        "preferred_field": "",
+                        "interests": "",
+                        "notes": "",
+                        "updated_at": now_iso,
+                    },
+                    extra_headers={"Prefer": "resolution=merge-duplicates,return=minimal"},
+                )
+            except Exception as prof_err:
+                app.logger.warning("Profile init on verify_registration: %s", prof_err)
+
+        if pending.get("security_answer_ciphertext") and user_id:
             try:
                 security_answer = _pending_password_cipher().decrypt(
                     pending["security_answer_ciphertext"].encode("ascii")
@@ -1471,7 +1545,7 @@ def verify_registration():
                     "POST",
                     "/rest/v1/recovery_questions",
                     body={
-                        "user_id": user["id"],
+                        "user_id": user_id,
                         "email": pending["email"],
                         "question": pending.get("security_question") or "",
                         "answer_salt": salt,
@@ -1479,6 +1553,7 @@ def verify_registration():
                         "failed_attempts": 0,
                         "reset_token_used": False,
                     },
+                    extra_headers={"Prefer": "resolution=merge-duplicates,return=minimal"},
                 )
             except Exception:
                 pass
@@ -2036,65 +2111,69 @@ def admin_login():
         if password != ADMIN_PASSWORD:
             return jsonify({"message": "Invalid admin username or password."}), 401
 
-    # Automatically provision / sync system admin in Supabase Auth via service role
-    if SUPABASE_SERVICE_ROLE_KEY and admin_target_email == "admin@careerguide.internal":
-        try:
-            all_users = list_supabase_users(force_refresh=True)
-            admin_user = next((u for u in all_users if str(u.get("email", "")).strip().lower() == admin_target_email), None)
-            if not admin_user:
-                supabase_admin_request(
-                    "POST",
-                    "/auth/v1/admin/users",
-                    body={
-                        "email": admin_target_email,
-                        "password": ADMIN_PASSWORD,
-                        "email_confirm": True,
-                        "app_metadata": {"role": "admin"},
-                        "user_metadata": {"name": "Administrator"}
-                    }
-                )
-                invalidate_supabase_users_cache()
-            else:
-                supabase_admin_request(
-                    "PUT",
-                    f"/auth/v1/admin/users/{admin_user['id']}",
-                    body={
-                        "password": ADMIN_PASSWORD,
-                        "ban_duration": "none",
-                        "email_confirm": True,
-                        "app_metadata": {**(admin_user.get("app_metadata") or {}), "role": "admin"}
-                    }
-                )
-                invalidate_supabase_users_cache()
-        except Exception as e:
-            print(f"Error provisioning system admin: {e}")
+    def _exchange_admin_token(target_email, pass_val):
+        auth_request = Request(
+            f"{supabase_url}/auth/v1/token?grant_type=password",
+            data=json.dumps({"email": target_email, "password": pass_val}).encode("utf-8"),
+            headers={
+                "apikey": anon_key,
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        with urlopen(auth_request, timeout=12) as response:
+            return json.loads(response.read().decode("utf-8"))
 
-    auth_request = Request(
-        f"{supabase_url}/auth/v1/token?grant_type=password",
-        data=json.dumps({"email": admin_target_email, "password": password}).encode("utf-8"),
-        headers={
-            "apikey": anon_key,
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
     session = None
     try:
-        with urlopen(auth_request, timeout=15) as response:
-            session = json.loads(response.read().decode("utf-8"))
+        # Fast path: direct token exchange (~1s)
+        session = _exchange_admin_token(admin_target_email, password)
     except HTTPError as err:
-        err_body = ""
-        try:
-            err_body = err.read().decode("utf-8", errors="ignore")
-            err_data = json.loads(err_body)
-            msg = err_data.get("msg") or err_data.get("error_description") or err_data.get("message")
-            if msg and "confirm" in msg.lower():
-                return jsonify({"message": f"Admin email is not confirmed: {msg}"}), 401
-        except Exception:
-            pass
+        # If token exchange failed for system admin, sync in Supabase Auth and retry once
+        if admin_target_email == "admin@careerguide.internal" and SUPABASE_SERVICE_ROLE_KEY:
+            try:
+                all_users = list_supabase_users()
+                admin_user = next((u for u in all_users if str(u.get("email", "")).strip().lower() == admin_target_email), None)
+                if not admin_user:
+                    supabase_admin_request(
+                        "POST",
+                        "/auth/v1/admin/users",
+                        body={
+                            "email": admin_target_email,
+                            "password": ADMIN_PASSWORD,
+                            "email_confirm": True,
+                            "app_metadata": {"role": "admin"},
+                            "user_metadata": {"name": "Administrator"}
+                        }
+                    )
+                else:
+                    supabase_admin_request(
+                        "PUT",
+                        f"/auth/v1/admin/users/{admin_user['id']}",
+                        body={
+                            "password": ADMIN_PASSWORD,
+                            "ban_duration": "none",
+                            "email_confirm": True,
+                            "app_metadata": {**(admin_user.get("app_metadata") or {}), "role": "admin"}
+                        }
+                    )
+                invalidate_supabase_users_cache()
+                session = _exchange_admin_token(admin_target_email, password)
+            except Exception as sync_err:
+                app.logger.warning("Admin auto-provisioning error: %s", sync_err)
 
-        return jsonify({"message": "Invalid admin username or password."}), 401
-    except (URLError, TimeoutError, ValueError, OSError):
+        if not session:
+            err_body = ""
+            try:
+                err_body = err.read().decode("utf-8", errors="ignore")
+                err_data = json.loads(err_body)
+                msg = err_data.get("msg") or err_data.get("error_description") or err_data.get("message")
+                if msg and "confirm" in msg.lower():
+                    return jsonify({"message": f"Admin email is not confirmed: {msg}"}), 401
+            except Exception:
+                pass
+            return jsonify({"message": "Invalid admin username or password."}), 401
+    except (URLError, TimeoutError, OSError):
         return jsonify({"message": "Authentication service timeout. Please try again."}), 504
 
     access_token = session.get("access_token") if session else None

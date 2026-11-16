@@ -232,7 +232,22 @@ export function AuthProvider({ children }) {
     });
     if (error) {
       if ((error.message || '').toLowerCase().includes('email not confirmed')) {
-        throw new Error('Please verify your email before signing in.');
+        throw new Error('Please verify your email before signing in. Check your inbox and spam folder.');
+      }
+      if ((error.message || '').toLowerCase().includes('invalid login credentials')) {
+        try {
+          const checkRes = await fetch(`${API_URL}/api/auth/check-pending?email=${encodeURIComponent(normalizedEmail)}`);
+          if (checkRes.ok) {
+            const checkData = await checkRes.json();
+            if (checkData.pending) {
+              throw new Error('Please verify your email before signing in. We sent a verification link to your email.');
+            }
+          }
+        } catch (checkErr) {
+          if (checkErr.message && checkErr.message.includes('verify your email')) {
+            throw checkErr;
+          }
+        }
       }
       // Keep banned check strictly in the normal user login flow.
       // Admin accounts must never be bannable.

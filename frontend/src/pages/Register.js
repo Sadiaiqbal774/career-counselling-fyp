@@ -21,6 +21,16 @@ function Register() {
   const [verificationEmail, setVerificationEmail] = useState('');
   const [verificationStep, setVerificationStep] = useState(false);
 
+  useEffect(() => {
+    const apiUrl = (() => {
+      if (typeof window !== 'undefined' && window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        return 'http://localhost:5000';
+      }
+      return (process.env.REACT_APP_API_URL || '').trim().replace(/\/+$/, '') || 'https://career-counselling-fyp.onrender.com';
+    })();
+    fetch(`${apiUrl}/api/health`).catch(() => {});
+  }, []);
+
   const destination = location.state?.from?.pathname || '/dashboard';
 
   if (initialized && isAuthenticated && !isSubmitting && !verificationStep) {
