@@ -395,19 +395,54 @@ def save_users(users):
         json.dump(users, file, indent=2)
 
 
+def _record_user_active(user_id, email, client_id="default"):
+    now = time.time()
+    cid = str(client_id or "default").strip()
+    for key in (str(user_id or "").strip(), str(email or "").strip().lower()):
+        if not key:
+            continue
+        if key not in active_user_presence or not isinstance(active_user_presence[key], dict) or "last_seen" in active_user_presence[key]:
+            active_user_presence[key] = {}
+        active_user_presence[key][cid] = now
+
+
+def _record_user_passive(user_id, email, client_id="default"):
+    cid = str(client_id or "default").strip()
+    for key in (str(user_id or "").strip(), str(email or "").strip().lower()):
+        if not key:
+            continue
+        clients = active_user_presence.get(key)
+        if isinstance(clients, dict):
+            clients.pop(cid, None)
+            clients.pop("last_seen", None)
+        else:
+            active_user_presence.pop(key, None)
+
+
+def _record_user_logout(user_id, email):
+    for key in (str(user_id or "").strip(), str(email or "").strip().lower()):
+        if key:
+            active_user_presence.pop(key, None)
+
+
 def is_user_logged_in(user_id, email, last_sign_in_at=None):
     uid = str(user_id or "").strip()
     em = str(email or "").strip().lower()
-    presence = active_user_presence.get(uid) or active_user_presence.get(em)
     now = time.time()
-    if presence:
-        if not presence.get("logged_in"):
-            return False
-        # Active only if a live heartbeat was received within the last 40 seconds
-        if now - presence.get("last_seen", 0) < 40:
-            return True
-        return False
-    # No presence entry means the user is not actively on the website
+    for key in (uid, em):
+        if not key:
+            continue
+        clients = active_user_presence.get(key)
+        if isinstance(clients, dict):
+            # Prune clients without heartbeat in last 35s
+            expired = [cid for cid, ts in list(clients.items()) if (now - ts) > 35]
+            for cid in expired:
+                clients.pop(cid, None)
+            if clients:
+                return True
+        elif isinstance(clients, (int, float)):
+            if now - clients < 35:
+                return True
     return False
 
 
@@ -1577,23 +1612,22 @@ def auth_presence():
     user_id = str(payload.get("userId") or "").strip()
     email = str(payload.get("email") or "").strip().lower()
     status = (payload.get("status") or "active").strip().lower()
-    is_active = (status == "active")
+    client_id = str(payload.get("clientId") or "default").strip()
 
     deleted_uids, deleted_emails = get_deleted_user_keys()
     if (user_id and user_id in deleted_uids) or (email and email in deleted_emails):
         # Account is deleted by admin! Purge from presence so it never appears
-        for key in (user_id, email):
-            if key:
-                active_user_presence.pop(key, None)
+        _record_user_logout(user_id, email)
         return jsonify({"status": "deleted", "active": False}), 200
 
-    now = time.time()
-    for key in (user_id, email):
-        if key:
-            active_user_presence[key] = {
-                "last_seen": now if is_active else 0,
-                "logged_in": is_active,
-            }
+    if status == "logout":
+        _record_user_logout(user_id, email)
+    elif status == "passive":
+        _record_user_passive(user_id, email, client_id)
+    else:
+        _record_user_active(user_id, email, client_id)
+
+    is_active = is_user_logged_in(user_id, email)
     return jsonify({"status": "ok", "active": is_active}), 200
 
 
@@ -1826,8 +1860,7 @@ def login():
 
     token = secrets.token_urlsafe(24)
     active_sessions[token] = user["id"]
-    active_user_presence[str(user["id"])] = {"last_seen": time.time(), "logged_in": True}
-    active_user_presence[user["email"].lower()] = {"last_seen": time.time(), "logged_in": True}
+    _record_user_active(user["id"], user["email"])
     unrecord_deleted_user(user.get("id"), user.get("email"))
     invalidate_known_users_cache()
 
@@ -1893,8 +1926,7 @@ def google_auth():
 
     token = secrets.token_urlsafe(24)
     active_sessions[token] = user["id"]
-    active_user_presence[str(user["id"])] = {"last_seen": time.time(), "logged_in": True}
-    active_user_presence[user["email"].lower()] = {"last_seen": time.time(), "logged_in": True}
+    _record_user_active(user["id"], user["email"])
     unrecord_deleted_user(user.get("id"), user.get("email"))
     invalidate_known_users_cache()
 
@@ -2505,9 +2537,7 @@ def admin_delete_user(user_id):
     em_str = str(user_email or "").strip().lower()
 
     # Kill live sessions and presence immediately so user is totally logged out
-    for k in [uid_str, em_str]:
-        if k:
-            active_user_presence.pop(k, None)
+    _record_user_logout(uid_str, em_str)
     for tok, sess_uid in list(active_sessions.items()):
         if str(sess_uid) == uid_str:
             del active_sessions[tok]

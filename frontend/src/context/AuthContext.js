@@ -66,10 +66,11 @@ export function AuthProvider({ children }) {
       setCurrentUser(mapped);
       setInitialized(true);
       if (mapped?.id && shouldPingActiveUser(mapped)) {
+        const clientId = (() => { try { let cid = sessionStorage.getItem('_presence_cid'); if (!cid) { cid = Math.random().toString(36).slice(2); sessionStorage.setItem('_presence_cid', cid); } return cid; } catch (_) { return 'default'; } })();
         fetch(`${API_URL}/api/auth/presence`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: mapped.id, email: mapped.email, status: 'active' }),
+          body: JSON.stringify({ userId: mapped.id, email: mapped.email, status: 'active', clientId }),
         }).catch(() => {});
 
         // Fetch and cache user profile from Supabase so it's immediately available across devices
@@ -139,34 +140,43 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (!currentUser?.id && !currentUser?.email) return;
 
+    // Unique ID per browser tab so multi-device tracking works correctly
+    const clientId = (() => {
+      try {
+        let cid = sessionStorage.getItem('_presence_cid');
+        if (!cid) { cid = Math.random().toString(36).slice(2); sessionStorage.setItem('_presence_cid', cid); }
+        return cid;
+      } catch (_) { return Math.random().toString(36).slice(2); }
+    })();
+
     const pingStatus = (status) => {
       try {
         fetch(`${API_URL}/api/auth/presence`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: currentUser.id, email: currentUser.email, status }),
+          body: JSON.stringify({ userId: currentUser.id, email: currentUser.email, status, clientId }),
         }).catch(() => {});
       } catch (_) {}
     };
 
-    // Heartbeat every 20 seconds as long as student is logged in and page is visible
+    // Heartbeat every 10 seconds as long as student is logged in and page is visible
     const interval = setInterval(() => {
       if (shouldPingActiveUser(currentUser) && document.visibilityState === 'visible') {
         pingStatus('active');
       }
-    }, 20000);
+    }, 10000);
 
     const sendPassive = () => {
       if (!currentUser?.id && !currentUser?.email) return;
       try {
-        const payloadStr = JSON.stringify({ userId: currentUser.id, email: currentUser.email, status: 'passive' });
+        const payloadStr = JSON.stringify({ userId: currentUser.id, email: currentUser.email, status: 'passive', clientId });
         if (navigator.sendBeacon) {
-          const blob = new Blob([payloadStr], { type: 'text/plain' });
+          const blob = new Blob([payloadStr], { type: 'application/json' });
           navigator.sendBeacon(`${API_URL}/api/auth/presence`, blob);
         }
         fetch(`${API_URL}/api/auth/presence`, {
           method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
+          headers: { 'Content-Type': 'application/json' },
           body: payloadStr,
           keepalive: true,
         }).catch(() => {});
@@ -271,15 +281,15 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     ensureSupabaseConfigured();
-    // IMPORTANT: await the passive presence ping (with 3s timeout) BEFORE
-    // calling signOut so the backend registers the logout before navigation.
+    // Send logout status (removes this tab's presence immediately)
     if (currentUser?.id || currentUser?.email) {
+      const clientId = (() => { try { return sessionStorage.getItem('_presence_cid') || 'default'; } catch (_) { return 'default'; } })();
       try {
         await Promise.race([
           fetch(`${API_URL}/api/auth/presence`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: currentUser.id, email: currentUser.email, status: 'passive' }),
+            body: JSON.stringify({ userId: currentUser.id, email: currentUser.email, status: 'logout', clientId }),
           }),
           new Promise((_, reject) => setTimeout(() => reject(new Error('presence timeout')), 3000)),
         ]);
