@@ -5,13 +5,11 @@ import { saveUserProfile } from '../data/userData';
 
 const AuthContext = createContext(null);
 const API_URL = (() => {
-  const envUrl = (process.env.REACT_APP_API_URL || '').trim().replace(/\/+$/, '');
-  if (!envUrl || envUrl.includes('example.com') || envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
-    if (typeof window !== 'undefined' && window.location && window.location.hostname && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
-      return 'https://career-counselling-fyp.onrender.com';
-    }
+  if (typeof window !== 'undefined' && window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://localhost:5000';
   }
-  return envUrl || (typeof window !== 'undefined' && window.location && !window.location.hostname.includes('localhost') ? 'https://career-counselling-fyp.onrender.com' : 'http://127.0.0.1:5000');
+  const envUrl = (process.env.REACT_APP_API_URL || '').trim().replace(/\/+$/, '');
+  return envUrl || 'https://career-counselling-fyp.onrender.com';
 })();
 
 function isValidEmail(email) {
@@ -163,17 +161,15 @@ export function AuthProvider({ children }) {
       try {
         const payloadStr = JSON.stringify({ userId: currentUser.id, email: currentUser.email, status: 'passive' });
         if (navigator.sendBeacon) {
-          // text/plain Blob avoids CORS preflight OPTIONS request so beacon sends instantly during tab close
           const blob = new Blob([payloadStr], { type: 'text/plain' });
           navigator.sendBeacon(`${API_URL}/api/auth/presence`, blob);
-        } else {
-          fetch(`${API_URL}/api/auth/presence`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: payloadStr,
-            keepalive: true,
-          }).catch(() => {});
         }
+        fetch(`${API_URL}/api/auth/presence`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: payloadStr,
+          keepalive: true,
+        }).catch(() => {});
       } catch (_) {}
     };
 
@@ -204,7 +200,7 @@ export function AuthProvider({ children }) {
     const normalizedEmail = email.trim().toLowerCase();
     if (!isValidEmail(normalizedEmail)) throw new Error('Please use a valid email address.');
     if (!isStrongPassword(password)) {
-      throw new Error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+      throw new Error('Password must be at least 6 characters.');
     }
 
     const payload = {
@@ -390,7 +386,7 @@ export function AuthProvider({ children }) {
   const updatePassword = useCallback(async (password) => {
     ensureSupabaseConfigured();
     if (!isStrongPassword(password)) {
-      throw new Error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+      throw new Error('Password must be at least 6 characters.');
     }
     const { error } = await supabase.auth.updateUser({ password });
     if (error) throw error;
@@ -419,7 +415,7 @@ export function AuthProvider({ children }) {
   const setPasswordForGoogleUser = useCallback(async ({ email, otpCode, newPassword }) => {
     ensureSupabaseConfigured();
     if (!isStrongPassword(newPassword)) {
-      throw new Error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+      throw new Error('Password must be at least 6 characters.');
     }
 
     const normalizedEmail = (email || '').trim().toLowerCase();

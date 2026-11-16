@@ -248,13 +248,7 @@ is_valid_gmail = is_valid_email
 def is_strong_password(password):
     if not isinstance(password, str):
         return False
-
-    return bool(
-        re.fullmatch(
-            r"(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}",
-            password
-        )
-    )
+    return len(password) >= 6
 
 
 _supabase_storage_cache = {}  # {filename: {"data": str, "timestamp": float}}
@@ -365,8 +359,8 @@ def is_user_logged_in(user_id, email, last_sign_in_at=None):
     if presence:
         if not presence.get("logged_in"):
             return False
-        # Active only if a live heartbeat was received within the last 60 seconds
-        if now - presence.get("last_seen", 0) < 60:
+        # Active only if a live heartbeat was received within the last 40 seconds
+        if now - presence.get("last_seen", 0) < 40:
             return True
         return False
     # No presence entry means the user is not actively on the website
@@ -1288,69 +1282,106 @@ def register():
 
     if not is_strong_password(password):
         return jsonify({
-            "message":
-            "Password must contain uppercase, lowercase, number and special character."
+            "message": "Password must be at least 6 characters."
         }), 400
 
     if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
         return jsonify({"message": "Registration service is not configured."}), 503
 
     try:
-        _cleanup_pending_registrations()
-        if any((user.get("email") or "").strip().lower() == email for user in list_supabase_users(force_refresh=True)):
-            return jsonify({"message": "An account with this email already exists."}), 409
-
-        pending = supabase_admin_request(
-            "GET",
-            "/rest/v1/pending_registrations",
-            params={"email": f"eq.{email}", "select": "id", "limit": 1},
-        )
-        if pending:
-            return jsonify({"message": "A verification email has already been sent for this email."}), 409
-
-        token = secrets.token_urlsafe(32)
-        password_salt = secrets.token_bytes(16)
-        password_ciphertext = _pending_password_cipher().encrypt(password.encode("utf-8")).decode("ascii")
-        sec_answer_cipher = (
-            _pending_password_cipher().encrypt(security_answer.encode("utf-8")).decode("ascii")
-            if security_answer else ""
-        )
-        pending_body = {
-            "name": name,
-            "email": email,
-            "password_ciphertext": password_ciphertext,
-            "password_salt": password_salt.hex(),
-            "password_hash": _pending_password_hash(password, password_salt),
-            "security_question": security_question or "",
-            "security_answer_ciphertext": sec_answer_cipher,
-            "token_hash": hash_text(token),
-            "expires_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + PENDING_REGISTRATION_TTL)),
-        }
-        supabase_admin_request(
-            "POST",
-            "/rest/v1/pending_registrations",
-            body=pending_body,
-            extra_headers={"Prefer": "return=minimal"},
-        )
+        # Clean up any leftover pending registrations for this email
         try:
-            _send_verification_email(email, name, token)
-        except Exception as email_err:
-            app.logger.exception("Failed to deliver verification email: %s", email_err)
             supabase_admin_request(
                 "DELETE",
                 "/rest/v1/pending_registrations",
-                params={"token_hash": f"eq.{hash_text(token)}"},
+                params={"email": f"eq.{email}"},
             )
-            return jsonify({"message": f"Unable to deliver verification email: {str(email_err)}"}), 503
+        except Exception:
+            pass
+
+        if any((user.get("email") or "").strip().lower() == email for user in list_supabase_users(force_refresh=True)):
+            return jsonify({"message": "An account with this email already exists."}), 409
+
+        # Direct account creation in Supabase Auth (Functional Requirement FR-01, TC-01)
+        user = supabase_admin_request(
+            "POST",
+            "/auth/v1/admin/users",
+            body={
+                "email": email,
+                "password": password,
+                "email_confirm": True,
+                "user_metadata": {"name": name},
+            },
+        )
+        user_id = user.get("id") if isinstance(user, dict) else None
+        if not user_id:
+            return jsonify({"message": "Failed to create user account."}), 500
+
+        unrecord_deleted_user(user_id, email)
+        invalidate_known_users_cache()
+
+        # Initialize profile in public.profiles table
+        try:
+            now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            supabase_admin_request(
+                "POST",
+                "/rest/v1/profiles",
+                body={
+                    "id": user_id,
+                    "full_name": name,
+                    "email": email,
+                    "phone": "",
+                    "city": "",
+                    "academic_level": "",
+                    "school": "",
+                    "marks": "",
+                    "intermediate_group": "",
+                    "intermediate_marks": "",
+                    "entry_test": "",
+                    "entry_test_score": "",
+                    "preferred_field": "",
+                    "interests": "",
+                    "notes": "",
+                    "updated_at": now_iso,
+                },
+                extra_headers={"Prefer": "resolution=merge-duplicates,return=minimal"},
+            )
+        except Exception as prof_err:
+            app.logger.warning("Profile init on register: %s", prof_err)
+
+        # Store security question if provided
+        if security_question and security_answer:
+            try:
+                salt = secrets.token_hex(16)
+                supabase_admin_request(
+                    "POST",
+                    "/rest/v1/recovery_questions",
+                    body={
+                        "user_id": user_id,
+                        "email": email,
+                        "question": security_question,
+                        "answer_salt": salt,
+                        "answer_hash": _recovery_answer_hash(security_answer, salt),
+                        "failed_attempts": 0,
+                        "reset_token_used": False,
+                    },
+                    extra_headers={"Prefer": "resolution=merge-duplicates,return=minimal"},
+                )
+            except Exception as sec_err:
+                app.logger.warning("Recovery question init on register: %s", sec_err)
+
+        return jsonify({
+            "success": True,
+            "requiresEmailVerification": False,
+            "message": "Registration Successful",
+            "email": email,
+            "user": {"id": user_id, "email": email, "name": name}
+        }), 201
     except RuntimeError as error:
         return jsonify({"message": str(error)}), 503
-    except smtplib.SMTPException as error:
-        return jsonify({"message": f"SMTP error: {str(error)}"}), 503
     except Exception as error:
         app.logger.exception("Registration error: %s", error)
         return jsonify({"message": f"Registration failed: {str(error)}"}), 500
-
-    return jsonify({"requiresEmailVerification": True, "email": email}), 202
 
 
 @app.route("/api/auth/resend-verification", methods=["POST"])
@@ -1365,22 +1396,30 @@ def resend_registration_verification():
             "/rest/v1/pending_registrations",
             params={"email": f"eq.{email}", "select": "*", "limit": 1},
         )
-        if not rows:
-            return jsonify({"message": "This registration has expired. Please create the account again."}), 404
-        token = secrets.token_urlsafe(32)
-        supabase_admin_request(
-            "PATCH",
-            "/rest/v1/pending_registrations",
-            body={
-                "token_hash": hash_text(token),
-                "expires_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + PENDING_REGISTRATION_TTL)),
-            },
-            params={"id": f"eq.{rows[0]['id']}"},
-        )
-        _send_verification_email(email, rows[0]["name"], token)
-    except (RuntimeError, smtplib.SMTPException) as error:
+        if rows:
+            token = secrets.token_urlsafe(32)
+            supabase_admin_request(
+                "PATCH",
+                "/rest/v1/pending_registrations",
+                body={
+                    "token_hash": hash_text(token),
+                    "expires_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + PENDING_REGISTRATION_TTL)),
+                },
+                params={"id": f"eq.{rows[0]['id']}"},
+            )
+            try:
+                _send_verification_email(email, rows[0]["name"], token)
+            except Exception:
+                pass
+            return jsonify({"message": "A new verification email has been sent."}), 200
+
+        existing = [u for u in list_supabase_users(force_refresh=True) if (u.get("email") or "").strip().lower() == email]
+        if existing:
+            return jsonify({"message": "Your account is active and verified! You can sign in right now."}), 200
+
+        return jsonify({"message": "Account not found. Please register to create an account."}), 404
+    except Exception as error:
         return jsonify({"message": str(error) or "Unable to resend verification email."}), 503
-    return jsonify({"message": "A new verification email has been sent."}), 200
 
 
 @app.route("/api/auth/verify-registration", methods=["POST"])
@@ -2169,13 +2208,17 @@ def admin_stats():
 
     users = valid_users
 
-    return jsonify({
+    response = jsonify({
         "totalUsers": len(users),
         "localUsers": sum(user.get("authProvider") == "local" for user in users),
         "googleUsers": sum(user.get("authProvider") == "google" for user in users),
         "users": users,
         "adminEmails": list(admin_email_allowlist()),
-    }), 200
+    })
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response, 200
 
 
 @app.route("/api/admin/users/<user_id>", methods=["PUT"])

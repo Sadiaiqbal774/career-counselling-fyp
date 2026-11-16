@@ -6,13 +6,11 @@ import { getAdminAccessToken, refreshAdminAccessToken, clearAdminSession } from 
 import './AdminDashboard.css';
 
 const API_URL = (() => {
-  const envUrl = (process.env.REACT_APP_API_URL || '').trim().replace(/\/+$/, '');
-  if (!envUrl || envUrl.includes('example.com') || envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
-    if (typeof window !== 'undefined' && window.location && window.location.hostname && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
-      return 'https://career-counselling-fyp.onrender.com';
-    }
+  if (typeof window !== 'undefined' && window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://localhost:5000';
   }
-  return envUrl || (typeof window !== 'undefined' && window.location && !window.location.hostname.includes('localhost') ? 'https://career-counselling-fyp.onrender.com' : 'http://127.0.0.1:5000');
+  const envUrl = (process.env.REACT_APP_API_URL || '').trim().replace(/\/+$/, '');
+  return envUrl || 'https://career-counselling-fyp.onrender.com';
 })();
 
 const PAKISTAN_CITIES = [
@@ -3016,15 +3014,20 @@ function AdminDashboard() {
       navigate('/admin/login', { replace: true });
       throw new Error('Administrator session expired. Please sign in again.');
     }
-    let response = await fetch(`${API_URL}${path}`, {
+    const isGet = !options.method || options.method.toUpperCase() === 'GET';
+    const separator = path.includes('?') ? '&' : '?';
+    const finalPath = isGet ? `${path}${separator}_t=${Date.now()}` : path;
+    const fetchOptions = {
       ...options,
+      cache: 'no-store',
       headers: { Authorization: `Bearer ${token}`, ...(options.headers || {}) },
-    });
+    };
+    let response = await fetch(`${API_URL}${finalPath}`, fetchOptions);
     if (response.status === 401) {
       const refreshedToken = await refreshAdminAccessToken();
       if (refreshedToken) {
-        response = await fetch(`${API_URL}${path}`, {
-          ...options,
+        response = await fetch(`${API_URL}${finalPath}`, {
+          ...fetchOptions,
           headers: { Authorization: `Bearer ${refreshedToken}`, ...(options.headers || {}) },
         });
       }
@@ -3208,20 +3211,32 @@ function AdminDashboard() {
     }
   }, []);
 
-  // Auto-refresh users every 10 seconds when on the users tab so active/passive status is always live
+  // Auto-refresh users every 5 seconds when on the users tab so active/passive status is always live.
+  // Also instantly refresh whenever the Admin tab regains visibility in the browser!
   useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        if (tab === 'users') load('users').catch(() => {});
+        else if (tab === 'dashboard') loadDashboard().catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    let interval;
     if (tab === 'users') {
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         load('users').catch(() => {});
-      }, 10000);
-      return () => clearInterval(interval);
-    }
-    if (tab === 'dashboard') {
-      const interval = setInterval(() => {
+      }, 5000);
+    } else if (tab === 'dashboard') {
+      interval = setInterval(() => {
         loadDashboard().catch(() => {});
       }, 15000);
-      return () => clearInterval(interval);
     }
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      if (interval) clearInterval(interval);
+    };
   }, [tab]);
   // Large record sets (200+ universities/scholarships) rendered in full make the page tall
   // enough to break browser rendering, so lists are paged; reset to page one on list/search change.

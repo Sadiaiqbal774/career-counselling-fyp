@@ -20,12 +20,11 @@ export function hasPassword(user) {
 }
 
 /**
- * Validates password strength: at least 8 characters, includes upper,
- * lower, number, and special character.
+ * Validates password strength: at least 6 characters (matches FYP project requirements).
  *
  * @param {string} password
  * @returns {boolean}
  */
 export function isStrongPassword(password) {
-  return typeof password === 'string' && /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password);
+  return typeof password === 'string' && password.length >= 6;
 }

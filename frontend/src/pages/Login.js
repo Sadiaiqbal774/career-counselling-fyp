@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import PasswordField from '../components/PasswordField';
 import './Auth.css';
@@ -8,9 +9,10 @@ function Login() {
   const { login, initialized, isAuthenticated, signInWithGoogle, verifyRegistration } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(location.state?.registeredEmail || '');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [infoMessage, setInfoMessage] = useState(location.state?.message || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -21,7 +23,7 @@ function Login() {
     if (!token) return;
     setIsSubmitting(true);
     verifyRegistration(token)
-      .then(() => setErrorMessage('Email verified. Your account is ready. Sign in to continue.'))
+      .then(() => setInfoMessage('Email verified. Your account is ready. Sign in to continue.'))
       .catch((error) => setErrorMessage(error.message || 'Unable to verify the registration.'))
       .finally(() => {
         setSearchParams({}, { replace: true });
@@ -36,10 +38,12 @@ function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setErrorMessage('');
+    setInfoMessage('');
     setIsSubmitting(true);
 
     try {
       const user = await login({ email, password });
+      toast.success('Login Successful');
       navigate(user?.isAdmin ? '/admin' : destination, { replace: true });
     } catch (error) {
       setErrorMessage(error.message || 'Unable to sign in right now.');
@@ -80,6 +84,22 @@ function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
+            {infoMessage ? (
+              <p
+                style={{
+                  color: '#065f46',
+                  backgroundColor: '#d1fae5',
+                  border: '1px solid #a7f3d0',
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  fontSize: '0.9rem',
+                  marginBottom: '16px',
+                }}
+              >
+                {infoMessage}
+              </p>
+            ) : null}
+
             <label className="auth-field">
               <span>Email</span>
               <input
