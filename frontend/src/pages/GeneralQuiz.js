@@ -49,7 +49,7 @@ function GeneralQuiz() {
     setErrorMessage('');
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!currentAnswer) {
       setErrorMessage('Please choose an answer before continuing.');
       return;
@@ -65,14 +65,16 @@ function GeneralQuiz() {
       const topCategories = getTopCategories(updatedScores);
       localStorage.setItem(userStorageKey(storageKeys.scores, currentUser?.id), JSON.stringify(updatedScores));
       localStorage.setItem(userStorageKey(storageKeys.topCategories, currentUser?.id), JSON.stringify(topCategories));
-      // Also persist to Supabase so scores survive across devices
+      // Save to Supabase first (await so data is committed before navigation)
       if (currentUser?.id) {
-        void supabase.from('quiz_scores').upsert({
-          user_id: currentUser.id,
-          scores: updatedScores,
-          top_categories: topCategories,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
+        try {
+          await supabase.from('quiz_scores').upsert({
+            user_id: currentUser.id,
+            scores: updatedScores,
+            top_categories: topCategories,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' });
+        } catch (_) {}
       }
       navigate('/specific-quiz');
       return;

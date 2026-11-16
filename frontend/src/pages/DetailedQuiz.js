@@ -28,7 +28,7 @@ function DetailedQuiz() {
     setErrorMessage('');
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentAnswer === '' || currentAnswer === undefined) {
       setErrorMessage('Please provide an answer before continuing.');
       return;
@@ -49,13 +49,15 @@ function DetailedQuiz() {
       };
 
       localStorage.setItem(userStorageKey('modelQuizAnswers', currentUser?.id), JSON.stringify(modelAnswers));
-      // also persist detailed/model answers to Supabase if signed-in
+      // Save model_answers to Supabase (await so data is committed before navigation)
       if (currentUser?.id) {
-        void supabase.from('quiz_scores').upsert({
-          user_id: currentUser.id,
-          model_answers: modelAnswers,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
+        try {
+          await supabase.from('quiz_scores').upsert({
+            user_id: currentUser.id,
+            model_answers: modelAnswers,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' });
+        } catch (_) {}
       }
       navigate('/result');
     }

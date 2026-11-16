@@ -3226,7 +3226,7 @@ function AdminDashboard() {
     if (tab === 'users') {
       interval = setInterval(() => {
         load('users').catch(() => {});
-      }, 8000);
+      }, 5000);
     } else if (tab === 'dashboard') {
       interval = setInterval(() => {
         loadDashboard().catch(() => {});
