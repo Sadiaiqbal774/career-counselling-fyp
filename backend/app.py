@@ -997,6 +997,9 @@ def load_supabase_quiz_scores(force_refresh=False):
             scores_data = json.loads(response.read().decode("utf-8"))
             for s in scores_data:
                 s["source"] = "quiz_scores"
+                # quiz_scores has no id column — synthesize a stable one from user_id for dedup
+                if not s.get("id"):
+                    s["id"] = f"qs_{s.get('user_id', 'unknown')}"
                 raw_records.append(s)
     except Exception:
         pass
@@ -2705,7 +2708,14 @@ def admin_resource(resource):
                             or sa_email in {e.strip().lower() for e in admin_email_allowlist()}
                             or sa_uid in admin_uids):
                         continue
-                    event_id = f"act_quiz_{sa.get('id')}"
+                    # Build a stable unique event ID using the record's id or user_id+source
+                    raw_id = sa.get("id")
+                    uid_for_id = sa.get("userId") or ""
+                    source_for_id = sa.get("source", "quiz")
+                    event_id = f"act_quiz_{raw_id}" if raw_id else f"act_quiz_{source_for_id}_{uid_for_id}"
+                    # Skip quiz_scores rows with no career result — they are incomplete/raw saves
+                    if not sa.get("recommendation") and not sa.get("highest_category") and sa.get("source") == "quiz_scores":
+                        continue
                     if event_id not in existing_act_ids:
                         activity_list.append({
                             "id": event_id,
