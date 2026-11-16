@@ -1036,15 +1036,41 @@ def load_supabase_quiz_scores(force_refresh=False):
         if not name:
             name = resolve_user_display_name(uid, fallback="Student", email=email)
 
+        # Derive highest_category and recommendation from raw scores when missing
+        _highest_cat = record.get("highest_category")
+        _recommendation = record.get("recommendation")
+        if not _highest_cat:
+            _raw_scores = record.get("scores") or {}
+            if _raw_scores:
+                try:
+                    _highest_cat = max(_raw_scores, key=lambda k: float(_raw_scores[k]))
+                except Exception:
+                    pass
+        if not _recommendation and _highest_cat:
+            _career_map = {
+                "Technology": "Software Developer or IT Specialist",
+                "Medical": "Doctor, Nurse, or Healthcare Professional",
+                "Business": "Business Analyst, Marketer, or Entrepreneur",
+                "Arts": "Graphic Designer, Artist, or Creative Professional",
+                "Computer Science & Technology": "Computer Science & Technology",
+                "Engineering": "Engineering",
+                "Medicine & Health Sciences": "Medicine & Health Sciences",
+                "Business & Commerce": "Business & Commerce",
+                "Natural & Applied Sciences": "Natural & Applied Sciences",
+                "Social Sciences & Humanities": "Social Sciences & Humanities",
+                "Law": "Law",
+            }
+            _recommendation = _career_map.get(_highest_cat, _highest_cat)
+
         enriched.append({
             "id": record.get("id"),
             "userId": uid,
             "userName": name,
             "userEmail": email,
             "source": record.get("source", "career_quiz"),
-            "recommendation": record.get("recommendation"),
-            "highest_category": record.get("highest_category"),
-            "top_categories": record.get("top_categories") or ([record.get("highest_category")] if record.get("highest_category") else []),
+            "recommendation": _recommendation,
+            "highest_category": _highest_cat,
+            "top_categories": record.get("top_categories") or ([_highest_cat] if _highest_cat else []),
             "scores": record.get("scores") or {},
             "academicProfile": {
                 "intermediateMarks": profile.get("intermediate_marks") or profile.get("marks") if profile else None,
