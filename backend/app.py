@@ -2697,6 +2697,14 @@ def admin_resource(resource):
             try:
                 supabase_assessments = load_supabase_quiz_scores()
                 for sa in supabase_assessments:
+                    # Skip admin/internal accounts — they should never appear as quiz takers
+                    sa_email = str(sa.get("userEmail") or "").strip().lower()
+                    sa_uid = str(sa.get("userId") or "").strip()
+                    admin_uids = {"8b27910b-f8b8-4839-8a46-a77b8b29a3e2"}
+                    if (sa_email.endswith("@careerguide.internal")
+                            or sa_email in {e.strip().lower() for e in admin_email_allowlist()}
+                            or sa_uid in admin_uids):
+                        continue
                     event_id = f"act_quiz_{sa.get('id')}"
                     if event_id not in existing_act_ids:
                         activity_list.append({
