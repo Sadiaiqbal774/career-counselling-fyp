@@ -54,7 +54,8 @@ function DetailedQuiz() {
         void supabase.from('quiz_scores').upsert({
           user_id: currentUser.id,
           model_answers: modelAnswers,
-        });
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
       }
       navigate('/result');
     }

@@ -159,17 +159,20 @@ export function AuthProvider({ children }) {
       } catch (_) {}
     };
 
-    // Heartbeat every 10 seconds as long as student is logged in and page is visible
+    // Heartbeat every 10 seconds while tab is visible — if tab is hidden, heartbeat pauses
+    // and the backend entry naturally expires after 35s (TTL). No passive ping on tab-switch/minimize.
     const interval = setInterval(() => {
       if (shouldPingActiveUser(currentUser) && document.visibilityState === 'visible') {
         pingStatus('active');
       }
     }, 10000);
 
-    const sendPassive = () => {
+    // sendLogout: called only when tab is actually closing (beforeunload / pagehide)
+    // This removes the clientId immediately so admin sees Inactive right away on actual close.
+    const sendLogout = () => {
       if (!currentUser?.id && !currentUser?.email) return;
       try {
-        const payloadStr = JSON.stringify({ userId: currentUser.id, email: currentUser.email, status: 'passive', clientId });
+        const payloadStr = JSON.stringify({ userId: currentUser.id, email: currentUser.email, status: 'logout', clientId });
         if (navigator.sendBeacon) {
           const blob = new Blob([payloadStr], { type: 'application/json' });
           navigator.sendBeacon(`${API_URL}/api/auth/presence`, blob);
@@ -183,24 +186,23 @@ export function AuthProvider({ children }) {
       } catch (_) {}
     };
 
+    // On tab becoming visible again, immediately re-ping as active
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        sendPassive();
-      } else if (document.visibilityState === 'visible') {
-        if (shouldPingActiveUser(currentUser)) {
-          pingStatus('active');
-        }
+      if (document.visibilityState === 'visible' && shouldPingActiveUser(currentUser)) {
+        pingStatus('active');
       }
+      // Do NOT send passive/logout on hidden — minimizing or switching tabs should NOT
+      // mark user inactive. The 35s TTL handles natural expiry if the browser truly closes.
     };
 
-    window.addEventListener('beforeunload', sendPassive);
-    window.addEventListener('pagehide', sendPassive);
+    window.addEventListener('beforeunload', sendLogout);
+    window.addEventListener('pagehide', sendLogout);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       clearInterval(interval);
-      window.removeEventListener('beforeunload', sendPassive);
-      window.removeEventListener('pagehide', sendPassive);
+      window.removeEventListener('beforeunload', sendLogout);
+      window.removeEventListener('pagehide', sendLogout);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [currentUser?.id, currentUser?.email]);

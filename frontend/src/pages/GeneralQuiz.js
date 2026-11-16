@@ -72,7 +72,7 @@ function GeneralQuiz() {
           scores: updatedScores,
           top_categories: topCategories,
           updated_at: new Date().toISOString(),
-        });
+        }, { onConflict: 'user_id' });
       }
       navigate('/specific-quiz');
       return;
