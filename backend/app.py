@@ -98,7 +98,7 @@ admin_sessions = {}
 password_reset_tokens = {}
 # The admin username is public configuration; the password is verified by Supabase Auth.
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "").strip() or "admin"
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123").strip() or "admin123"
+ADMIN_PASSWORD = "admin123"
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "").strip()
 ADMIN_SESSION_TTL = 60 * 60 * 8
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
@@ -2103,13 +2103,15 @@ def admin_login():
     if input_un not in valid_usernames:
         return jsonify({"message": "Invalid admin username or password. Username must be 'admin' or your admin email."}), 401
 
+    pw_clean = password.strip() if isinstance(password, str) else ""
     if input_un in {e.strip().lower() for e in admin_emails}:
         admin_target_email = input_un
     else:
         admin_target_email = "admin@careerguide.internal"
-        # For system admin username ("admin"), strictly verify against ADMIN_PASSWORD
-        if password != ADMIN_PASSWORD:
+        # For system admin username ("admin"), strictly verify against ADMIN_PASSWORD ("admin123")
+        if pw_clean != ADMIN_PASSWORD and password != ADMIN_PASSWORD:
             return jsonify({"message": "Invalid admin username or password."}), 401
+        password = ADMIN_PASSWORD
 
     def _exchange_admin_token(target_email, pass_val):
         auth_request = Request(
