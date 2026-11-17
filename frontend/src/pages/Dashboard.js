@@ -145,12 +145,7 @@ function Dashboard() {
             </div>
           </div>
 
-          <div
-            className="cg-metric-card cg-metric-card--1"
-            style={{ cursor: 'pointer' }}
-            onClick={() => navigate('/saved')}
-            title="Click to view all saved opportunities"
-          >
+          <div className="cg-metric-card cg-metric-card--1">
             <div className="cg-metric-top">
               <span className="cg-metric-label">Saved opportunities</span>
               <span className="cg-metric-icon">⭐</span>
