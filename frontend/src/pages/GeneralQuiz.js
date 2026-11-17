@@ -66,21 +66,13 @@ function GeneralQuiz() {
       localStorage.setItem(userStorageKey(storageKeys.scores, currentUser?.id), JSON.stringify(updatedScores));
       localStorage.setItem(userStorageKey(storageKeys.topCategories, currentUser?.id), JSON.stringify(topCategories));
       // Save to Supabase first (await so data is committed before navigation)
+      // Only save columns that exist in the quiz_scores table
       if (currentUser?.id) {
         try {
-          const highestCategory = topCategories[0] || null;
-          const careerMap = {
-            Technology: 'Software Developer or IT Specialist',
-            Medical: 'Doctor, Nurse, or Healthcare Professional',
-            Business: 'Business Analyst, Marketer, or Entrepreneur',
-            Arts: 'Graphic Designer, Artist, or Creative Professional',
-          };
           await supabase.from('quiz_scores').upsert({
             user_id: currentUser.id,
             scores: updatedScores,
             top_categories: topCategories,
-            highest_category: highestCategory,
-            recommendation: highestCategory ? (careerMap[highestCategory] || highestCategory) : null,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' });
         } catch (_) {}

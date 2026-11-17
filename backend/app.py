@@ -958,7 +958,7 @@ def invalidate_quiz_scores_cache():
 def load_supabase_quiz_scores(force_refresh=False):
     global _quiz_scores_cache
     now = time.time()
-    if not force_refresh and _quiz_scores_cache["data"] is not None and (now - _quiz_scores_cache["timestamp"] < 10):
+    if not force_refresh and _quiz_scores_cache["data"] is not None and (now - _quiz_scores_cache["timestamp"] < 5):
         return list(_quiz_scores_cache["data"])
 
     supabase_url = os.environ.get("SUPABASE_URL", "").strip().rstrip("/") or SUPABASE_URL
@@ -2616,8 +2616,9 @@ def admin_assessments():
         return auth_error
     records = []
     seen_ids = set()
+    # Always fetch fresh data from Supabase so new quiz attempts appear immediately
     try:
-        for r in load_supabase_quiz_scores():
+        for r in load_supabase_quiz_scores(force_refresh=True):
             rid = str(r.get("id"))
             if rid not in seen_ids:
                 records.append(r)
@@ -2724,7 +2725,7 @@ def admin_resource(resource):
 
             # 2. Dynamically synthesize assessment completion events from Supabase quiz results
             try:
-                supabase_assessments = load_supabase_quiz_scores()
+                supabase_assessments = load_supabase_quiz_scores(force_refresh=True)
                 for sa in supabase_assessments:
                     # Skip admin/internal accounts — they should never appear as quiz takers
                     sa_email = str(sa.get("userEmail") or "").strip().lower()

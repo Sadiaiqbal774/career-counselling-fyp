@@ -133,14 +133,13 @@ function SpecificQuiz() {
       localStorage.setItem(userStorageKey(storageKeys.topCategories, currentUser?.id), JSON.stringify(storedTopCategories));
 
       // Persist final scores to Supabase (await so data saves before navigation)
+      // Only save columns that exist in the quiz_scores table
       if (currentUser?.id) {
         try {
           await supabase.from('quiz_scores').upsert({
             user_id: currentUser.id,
             scores: updatedScores,
             top_categories: storedTopCategories,
-            highest_category: highestCategory,
-            recommendation: recommendation,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' });
         } catch (_) {}

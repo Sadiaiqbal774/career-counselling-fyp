@@ -50,6 +50,7 @@ function DetailedQuiz() {
 
       localStorage.setItem(userStorageKey('modelQuizAnswers', currentUser?.id), JSON.stringify(modelAnswers));
       // Save model_answers to Supabase (await so data is committed before navigation)
+      // Only save columns that exist in the quiz_scores table
       if (currentUser?.id) {
         try {
           await supabase.from('quiz_scores').upsert({
@@ -57,6 +58,8 @@ function DetailedQuiz() {
             model_answers: modelAnswers,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' });
+        } catch (_) {}
+      }
         } catch (_) {}
       }
       navigate('/result');
