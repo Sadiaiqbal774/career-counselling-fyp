@@ -434,14 +434,14 @@ def is_user_logged_in(user_id, email, last_sign_in_at=None):
             continue
         clients = active_user_presence.get(key)
         if isinstance(clients, dict):
-            # Prune clients without heartbeat in last 90s
-            expired = [cid for cid, ts in list(clients.items()) if (now - ts) > 90]
+            # Prune clients without heartbeat in last 35s
+            expired = [cid for cid, ts in list(clients.items()) if (now - ts) > 35]
             for cid in expired:
                 clients.pop(cid, None)
             if clients:
                 return True
         elif isinstance(clients, (int, float)):
-            if now - clients < 90:
+            if now - clients < 35:
                 return True
     return False
 

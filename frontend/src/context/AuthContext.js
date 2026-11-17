@@ -164,25 +164,26 @@ export function AuthProvider({ children }) {
       pingStatus('active');
     }
 
-    // Heartbeat every 12 seconds while the user session is active
+    // Heartbeat every 10 seconds while the user session is active
     const interval = setInterval(() => {
       if (shouldPingActiveUser(currentUser)) {
         pingStatus('active');
       }
-    }, 12000);
+    }, 10000);
 
-    // sendThisDevicePassive: called when THIS tab/browser window is actually closed
+    // sendThisDevicePassive: called when THIS tab/browser window is closed
     const sendThisDevicePassive = () => {
       if (!currentUser?.id && !currentUser?.email) return;
       try {
         const payloadStr = JSON.stringify({ userId: currentUser.id, email: currentUser.email, status: 'passive', clientId });
         if (navigator.sendBeacon) {
-          const blob = new Blob([payloadStr], { type: 'application/json' });
+          // Send as text/plain so the browser dispatches immediately without CORS preflight
+          const blob = new Blob([payloadStr], { type: 'text/plain' });
           navigator.sendBeacon(`${API_URL}/api/auth/presence`, blob);
         }
         fetch(`${API_URL}/api/auth/presence`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'text/plain' },
           body: payloadStr,
           keepalive: true,
         }).catch(() => {});
@@ -197,11 +198,13 @@ export function AuthProvider({ children }) {
     };
 
     window.addEventListener('beforeunload', sendThisDevicePassive);
+    window.addEventListener('pagehide', sendThisDevicePassive);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       clearInterval(interval);
       window.removeEventListener('beforeunload', sendThisDevicePassive);
+      window.removeEventListener('pagehide', sendThisDevicePassive);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [currentUser?.id, currentUser?.email]);
