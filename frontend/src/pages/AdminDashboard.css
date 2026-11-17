@@ -3605,3 +3605,300 @@ button.admin-program-chip--more:hover {
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25) !important;
   background: #f8faff !important;
 }
+
+
+/* ============================================================
+   MOBILE RESPONSIVE OVERRIDES — Admin Dashboard
+   Breakpoints: 900px (tablet), 600px (mobile), 420px (small)
+   ============================================================ */
+
+/* ---- Ensure all tables scroll horizontally on small screens ---- */
+@media (max-width: 900px) {
+  .admin-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-md);
+  }
+
+  /* Users table: stack name+email, hide less critical columns */
+  .admin-table th,
+  .admin-table td {
+    white-space: nowrap;
+    font-size: 0.80rem;
+    padding: 9px 7px;
+  }
+
+  /* Action buttons should not shrink awkwardly */
+  .admin-action {
+    min-width: unset;
+    padding: 5px 9px;
+    font-size: 0.78rem;
+    margin-right: 4px;
+  }
+
+  /* Subnav filter pills wrap nicely */
+  .admin-subnav {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .admin-subnav-item {
+    padding: 7px 13px;
+    font-size: 0.82rem;
+  }
+
+  /* Page header area */
+  .admin-topbar h1 {
+    font-size: 1.3rem;
+  }
+
+  /* Bar chart label column shrink */
+  .admin-bar-item {
+    grid-template-columns: 100px 1fr 50px;
+    gap: 8px;
+    font-size: 0.82rem;
+  }
+
+  /* Activity / assessment header row with export buttons */
+  .admin-table-header-row,
+  .admin-section-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .admin-export-btn {
+    font-size: 0.78rem;
+    padding: 0 11px;
+    height: 32px;
+  }
+
+  /* Users page: stat strip */
+  .admin-dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Modal shouldn't exceed viewport */
+  .admin-modal-box {
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  /* Score breakdown pills on assessments page */
+  .admin-score-breakdown {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  /* Operation context pills on activity page */
+  .admin-context-pills {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
+/* ---- 600px: true mobile phones ---- */
+@media (max-width: 600px) {
+  .admin-main {
+    padding: 14px 10px 48px;
+  }
+
+  .admin-topbar h1 {
+    font-size: 1.15rem;
+  }
+
+  .admin-topbar__subtitle {
+    font-size: 0.84rem;
+  }
+
+  /* Cards get tighter padding */
+  .admin-card {
+    padding: 14px 12px;
+  }
+
+  /* Full-width export buttons on mobile */
+  .admin-export-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  /* Users table: make it scrollable with min-width to preserve columns */
+  .admin-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-table {
+    min-width: 560px; /* force horizontal scroll instead of wrapping */
+  }
+
+  /* Assessments table needs more room */
+  .admin-table--assessments {
+    min-width: 640px;
+  }
+
+  /* Activity log table */
+  .admin-table--activity {
+    min-width: 580px;
+  }
+
+  /* Stat cards: 2 column on small mobile */
+  .admin-dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Bar chart label: shorter */
+  .admin-bar-item {
+    grid-template-columns: 80px 1fr 44px;
+    gap: 6px;
+    font-size: 0.78rem;
+  }
+
+  .admin-bar-item--detailed {
+    grid-template-columns: 1fr auto;
+    gap: 6px;
+  }
+  .admin-bar-item--detailed .admin-bar-track {
+    grid-column: 1 / -1;
+  }
+
+  /* Subnav pills: smaller */
+  .admin-subnav-item {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    gap: 5px;
+  }
+
+  /* Action row in forms */
+  .admin-form-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* User edit modal: full screen on mobile */
+  .admin-modal-overlay {
+    padding: 10px 8px;
+    align-items: flex-end;
+  }
+
+  .admin-modal-box {
+    border-radius: 16px 16px 0 0;
+    max-height: 95vh;
+    width: 100%;
+    overflow-y: auto;
+  }
+
+  /* Record detail layout: single column */
+  .admin-record-layout {
+    grid-template-columns: 1fr;
+  }
+
+  /* KPI and quick-access grids */
+  .admin-kpi-grid,
+  .admin-dash-quick-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Domain donut chart: stack vertically */
+  .admin-domain-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* Section headers with buttons: stack */
+  .admin-section-header,
+  .admin-table-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  /* Presence/status badges */
+  .admin-status-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Score/context pill rows */
+  .admin-score-breakdown,
+  .admin-context-pills {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  /* Operation context pill max-width on mobile */
+  .status-pill {
+    font-size: 0.70rem;
+    padding: 2px 7px;
+  }
+
+  /* Sign out button: full width */
+  .admin-signout {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Sidebar nav items: compact icon+label stacked */
+  .admin-nav {
+    justify-content: space-between;
+  }
+
+  .admin-nav-item {
+    flex-direction: column;
+    gap: 3px;
+    padding: 7px 8px;
+    font-size: 0.72rem;
+  }
+
+  .admin-nav-item span:last-child {
+    font-size: 0.62rem;
+    text-align: center;
+    line-height: 1.1;
+  }
+}
+
+/* ---- 420px: very small phones ---- */
+@media (max-width: 420px) {
+  .admin-main {
+    padding: 12px 8px 48px;
+  }
+
+  .admin-card {
+    padding: 12px 10px;
+  }
+
+  .admin-topbar h1 {
+    font-size: 1.05rem;
+  }
+
+  .admin-table {
+    min-width: 520px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    font-size: 0.74rem;
+    padding: 8px 6px;
+  }
+
+  .admin-action {
+    padding: 4px 7px;
+    font-size: 0.72rem;
+  }
+
+  /* Stat cards: 1 column on tiny screens */
+  .admin-dashboard-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-kpi-grid,
+  .admin-dash-quick-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-brand-text strong {
+    font-size: 0.95rem;
+  }
+
+  .admin-brand-text span {
+    font-size: 0.68rem;
+  }
+}
