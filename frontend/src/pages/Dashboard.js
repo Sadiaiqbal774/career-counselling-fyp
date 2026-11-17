@@ -5,6 +5,7 @@ import { getEmptyScores } from '../data/quizData';
 import { getProfileCompletion, readUserProfile } from '../data/userData';
 import { getBookmarks } from '../data/bookmarkData';
 import useQuizScores from '../hooks/useQuizScores';
+import useUserProfile from '../hooks/useUserProfile';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -13,8 +14,7 @@ function Dashboard() {
   const studentName = currentUser?.name || 'Student';
   const firstName = studentName.split(' ')[0];
   const profileEmail = currentUser?.email || 'No email available';
-  const profile = useMemo(() => readUserProfile(currentUser?.id), [currentUser?.id]);
-  const profileCompletion = getProfileCompletion(profile);
+  const { profile, profileCompletion } = useUserProfile(currentUser);
   const bookmarks = useMemo(() => getBookmarks(currentUser?.id), [currentUser?.id]);
   const savedCount = (bookmarks.universities?.length || 0) + (bookmarks.scholarships?.length || 0);
 

@@ -148,10 +148,10 @@ function Profile() {
         if (cancelled) return;
 
         if (savedProfile) {
-          // Strictly require savedProfile email to match currentUser.email
+          // If both emails are present, ensure they match to prevent cross-account leak
           if (
-            !savedProfile.email ||
-            !currentUser.email ||
+            savedProfile.email &&
+            currentUser.email &&
             savedProfile.email.trim().toLowerCase() !== currentUser.email.trim().toLowerCase()
           ) {
             return;
@@ -289,7 +289,7 @@ function Profile() {
         notes: String(profile.notes || '').trim(),
         updated_at: new Date().toISOString(),
       };
-      const { error: syncError } = await supabase.from('profiles').upsert(profilePayload);
+      const { error: syncError } = await supabase.from('profiles').upsert(profilePayload, { onConflict: 'id' });
       if (syncError) {
         console.warn('Supabase profile sync warning:', syncError);
       }
