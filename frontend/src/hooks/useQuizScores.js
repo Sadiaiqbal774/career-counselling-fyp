@@ -50,7 +50,7 @@ export default function useQuizScores(currentUser) {
       try {
         const { data, error } = await supabase
           .from('quiz_scores')
-          .select('scores, top_categories, model_answers, updated_at')
+          .select('scores, top_categories, model_answers, highest_category, recommendation, updated_at')
           .eq('user_id', currentUser.id)
           .order('updated_at', { ascending: false })
           .limit(1);
