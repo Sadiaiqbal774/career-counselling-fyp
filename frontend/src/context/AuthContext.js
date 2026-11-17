@@ -159,17 +159,19 @@ export function AuthProvider({ children }) {
       } catch (_) {}
     };
 
-    // Heartbeat every 10 seconds while tab is visible — if tab is hidden, heartbeat pauses
-    // and the backend entry naturally expires after 35s (TTL). No passive ping on tab-switch/minimize.
+    // Immediate active ping on mount / login
+    if (shouldPingActiveUser(currentUser)) {
+      pingStatus('active');
+    }
+
+    // Heartbeat every 12 seconds while the user session is active
     const interval = setInterval(() => {
-      if (shouldPingActiveUser(currentUser) && document.visibilityState === 'visible') {
+      if (shouldPingActiveUser(currentUser)) {
         pingStatus('active');
       }
-    }, 10000);
+    }, 12000);
 
-    // sendThisDevicePassive: called when THIS tab/browser is closing.
-    // Sends 'passive' with this specific clientId — removes ONLY this device from presence.
-    // Does NOT use 'logout' which would wipe ALL devices (we only use logout on explicit sign-out).
+    // sendThisDevicePassive: called when THIS tab/browser window is actually closed
     const sendThisDevicePassive = () => {
       if (!currentUser?.id && !currentUser?.email) return;
       try {
@@ -178,7 +180,6 @@ export function AuthProvider({ children }) {
           const blob = new Blob([payloadStr], { type: 'application/json' });
           navigator.sendBeacon(`${API_URL}/api/auth/presence`, blob);
         }
-        // Also fire a keepalive fetch as backup (mobile browsers vary)
         fetch(`${API_URL}/api/auth/presence`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -193,18 +194,14 @@ export function AuthProvider({ children }) {
       if (document.visibilityState === 'visible' && shouldPingActiveUser(currentUser)) {
         pingStatus('active');
       }
-      // Do NOT send passive on hidden — minimizing/switching tabs must NOT mark user inactive.
-      // The 25s TTL handles natural expiry when browser truly dies without firing pagehide.
     };
 
     window.addEventListener('beforeunload', sendThisDevicePassive);
-    window.addEventListener('pagehide', sendThisDevicePassive);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       clearInterval(interval);
       window.removeEventListener('beforeunload', sendThisDevicePassive);
-      window.removeEventListener('pagehide', sendThisDevicePassive);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [currentUser?.id, currentUser?.email]);
