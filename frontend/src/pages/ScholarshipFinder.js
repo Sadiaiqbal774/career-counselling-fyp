@@ -204,7 +204,37 @@ function ScholarshipFinder() {
         if (!region) return true;
         const prov = String(s.provinces || "").toLowerCase();
         const name = String(s.name || "").toLowerCase();
-        return prov.includes(region) || prov.includes("federal") || prov.includes("national") || name.includes(region);
+        const combined = `${prov} ${name}`;
+
+        if (region === "punjab") {
+          return combined.includes("punjab") || combined.includes("peef");
+        }
+        if (region === "sindh") {
+          return combined.includes("sindh") || combined.includes("seef");
+        }
+        if (region === "khyber" || region === "kpk") {
+          return combined.includes("khyber") || combined.includes("kpk") || combined.includes("pakhtunkhwa") || combined.includes("kpef");
+        }
+        if (region === "balochistan") {
+          return combined.includes("balochistan") || combined.includes("baluchistan") || combined.includes("beef");
+        }
+        if (region === "federal" || region === "national") {
+          return combined.includes("federal") || combined.includes("national");
+        }
+        if (region === "islamabad") {
+          return combined.includes("islamabad") || combined.includes("federal") || combined.includes("capital");
+        }
+        if (region.includes("azad") || region.includes("kashmir") || region.includes("ajk")) {
+          return combined.includes("azad jammu") || combined.includes("kashmir") || combined.includes("ajk");
+        }
+        if (region.includes("gilgit") || region.includes("baltistan")) {
+          return combined.includes("gilgit") || combined.includes("baltistan") || combined.includes("gb");
+        }
+        if (region === "international" || region.includes("abroad")) {
+          return combined.includes("international") || combined.includes("abroad") || combined.includes("foreign") || combined.includes("commonwealth");
+        }
+
+        return prov.includes(region) || name.includes(region);
       })
       .filter((s) => !onlyEligible || scholarshipEligibility(s, marks) !== "not-eligible")
       .sort((a, b) => {
@@ -407,6 +437,7 @@ function ScholarshipFinder() {
           <option value="Balochistan">Balochistan</option>
           <option value="Islamabad">Islamabad</option>
           <option value="Azad Jammu">Azad Jammu &amp; Kashmir</option>
+          <option value="Gilgit">Gilgit-Baltistan</option>
           <option value="International">International / Abroad</option>
         </select>
 
