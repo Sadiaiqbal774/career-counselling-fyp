@@ -62,24 +62,9 @@ function matchConfiguredResponse(responses, message) {
   return bestMatch;
 }
 
-function matchResponse(responses, message) {
-  const configured = matchConfiguredResponse(responses, message);
-  if (configured) return configured;
-  const fallback = responses.find((entry) => !(entry.keyword || '').trim());
-  return fallback || { response: "I'm not sure about that yet — try asking about the quiz, universities, scholarships, or your profile." };
-}
-
-function ChatbotWidget() {
-  const { currentUser, getAccessToken } = useAuth();
-  const [open, setOpen] = useState(false);
-  const [responses, setResponses] = useState([]);
-  const listRef = useRef(null);
-  const [draft, setDraft] = useState('');
-
-  const quizData = readUserQuizData(currentUser?.id);
-  const hasCompletedQuiz = Boolean(quizData?.scores);
-
-  const [messages, setMessages] = useState([
+function getDefaultMessages(hasCompletedQuiz) {
+  const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return [
     {
       sender: 'bot',
       text: hasCompletedQuiz
@@ -95,8 +80,58 @@ function ChatbotWidget() {
             { link: '/quiz', label: 'Start Career Quiz' },
             { link: '/scholarships', label: 'Browse Scholarships' },
           ],
+      time: currentTime,
     },
-  ]);
+  ];
+}
+
+function ChatbotWidget() {
+  const { currentUser, getAccessToken } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [responses, setResponses] = useState([]);
+  const listRef = useRef(null);
+  const [draft, setDraft] = useState('');
+  const [saveNotice, setSaveNotice] = useState('');
+
+  const quizData = readUserQuizData(currentUser?.id);
+  const hasCompletedQuiz = Boolean(quizData?.scores);
+
+  const storageKey = `cg_chat_history_${currentUser?.id || 'guest'}`;
+
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (_) {}
+    return getDefaultMessages(hasCompletedQuiz);
+  });
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+          return;
+        }
+      }
+    } catch (_) {}
+    setMessages(getDefaultMessages(hasCompletedQuiz));
+  }, [currentUser?.id, hasCompletedQuiz, storageKey]);
+
+  useEffect(() => {
+    try {
+      if (Array.isArray(messages) && messages.length > 0) {
+        localStorage.setItem(storageKey, JSON.stringify(messages));
+      }
+    } catch (_) {}
+  }, [messages, storageKey]);
 
   useEffect(() => {
     fetch(`${API_URL}/api/chatbot/responses`)
@@ -115,149 +150,74 @@ function ChatbotWidget() {
     return null;
   }
 
+  const handleSaveChatHistory = () => {
+    if (!messages || messages.length === 0) return;
+    const userName = currentUser?.name || currentUser?.displayName || (currentUser?.email ? currentUser.email.split('@')[0] : 'Student');
+    const userEmail = currentUser?.email || 'N/A';
+    const dateStr = new Date().toLocaleString();
+
+    let transcript = `=================================================================\n`;
+    transcript += `CAREERGUIDE - AI COUNSELING CHAT SESSION TRANSCRIPT\n`;
+    transcript += `Date & Time : ${dateStr}\n`;
+    transcript += `Student     : ${userName} (${userEmail})\n`;
+    transcript += `Requirement : FR-07 (AI Chatbot) / UC-07 Step 6 (Save History)\n`;
+    transcript += `=================================================================\n\n`;
+
+    messages.forEach((msg) => {
+      const role = msg.sender === 'user' ? userName : 'CareerGuide Assistant';
+      const time = msg.time ? ` [${msg.time}]` : '';
+      transcript += `${role}${time}:\n${msg.text}\n`;
+      if (msg.links && msg.links.length > 0) {
+        transcript += `Recommended Links: ${msg.links.map((l) => `${l.label} (${l.link})`).join(', ')}\n`;
+      }
+      transcript += `\n-----------------------------------------------------------------\n\n`;
+    });
+
+    try {
+      const blob = new Blob([transcript], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const datePart = new Date().toISOString().slice(0, 10);
+      link.download = `CareerGuide_Chat_History_${datePart}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      setSaveNotice('Chat saved!');
+      setTimeout(() => setSaveNotice(''), 3000);
+    } catch (_) {
+      setSaveNotice('Saved locally');
+      setTimeout(() => setSaveNotice(''), 3000);
+    }
+  };
+
+  const handleClearChat = () => {
+    const defaults = getDefaultMessages(hasCompletedQuiz);
+    setMessages(defaults);
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(defaults));
+    } catch (_) {}
+    setSaveNotice('Chat reset');
+    setTimeout(() => setSaveNotice(''), 2000);
+  };
+
   const send = async (event) => {
     event.preventDefault();
     const text = draft.trim();
     if (!text) return;
 
-    const normalizedText = text.toLowerCase();
-    let reply = '';
-    let links = [];
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const userMsg = { sender: 'user', text, time: nowTime };
 
-    // 1. Check Admin-Configured Auto-Responses FIRST (FR-14)
-    // Whatever the admin sets in chatbot_responses.json takes precedence over hardcoded rules
-    const configuredMatch = matchConfiguredResponse(responses, text);
-    if (configuredMatch && configuredMatch.response) {
-      reply = configuredMatch.response;
-      if (configuredMatch.link) {
-        links = [{ link: configuredMatch.link, label: configuredMatch.linkLabel || 'Open this page' }];
-      }
-    }
-    // 2. Scholarships intent fallback
-    else if (
-      normalizedText.includes('scholarship') ||
-      normalizedText.includes('financial aid') ||
-      normalizedText.includes('funding') ||
-      normalizedText.includes('fee waiver') ||
-      normalizedText.includes('concession')
-    ) {
-      if (hasCompletedQuiz) {
-        reply = "Your assessment scores and profile marks are safely recorded! You can browse eligible merit-based and need-based scholarships in the Scholarship Finder. You do not need to take any new test or quiz.";
-        links = [
-          { link: '/scholarships', label: 'Open Scholarship Finder' },
-          { link: '/university-recommender', label: 'University Recommender' },
-        ];
-      } else {
-        reply = "Browse the Scholarship Finder to explore merit-based and need-based financial aid opportunities across Pakistan. You can also take our quick career quiz to identify your ideal field.";
-        links = [
-          { link: '/scholarships', label: 'Open Scholarship Finder' },
-          { link: '/quiz', label: 'Take Career Quiz' },
-        ];
-      }
-    }
-    // 3. Explicit retake quiz request
-    else if (
-      (normalizedText.includes('retake') || normalizedText.includes('restart') || normalizedText.includes('redo') || normalizedText.includes('again') || normalizedText.includes('reset')) &&
-      (normalizedText.includes('quiz') || normalizedText.includes('test') || normalizedText.includes('assessment'))
-    ) {
-      reply = "If you would like to update your answers or explore other fields, you can retake the career assessment at any time.";
-      links = [{ link: '/quiz', label: 'Retake Assessment' }];
-    }
-    // 4. Post-quiz / Assessment status / Quiz general query
-    else if (
-      normalizedText.includes('quiz') ||
-      normalizedText.includes('assessment') ||
-      normalizedText.includes('career test') ||
-      (normalizedText.includes('test') && !normalizedText.includes('entry test'))
-    ) {
-      if (hasCompletedQuiz) {
-        reply = "You have already completed your career assessment! Your results and career matches are safely stored. You do not need to retake the quiz unless you want to change your answers.";
-        links = [
-          { link: '/result', label: 'View Assessment Results' },
-          { link: '/university-recommender', label: 'Open University Recommender' },
-        ];
-      } else {
-        reply = "You can take the career assessment anytime! It takes only 5 minutes, evaluating your academic background and interests to match you with top degrees and careers.";
-        links = [{ link: '/quiz', label: 'Start Career Quiz' }];
-      }
-    }
-    // 5. Results / Score / Recommendations
-    else if (
-      normalizedText.includes('result') ||
-      normalizedText.includes('recommendation') ||
-      normalizedText.includes('my score') ||
-      normalizedText.includes('view result')
-    ) {
-      if (hasCompletedQuiz) {
-        reply = "Your assessment results are ready to view! Check your full category breakdown and career recommendations on the Results page.";
-        links = [
-          { link: '/result', label: 'View Results' },
-          { link: '/university-recommender', label: 'Explore Universities' },
-        ];
-      } else {
-        reply = "You haven't completed the career assessment yet. Complete the 5-minute quiz to generate your personalized career results!";
-        links = [{ link: '/quiz', label: 'Start Career Quiz' }];
-      }
-    }
-    // 6. Universities / Degree Programs / Admissions
-    else if (
-      normalizedText.includes('universit') ||
-      normalizedText.includes('college') ||
-      normalizedText.includes('admission') ||
-      normalizedText.includes('degree') ||
-      normalizedText.includes('program') ||
-      normalizedText.includes('merit')
-    ) {
-      if (hasCompletedQuiz) {
-        reply = "Your profile marks and assessment scores are already connected with the University Recommender! You can view programs and university options matched to you.";
-        links = [{ link: '/university-recommender', label: 'Open University Recommender' }];
-      } else {
-        reply = "Use the University Recommender to find universities across Pakistan. We recommend completing the quick assessment first so we can recommend programs suited to your strengths.";
-        links = [
-          { link: '/university-recommender', label: 'Open University Recommender' },
-          { link: '/quiz', label: 'Take Quiz First' },
-        ];
-      }
-    }
-    // 7. Profile / Academic marks
-    else if (
-      normalizedText.includes('profile') ||
-      normalizedText.includes('account') ||
-      normalizedText.includes('marks') ||
-      normalizedText.includes('matric') ||
-      normalizedText.includes('inter') ||
-      normalizedText.includes('phone') ||
-      normalizedText.includes('city')
-    ) {
-      reply = "You can update your personal information, intermediate marks, and entry test scores from your Profile anytime. Your recommendations update automatically.";
-      links = [{ link: '/profile', label: 'Open Your Profile' }];
-    }
-    // 8. Dark Mode / Theme / Settings
-    else if (
-      normalizedText.includes('dark mode') ||
-      normalizedText.includes('theme') ||
-      normalizedText.includes('settings') ||
-      normalizedText.includes('night mode')
-    ) {
-      reply = "You can enable or disable Dark Mode, change your password, or configure preferences in Profile.";
-      links = [{ link: '/profile', label: 'Open Profile' }];
-    }
-    // 9. Default Fallback
-    else {
-      const fallback = responses.find((entry) => !(entry.keyword || '').trim());
-      reply = fallback ? fallback.response : "I can help you with your assessment results, university recommendations, scholarships, or your profile. What would you like to know?";
-    }
-
-    setMessages((previous) => [
-      ...previous,
-      { sender: 'user', text },
-      { sender: 'bot', text: reply, links },
-    ]);
+    setMessages((previous) => [...previous, userMsg]);
     setDraft('');
 
     const token = await getAccessToken();
     const resolvedUserId = currentUser?.id || null;
     let resolvedUserName = currentUser?.name || currentUser?.displayName;
+
     if (!resolvedUserName || resolvedUserName === 'Student' || resolvedUserName === 'Visitor') {
       if (currentUser?.email) {
         resolvedUserName = currentUser.email.split('@')[0];
@@ -265,20 +225,51 @@ function ChatbotWidget() {
     }
     const resolvedUserEmail = currentUser?.email || null;
 
-    fetch(`${API_URL}/api/chatbot/interactions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({
-        message: text,
-        response: reply,
-        userId: resolvedUserId,
-        userName: resolvedUserName || (resolvedUserId ? 'Student' : 'Visitor'),
-        userEmail: resolvedUserEmail,
-      }),
-    }).catch(() => {});
+    let reply = '';
+    let links = [];
+
+    try {
+      // 1. Call Backend AI Engine (NLP & Machine Learning Semantic Similarity - FR-07)
+      const response = await fetch(`${API_URL}/api/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          message: text,
+          userId: resolvedUserId,
+          userName: resolvedUserName || (resolvedUserId ? 'Student' : 'Visitor'),
+          userEmail: resolvedUserEmail,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        reply = data.response || '';
+        links = data.links || [];
+      } else {
+        throw new Error('AI backend query failed');
+      }
+    } catch (err) {
+      // 2. Intelligent Client-Side Fallback if server is unreachable
+      const configuredMatch = matchConfiguredResponse(responses, text);
+      if (configuredMatch && configuredMatch.response) {
+        reply = configuredMatch.response;
+        if (configuredMatch.link) {
+          links = [{ link: configuredMatch.link, label: configuredMatch.linkLabel || 'Open this page' }];
+        }
+      } else {
+        reply = "I am your CareerGuide AI Counseling Assistant. You can ask me about degree programs (CS, SE, AI, MBBS, Engineering, Business, Law), university cutoffs (NUST, FAST, COMSATS), entry tests (NET, MDCAT, ECAT), or scholarships in Pakistan.";
+        links = [
+          { link: '/university-recommender', label: 'University Recommender' },
+          { link: '/scholarships', label: 'Scholarship Finder' },
+        ];
+      }
+    }
+
+    const botMsg = { sender: 'bot', text: reply, links, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+    setMessages((previous) => [...previous, botMsg]);
   };
 
   return (
@@ -286,13 +277,43 @@ function ChatbotWidget() {
       {open && (
         <div className="chatbot-panel">
           <div className="chatbot-panel__header">
-            <span>CareerGuide Assistant</span>
-            <button type="button" aria-label="Close chat" onClick={() => setOpen(false)}>×</button>
+            <div className="chatbot-panel__title-wrap">
+              <span className="chatbot-panel__title">CareerGuide Assistant</span>
+              {saveNotice && <span className="chatbot-panel__save-badge">{saveNotice}</span>}
+            </div>
+            <div className="chatbot-panel__actions">
+              <button
+                type="button"
+                className="chatbot-panel__action-btn"
+                onClick={handleSaveChatHistory}
+                title="Save chat history (FR-07 / UC-07 Step 6)"
+                aria-label="Save chat history"
+              >
+                💾
+              </button>
+              <button
+                type="button"
+                className="chatbot-panel__action-btn"
+                onClick={handleClearChat}
+                title="Restart chat session"
+                aria-label="Restart chat session"
+              >
+                ↺
+              </button>
+              <button
+                type="button"
+                className="chatbot-panel__close-btn"
+                aria-label="Close chat"
+                onClick={() => setOpen(false)}
+              >
+                ×
+              </button>
+            </div>
           </div>
           <div className="chatbot-panel__messages" ref={listRef}>
             {messages.map((message, index) => (
               <div key={index} className={`chatbot-message chatbot-message--${message.sender}`}>
-                {message.text}
+                <div className="chatbot-message__text">{message.text}</div>
                 {message.links && message.links.length > 0 && (
                   <div className="chatbot-message__links">
                     {message.links.map((item, i) => (
@@ -307,6 +328,7 @@ function ChatbotWidget() {
                     ))}
                   </div>
                 )}
+                {message.time && <span className="chatbot-message__time">{message.time}</span>}
               </div>
             ))}
           </div>

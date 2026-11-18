@@ -19,6 +19,11 @@ from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 from cryptography.fernet import Fernet, InvalidToken
+try:
+    from chatbot_engine import chatbot_engine
+except Exception:
+    chatbot_engine = None
+
 from supabase_auth import (
     SupabaseAuthError,
     admin_email_allowlist,
@@ -1358,8 +1363,27 @@ def field_matches_program(program, field):
 
 
 @app.route("/")
-@app.route("/api/health")
+@app.route("/preview")
 def home():
+    accept = request.headers.get("Accept", "")
+    if ("text/html" in accept or request.path == "/preview") and not request.path.startswith("/api"):
+        preview_file = backend_dir / "preview_chatbot.html"
+        if not preview_file.exists():
+            preview_file = backend_dir.parent / "preview_chatbot.html"
+        if preview_file.exists():
+            with open(preview_file, "r", encoding="utf-8") as f:
+                return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+    return jsonify({
+        "status": "healthy",
+        "service": "Career Counselling FYP Backend",
+        "timestamp": time.time(),
+        "preview_url": "http://127.0.0.1:5000/preview"
+    }), 200
+
+
+@app.route("/api/health")
+def api_health():
     return jsonify({
         "status": "healthy",
         "service": "Career Counselling FYP Backend",
@@ -3082,6 +3106,67 @@ def admin_program(university_id, program_id):
     return jsonify({"program": programs[program_index]}), 200
 
 
+@app.route("/api/chat", methods=["POST"])
+def ai_chat_query():
+    payload = request.get_json(silent=True) or {}
+    message = str(payload.get("message", "")).strip()
+    user_id = payload.get("userId")
+    user_name = payload.get("userName")
+    user_email = payload.get("userEmail")
+
+    if not message:
+        return jsonify({"error": "Message is required"}), 400
+
+    # 1. Check Admin Auto-Responses first (FR-14-02: Admin dynamic rule)
+    records = load_json_records("chatbot-responses") or []
+    norm = message.lower()
+    matched_admin = None
+    for r in records:
+        kw = (r.get("keyword") or "").lower().strip()
+        if kw and kw in norm:
+            matched_admin = r
+            break
+
+    if matched_admin and matched_admin.get("response"):
+        reply = matched_admin.get("response")
+        links = []
+        if matched_admin.get("link"):
+            links = [{"label": matched_admin.get("linkLabel") or "Open Link", "link": matched_admin.get("link")}]
+        result = {"response": reply, "links": links, "confidence": 1.0, "matchedTopic": "admin_rule"}
+    elif chatbot_engine:
+        # 2. Run NLP TF-IDF Cosine Similarity Semantic Engine (FR-07-01 / Architecture Figure 3-37)
+        result = chatbot_engine.predict(message)
+    else:
+        result = {
+            "response": "I can help you with your assessment results, university recommendations, scholarships, or your profile. What would you like to know?",
+            "links": [{"label": "University Recommender", "link": "/university-recommender"}],
+            "confidence": 0.5,
+            "matchedTopic": "fallback"
+        }
+
+    # 3. Log interaction to history and DB
+    final_name = user_name or ("Visitor" if not user_id else "Student")
+    interaction = {
+        "id": secrets.token_hex(8),
+        "userId": user_id,
+        "userName": final_name,
+        "userEmail": user_email,
+        "message": message,
+        "response": result["response"],
+        "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+    history_records = load_json_records("chatbot-interactions") or []
+    history_records.append(interaction)
+    save_json_records("chatbot-interactions", history_records[-1000:])
+    log_activity("chatbot_interaction", {
+        "userId": interaction["userId"],
+        "userName": interaction["userName"],
+        "email": user_email
+    })
+
+    return jsonify(result), 200
+
+
 @app.route("/api/chatbot/responses", methods=["GET"])
 def chatbot_responses():
     records = load_json_records("chatbot-responses") or []
@@ -3143,7 +3228,38 @@ def chatbot_interaction():
         "userName": interaction["userName"],
         "email": user_email
     })
+
+    # Synchronize with PostgreSQL/Supabase chat_messages table if configured (Report ERD Fig 3-39)
+    try:
+        if SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
+            supabase_admin_request(
+                "POST",
+                "/rest/v1/chat_messages",
+                body={
+                    "message_id": interaction["id"],
+                    "user_id": interaction["userId"],
+                    "user_name": interaction["userName"],
+                    "user_email": interaction["userEmail"],
+                    "message_text": interaction["message"],
+                    "response_text": interaction["response"],
+                    "timestamp": interaction["createdAt"],
+                },
+                extra_headers={"Prefer": "return=minimal"}
+            )
+    except Exception:
+        pass
+
     return jsonify({"interaction": interaction}), 201
+
+
+@app.route("/api/chatbot/history", methods=["GET"])
+def chatbot_history():
+    user_id = request.args.get("userId")
+    records = load_json_records("chatbot-interactions") or []
+    if user_id:
+        user_records = [r for r in records if r.get("userId") == user_id]
+        return jsonify({"history": user_records[-100:]}), 200
+    return jsonify({"history": records[-100:]}), 200
 
 
 # CAREER EXPLANATION

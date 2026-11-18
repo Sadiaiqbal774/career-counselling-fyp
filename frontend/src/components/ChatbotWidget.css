@@ -19,11 +19,14 @@
   font-size: 1.4rem;
   box-shadow: 0 12px 30px rgba(43, 33, 24, 0.28);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .chatbot-panel {
-  width: min(320px, calc(100vw - 40px));
-  height: 420px;
+  width: min(340px, calc(100vw - 40px));
+  height: 440px;
   display: flex;
   flex-direction: column;
   background: #fffaf4;
@@ -37,19 +40,74 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  padding: 12px 14px;
   background: #5a3e29;
   color: #fff;
   font-weight: 700;
+  gap: 8px;
 }
 
-.chatbot-panel__header button {
+.chatbot-panel__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.chatbot-panel__title {
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chatbot-panel__save-badge {
+  font-size: 0.72rem;
+  background: #27ae60;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.chatbot-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chatbot-panel__action-btn {
+  border: 0;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 0.88rem;
+  padding: 4px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.chatbot-panel__action-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.chatbot-panel__close-btn {
   border: 0;
   background: transparent;
   color: #fff;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   cursor: pointer;
   line-height: 1;
+  padding: 0 4px;
+  margin-left: 2px;
+}
+
+.chatbot-panel__close-btn:hover {
+  opacity: 0.8;
 }
 
 .chatbot-panel__messages {
@@ -67,6 +125,8 @@
   border-radius: 12px;
   font-size: 0.9rem;
   line-height: 1.4;
+  display: flex;
+  flex-direction: column;
 }
 
 .chatbot-message--bot {
@@ -94,6 +154,14 @@
   color: #5a3e29;
   text-decoration: underline;
   font-size: 0.85rem;
+}
+
+.chatbot-message__time {
+  display: block;
+  font-size: 0.68rem;
+  opacity: 0.65;
+  margin-top: 4px;
+  text-align: right;
 }
 
 .chatbot-panel__input {
@@ -139,6 +207,14 @@ html.dark-mode .chatbot-panel {
 html.dark-mode .chatbot-panel__header {
   background: #2a1f19;
   border-bottom: 1px solid #3d2f26;
+}
+
+html.dark-mode .chatbot-panel__action-btn {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+html.dark-mode .chatbot-panel__action-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 html.dark-mode .chatbot-message--bot {
