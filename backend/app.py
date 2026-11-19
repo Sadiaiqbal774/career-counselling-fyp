@@ -2394,14 +2394,13 @@ def admin_update_user(user_id):
         return auth_error
 
     payload = request.get_json(silent=True) or {}
-    name = (payload.get("name") or "").strip()
-    email = (payload.get("email") or "").strip().lower()
-    if not name or not email:
-        return jsonify({"message": "Name and email are required."}), 400
+    # Admins can only block or unblock user accounts, not edit user credentials (name/email).
+    if "blocked" not in payload:
+        return jsonify({"message": "Admins can only block or unblock user accounts, not edit user details."}), 400
 
     # Admin accounts must never be deleted or banned through the panel.
     # Block banning admin accounts and self-banning.
-    if "blocked" in payload and bool(payload["blocked"]):
+    if bool(payload["blocked"]):
         refusal = _refuse_if_admin_target(user_id, action_verb="ban")
         if refusal:
             return refusal
@@ -2411,31 +2410,24 @@ def admin_update_user(user_id):
     local_user = next((entry for entry in users if str(entry.get("id")) == str(user_id)), None)
     if local_user:
         was_blocked = bool(local_user.get("blocked") or local_user.get("is_blocked") or local_user.get("isBlocked") or local_user.get("banned_until"))
-        local_user["name"] = name
-        local_user["email"] = email
-        will_block = bool(payload["blocked"]) if "blocked" in payload else None
-        if will_block is not None:
-            local_user["blocked"] = will_block
-            local_user["is_blocked"] = will_block
-            local_user["isBlocked"] = will_block
-            local_user["banned_until"] = "2126-01-01T00:00:00Z" if will_block else None
+        # Retain registered name and email - credentials cannot be edited by admin
+        name = local_user.get("name") or ""
+        email = local_user.get("email") or ""
+        will_block = bool(payload["blocked"])
+        local_user["blocked"] = will_block
+        local_user["is_blocked"] = will_block
+        local_user["isBlocked"] = will_block
+        local_user["banned_until"] = "2126-01-01T00:00:00Z" if will_block else None
         save_users(users)
         invalidate_supabase_users_cache()
 
-        blocked_status_changed = (will_block is not None and will_block != was_blocked)
+        blocked_status_changed = (will_block != was_blocked)
         if blocked_status_changed:
             log_activity("admin_user_blocked" if will_block else "admin_user_unblocked", {
                 "userId": user_id,
                 "email": email,
                 "userName": name,
                 "action": "Blocked account" if will_block else "Unblocked account",
-            })
-        else:
-            log_activity("admin_user_updated", {
-                "userId": user_id,
-                "email": email,
-                "userName": name,
-                "action": f"Updated user account ({name})" if name else "Updated user account",
             })
         return jsonify({"user": sanitize_user(local_user)}), 200
 
@@ -2444,7 +2436,6 @@ def admin_update_user(user_id):
         return jsonify({"message": "User not found."}), 404
 
     try:
-        # Fetch target user via auth.admin.getUserById
         current = supabase_admin_request("GET", f"/auth/v1/admin/users/{user_id}")
         if not current or not current.get("id"):
             raise ValueError("User not found in Supabase")
@@ -2457,96 +2448,51 @@ def admin_update_user(user_id):
             (current.get("app_metadata") or {}).get("is_blocked")
         )
 
-        will_block = None
-        if "blocked" in payload:
-            will_block = bool(payload["blocked"])
-
-        user_meta = {**(current.get("user_metadata") or {}), "name": name}
+        will_block = bool(payload["blocked"])
+        user_meta = {**(current.get("user_metadata") or {})}
         app_meta = {**(current.get("app_metadata") or {})}
-        if will_block is not None:
-            user_meta["is_blocked"] = will_block
-            app_meta["is_blocked"] = will_block
+        user_meta["is_blocked"] = will_block
+        app_meta["is_blocked"] = will_block
 
         update_body = {
-            "email": email,
             "user_metadata": user_meta,
             "app_metadata": app_meta,
         }
-        is_underlying_admin_email = bool(email and email.strip().lower() in [e.strip().lower() for e in admin_email_allowlist()])
-        if will_block is not None:
-            if is_underlying_admin_email:
-                update_body["ban_duration"] = "none"
-            else:
-                update_body["ban_duration"] = "876000h" if will_block else "none"
+        # Note: Admin cannot modify user email or name - credentials remain untouched
+        user_email = (current.get("email") or "").strip().lower()
+        user_name = (user_meta.get("name") or user_email).strip()
+
+        is_underlying_admin_email = bool(user_email and user_email in [e.strip().lower() for e in admin_email_allowlist()])
+        if is_underlying_admin_email:
+            update_body["ban_duration"] = "none"
+        else:
+            update_body["ban_duration"] = "876000h" if will_block else "none"
 
         updated = supabase_admin_request("PUT", f"/auth/v1/admin/users/{user_id}", body=update_body)
         invalidate_supabase_users_cache()
 
         # Also sync to local users.json if present
         users = load_users()
-        local_u = next((entry for entry in users if str(entry.get("id")) == str(user_id) or (email and str(entry.get("email", "")).lower() == email.lower())), None)
+        local_u = next((entry for entry in users if str(entry.get("id")) == str(user_id) or (user_email and str(entry.get("email", "")).lower() == user_email)), None)
         if local_u:
-            local_u["name"] = name
-            local_u["email"] = email
-            if will_block is not None:
-                local_u["blocked"] = will_block
-                local_u["is_blocked"] = will_block
-                local_u["isBlocked"] = will_block
-                local_u["banned_until"] = "2126-01-01T00:00:00Z" if will_block else None
+            local_u["blocked"] = will_block
+            local_u["is_blocked"] = will_block
+            local_u["isBlocked"] = will_block
+            local_u["banned_until"] = "2126-01-01T00:00:00Z" if will_block else None
             save_users(users)
 
-        blocked_status_changed = (will_block is not None and will_block != was_blocked)
+        blocked_status_changed = (will_block != was_blocked)
         if blocked_status_changed:
             log_activity("admin_user_blocked" if will_block else "admin_user_unblocked", {
                 "userId": user_id,
-                "email": email,
-                "userName": name,
+                "email": user_email,
+                "userName": user_name,
                 "action": "Blocked account" if will_block else "Unblocked account",
             })
-        else:
-            log_activity("admin_user_updated", {
-                "userId": user_id,
-                "email": email,
-                "userName": name,
-                "action": f"Updated user account ({name})" if name else "Updated user account",
-            })
+        return jsonify({"user": sanitize_user(updated or current)}), 200
+    except Exception as exc:
+        return jsonify({"message": f"Failed to update user status: {str(exc)}"}), 500
 
-        return jsonify({"user": sanitize_supabase_user(updated)}), 200
-    except Exception as error:
-        # Fallback to local users store if user is not in Supabase (e.g. Dania or seeded users)
-        users = load_users()
-        local_user = next((entry for entry in users if str(entry.get("id")) == str(user_id)), None)
-        was_blocked = bool(local_user.get("blocked") or local_user.get("is_blocked") or local_user.get("isBlocked") or local_user.get("banned_until")) if local_user else False
-        if not local_user:
-            local_user = {"id": str(user_id), "name": name, "email": email}
-            users.append(local_user)
-        local_user["name"] = name
-        local_user["email"] = email
-        will_block = bool(payload.get("blocked")) if "blocked" in payload else None
-        if will_block is not None:
-            local_user["blocked"] = will_block
-            local_user["is_blocked"] = will_block
-            local_user["isBlocked"] = will_block
-            local_user["banned_until"] = "2126-01-01T00:00:00Z" if will_block else None
-        save_users(users)
-        invalidate_supabase_users_cache()
-
-        blocked_status_changed = (will_block is not None and will_block != was_blocked)
-        if blocked_status_changed:
-            log_activity("admin_user_blocked" if will_block else "admin_user_unblocked", {
-                "userId": user_id,
-                "email": email,
-                "userName": name,
-                "action": "Blocked account" if will_block else "Unblocked account",
-            })
-        else:
-            log_activity("admin_user_updated", {
-                "userId": user_id,
-                "email": email,
-                "userName": name,
-                "action": f"Updated user account ({name})" if name else "Updated user account",
-            })
-        return jsonify({"user": sanitize_user(local_user)}), 200
 
 
 @app.route("/api/admin/users/<user_id>", methods=["DELETE"])
