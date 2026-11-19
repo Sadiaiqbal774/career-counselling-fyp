@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import supabase from '../lib/supabase';
 import { isStrongPassword } from '../lib/authHelpers';
@@ -17,51 +17,95 @@ function ResetPassword() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [recoveryReady, setRecoveryReady] = useState(false);
   const [recoveryChecked, setRecoveryChecked] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const code = searchParams.get('code');
 
   useEffect(() => {
     let mounted = true;
 
-    // Listen for auth events. Enable the form ONLY on PASSWORD_RECOVERY.
-    // A normal logged-in session (SIGNED_IN, INITIAL_SESSION, etc.) will NOT enable recoveryReady.
+    // Listen for auth events. Enable the form if a session is established
+    // (covers PASSWORD_RECOVERY, SIGNED_IN, INITIAL_SESSION, TOKEN_REFRESHED)
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
-      if (event === 'PASSWORD_RECOVERY' && session) {
+      if (session) {
         setRecoveryReady(true);
         setRecoveryChecked(true);
       }
     });
 
     const initRecovery = async () => {
-      if (code) {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+      const hash = typeof window !== 'undefined' ? (window.location.hash || '') : '';
+      const search = typeof window !== 'undefined' ? (window.location.search || '') : '';
+
+      // Check for explicit error from Supabase in URL hash or query params
+      if (hash.includes('error=') || search.includes('error=')) {
         if (!mounted) return;
-        if (!exchangeError) {
-          setRecoveryReady(true);
-        } else {
-          setRecoveryReady(false);
+        let desc = 'The reset link is invalid or has expired. Please request a new one.';
+        if (hash.includes('error_description=')) {
+          try {
+            desc = decodeURIComponent(hash.split('error_description=')[1].split('&')[0].replace(/\+/g, ' '));
+          } catch (_) {}
+        } else if (searchParams.get('error_description')) {
+          desc = searchParams.get('error_description');
         }
+        setErrorMessage(desc);
+        setRecoveryReady(false);
         setRecoveryChecked(true);
         return;
       }
 
-      // Check if URL hash or query contains recovery flag
-      if (typeof window !== 'undefined' && (window.location.hash.includes('type=recovery') || searchParams.get('type') === 'recovery')) {
+      // 1. PKCE flow with code param
+      if (code) {
+        try {
+          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (!mounted) return;
+          if (!exchangeError && data?.session) {
+            setRecoveryReady(true);
+            setRecoveryChecked(true);
+            return;
+          }
+          if (exchangeError) {
+            setErrorMessage(exchangeError.message || 'The reset code is invalid or expired.');
+          }
+        } catch (_) {}
+      }
+
+      // 2. Recovery / Access token present in hash or query
+      if (
+        hash.includes('type=recovery') ||
+        search.includes('type=recovery') ||
+        hash.includes('access_token=') ||
+        searchParams.get('type') === 'recovery'
+      ) {
         if (!mounted) return;
         setRecoveryReady(true);
         setRecoveryChecked(true);
         return;
       }
 
-      // Check current session to allow onAuthStateChange to process any implicit flow,
-      // but do NOT enable recoveryReady just because data.session exists.
+      // 3. Existing authenticated session (e.g. Supabase client already parsed hash or logged-in user)
       try {
-        await supabase.auth.getSession();
+        const { data } = await supabase.auth.getSession();
+        if (!mounted) return;
+        if (data?.session) {
+          setRecoveryReady(true);
+          setRecoveryChecked(true);
+          return;
+        }
       } catch (_) {}
 
-      if (!mounted) return;
-      setRecoveryChecked(true);
+      // 4. Grace period for asynchronous URL hash parsing by Supabase JS client
+      setTimeout(async () => {
+        if (!mounted) return;
+        try {
+          const { data } = await supabase.auth.getSession();
+          if (data?.session) {
+            setRecoveryReady(true);
+          }
+        } catch (_) {}
+        setRecoveryChecked(true);
+      }, 600);
     };
 
     initRecovery();
@@ -72,7 +116,7 @@ function ResetPassword() {
         authListener.subscription.unsubscribe();
       }
     };
-  }, [code]);
+  }, [code, searchParams]);
 
   if (initialized && recoveryChecked && !recoveryReady) {
     return (
@@ -86,11 +130,27 @@ function ResetPassword() {
                 <div className="auth-brand-subtitle">Reset your password</div>
               </div>
             </div>
-            <h1>Invalid reset link</h1>
-            <p>The reset link is missing or invalid. Please request a new password reset email.</p>
+            <h1>Invalid or Expired Link</h1>
+            <p>
+              {errorMessage || 'This password reset link has expired or has already been used. Please request a new link.'}
+            </p>
           </aside>
           <section className="auth-card">
-            <p className="auth-error">Invalid or expired reset link. Please request a new one.</p>
+            <div className="auth-card-header">
+              <p className="eyebrow">Password recovery</p>
+              <h2>Link Expired</h2>
+              <p className="muted-text">
+                Password reset links are valid for 1 hour and can only be used once for security.
+              </p>
+            </div>
+            <p className="auth-error">
+              {errorMessage || 'Invalid or expired reset link. Please request a new one.'}
+            </p>
+            <div style={{ marginTop: '20px' }}>
+              <Link to="/forgot-password" className="auth-primary-button" style={{ display: 'inline-block', textAlign: 'center', textDecoration: 'none' }}>
+                Request New Reset Link →
+              </Link>
+            </div>
           </section>
         </section>
       </main>
@@ -146,7 +206,7 @@ function ResetPassword() {
           <div className="auth-card-header">
             <p className="eyebrow">Password reset</p>
             <h2>Set new password</h2>
-            <p className="muted-text">Your reset code is valid. Create a strong password.</p>
+            <p className="muted-text">Your reset session is active. Create a strong password.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
