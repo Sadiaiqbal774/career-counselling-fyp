@@ -2980,7 +2980,6 @@ function AdminDashboard() {
   const [resourceView, setResourceView] = useState('list');
   const [users, setUsers] = useState([]); const [records, setRecords] = useState([]);
   const [dashboardData, setDashboardData] = useState({ users: [], activity: [], assessments: [], chatbot: [], scholarships: [], universities: [] });
-  const [blockingUserId, setBlockingUserId] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [originalUser, setOriginalUser] = useState(null);
   const [isSavingUser, setIsSavingUser] = useState(false);
@@ -3278,76 +3277,80 @@ function AdminDashboard() {
     load(view === 'log' ? 'chatbot-interactions' : 'chatbot-responses').catch((loadError) => setError(loadError.message));
   };
 
-  const handleToggleBlock = async (user) => {
-    if (!user || isUserAdmin(user) || isSelfUser(user) || blockingUserId) return;
-    const isCurrentlyBlocked = Boolean(isUserBlocked(user));
-    const targetBlocked = !isCurrentlyBlocked;
-    setBlockingUserId(user.id);
-    setError('');
-    setNotice('');
+  const isUserChanged = Boolean(
+    editingUser && originalUser && (
+      Boolean(editingUser.blocked) !== Boolean(originalUser.blocked)
+    )
+  );
+
+  const saveUser = async (event) => {
+    event.preventDefault();
+    if (!editingUser || !isUserChanged || isSavingUser) return;
+    setIsSavingUser(true);
+    setModalError('');
+    setModalNotice('');
     try {
-      const result = await api(`/api/admin/users/${user.id}`, {
+      const targetBlocked = Boolean(editingUser.blocked);
+      const result = await api(`/api/admin/users/${editingUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ blocked: targetBlocked }),
       });
       const updatedUser = {
-        ...user,
+        ...editingUser,
         ...(result?.user || {}),
         blocked: targetBlocked,
         is_blocked: targetBlocked,
         isBlocked: targetBlocked,
         banned_until: targetBlocked ? '2126-01-01T00:00:00Z' : null,
         user_metadata: {
-          ...(user.user_metadata || {}),
+          ...(editingUser.user_metadata || {}),
           ...(result?.user?.user_metadata || {}),
           is_blocked: targetBlocked,
         },
         app_metadata: {
-          ...(user.app_metadata || {}),
+          ...(editingUser.app_metadata || {}),
           ...(result?.user?.app_metadata || {}),
           is_blocked: targetBlocked,
         },
       };
-      setUsers((prevUsers) => prevUsers.map((u) => (String(u.id) === String(user.id) ? updatedUser : u)));
-      const actionItem = {
-        id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-        type: targetBlocked ? 'admin_user_blocked' : 'admin_user_unblocked',
-        userName: user.name,
-        userEmail: user.email,
-        userId: user.id,
-        action: targetBlocked ? 'Blocked account' : 'Unblocked account',
-        details: {
-          userId: user.id,
-          userName: user.name,
-          email: user.email,
-          action: targetBlocked ? 'Blocked account' : 'Unblocked account',
-        },
-        createdAt: new Date().toISOString(),
-      };
-      persistAdminAction(actionItem);
-      setDashboardData((prev) => ({
-        ...prev,
-        users: (prev.users || []).map((entry) => (String(entry.id) === String(user.id) ? updatedUser : entry)),
-        activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
-      }));
-      setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
-      setNotice(`User account "${user.name || user.email}" is now ${targetBlocked ? 'blocked' : 'unblocked'}.`);
-    } catch (toggleErr) {
-      setError(toggleErr.message || `Failed to ${targetBlocked ? 'block' : 'unblock'} user.`);
-    } finally {
-      setBlockingUserId(null);
-    }
-  };
+      setUsers((prevUsers) => prevUsers.map((user) => (String(user.id) === String(editingUser.id) ? updatedUser : user)));
+      const blockedChanged = Boolean(editingUser.blocked) !== Boolean(originalUser.blocked);
 
-  const handleDeleteUserClick = (user) => {
-    if (!user || isUserAdmin(user) || isSelfUser(user)) return;
-    setUserDeleteConfirmation({
-      user,
-      input: '',
-      error: '',
-      isDeleting: false,
-    });
+      if (blockedChanged) {
+        const nextBlocked = targetBlocked;
+        const actionItem = {
+          id: `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          type: nextBlocked ? 'admin_user_blocked' : 'admin_user_unblocked',
+          userName: editingUser.name,
+          userEmail: editingUser.email,
+          userId: editingUser.id,
+          action: nextBlocked ? 'Blocked account' : 'Unblocked account',
+          details: {
+            userId: editingUser.id,
+            userName: editingUser.name,
+            email: editingUser.email,
+            action: nextBlocked ? 'Blocked account' : 'Unblocked account',
+          },
+          createdAt: new Date().toISOString(),
+        };
+        persistAdminAction(actionItem);
+        setDashboardData((prev) => ({
+          ...prev,
+          users: (prev.users || []).map((entry) => (String(entry.id) === String(editingUser.id) ? updatedUser : entry)),
+          activity: deduplicateActivities([actionItem, ...(prev.activity || [])]),
+        }));
+        setRecords((prev) => (tab === 'activity' ? deduplicateActivities([actionItem, ...prev]) : prev));
+      }
+
+      setEditingUser(null);
+      setOriginalUser(null);
+      setNotice(`User "${editingUser.name || editingUser.email}" is now ${targetBlocked ? 'blocked' : 'unblocked'}.`);
+    } catch (saveError) {
+      setModalError(saveError.message || 'Failed to update user.');
+    } finally {
+      setIsSavingUser(false);
+    }
   };
 
   const deleteUser = (user) => {
@@ -3934,7 +3937,17 @@ function AdminDashboard() {
                 </thead>
                 <tbody>
                   {sortedUsers.map((user) => (
-                    <tr key={user.id}>
+                    <tr
+                      key={user.id}
+                      onClick={() => {
+                        const prepared = prepareUserForEdit(user);
+                        setEditingUser(prepared);
+                        setOriginalUser(prepared);
+                        setModalError('');
+                        setModalNotice('');
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <td style={{ textAlign: 'left' }}>
                         <strong style={{ color: 'var(--ink)' }}>{user.name}</strong>
                         {isUserAdmin(user) && (
@@ -3977,29 +3990,19 @@ function AdminDashboard() {
                       </td>
                       <td className="admin-col-actions" style={{ textAlign: 'center', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
                         <div className="admin-user-actions-wrap" style={{ justifyContent: 'center' }}>
-                          {isUserAdmin(user) || isSelfUser(user) ? (
-                            <span style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', fontStyle: 'italic' }}>Protected</span>
-                          ) : (
-                            <>
-                              <button
-                                className={`admin-action admin-action--user ${isUserBlocked(user) ? 'admin-action--good' : 'admin-action--warn'}`}
-                                type="button"
-                                onClick={() => handleToggleBlock(user)}
-                                disabled={blockingUserId === user.id}
-                                title={isUserBlocked(user) ? 'Unblock user account' : 'Block user account'}
-                              >
-                                {blockingUserId === user.id ? '...' : isUserBlocked(user) ? 'Unblock' : 'Block'}
-                              </button>
-                              <button
-                                className="admin-action admin-action--user admin-action--danger"
-                                type="button"
-                                onClick={() => handleDeleteUserClick(user)}
-                                title="Delete user account"
-                              >
-                                Delete
-                              </button>
-                            </>
-                          )}
+                          <button
+                            className="admin-action admin-action--user admin-action--edit"
+                            type="button"
+                            onClick={() => {
+                              const prepared = prepareUserForEdit(user);
+                              setEditingUser(prepared);
+                              setOriginalUser(prepared);
+                              setModalError('');
+                              setModalNotice('');
+                            }}
+                          >
+                            Edit
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -4021,6 +4024,190 @@ function AdminDashboard() {
                 </tbody>
               </table>
             </div>
+            {editingUser && (
+              <div className="admin-modal-overlay" onClick={() => !isSavingUser && setEditingUser(null)}>
+                <div className="admin-modal-card" onClick={(e) => e.stopPropagation()}>
+                  <div className="admin-modal-header">
+                    <h2>Edit User Account</h2>
+                    <button
+                      type="button"
+                      className="admin-modal-close"
+                      onClick={() => setEditingUser(null)}
+                      disabled={isSavingUser}
+                      aria-label="Close modal"
+                    >×</button>
+                  </div>
+                  <form className="admin-modal-body" onSubmit={saveUser}>
+                    {modalNotice && (
+                      <div className="admin-notice" role="status" style={{ margin: '0 0 14px' }}>
+                        <span>{modalNotice}</span>
+                      </div>
+                    )}
+                    {modalError && (
+                      <div className="admin-error" role="alert" style={{ margin: '0 0 14px' }}>
+                        <span>{modalError}</span>
+                      </div>
+                    )}
+                    <div>
+                      <label htmlFor="edit-user-name">User Name</label>
+                      <input
+                        id="edit-user-name"
+                        type="text"
+                        value={editingUser.name || ''}
+                        disabled
+                        readOnly
+                        aria-label="User name"
+                        style={{ opacity: 0.85, cursor: 'not-allowed', backgroundColor: 'var(--surface-sunken, #f8fafc)' }}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="edit-user-email">Email Address</label>
+                      <input
+                        id="edit-user-email"
+                        type="email"
+                        value={editingUser.email || ''}
+                        disabled
+                        readOnly
+                        aria-label="User email"
+                        style={{ opacity: 0.85, cursor: 'not-allowed', backgroundColor: 'var(--surface-sunken, #f8fafc)' }}
+                      />
+                    </div>
+                    <label className="admin-modal-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(editingUser.blocked)}
+                        onChange={(event) => {
+                          const isChecked = event.target.checked;
+                          setEditingUser({
+                            ...editingUser,
+                            blocked: isChecked,
+                            is_blocked: isChecked,
+                            isBlocked: isChecked,
+                            banned_until: isChecked ? '2126-01-01T00:00:00Z' : null,
+                            user_metadata: {
+                              ...(editingUser.user_metadata || {}),
+                              is_blocked: isChecked,
+                            },
+                            app_metadata: {
+                              ...(editingUser.app_metadata || {}),
+                              is_blocked: isChecked,
+                            },
+                          });
+                        }}
+                        disabled={isSavingUser || isUserAdmin(editingUser) || isSelfUser(editingUser)}
+                      />
+                      <span>Block account access (prevent user from signing in)</span>
+                    </label>
+                    <div className="admin-modal-actions">
+                      <button
+                        className="secondary-button"
+                        type="button"
+                        onClick={() => setEditingUser(null)}
+                        disabled={isSavingUser}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="primary-button"
+                        type="submit"
+                        disabled={!isUserChanged || isSavingUser}
+                      >
+                        {isSavingUser ? 'Saving...' : 'Save changes'}
+                      </button>
+                    </div>
+
+                    {/* Danger zone */}
+                    <div className="admin-edit-danger-zone" style={{ marginTop: '22px', paddingTop: '16px', borderTop: '1px solid var(--border, #e2e8f0)' }}>
+                      <h3 style={{ margin: '0 0 4px', fontSize: '0.96rem', color: '#dc2626', fontWeight: 600 }}>Delete account</h3>
+                      <p style={{ margin: '0 0 12px', fontSize: '0.84rem', color: 'var(--ink-muted)', lineHeight: '1.4' }}>
+                        Permanently deletes this user and their data. This cannot be undone.
+                      </p>
+                      {isUserAdmin(editingUser) ? (
+                        <div>
+                          <button
+                            type="button"
+                            className="admin-action--danger"
+                            disabled
+                            style={{
+                              background: 'transparent',
+                              border: '1px solid #e2e8f0',
+                              color: 'var(--ink-faint)',
+                              opacity: 0.6,
+                              cursor: 'not-allowed',
+                              padding: '7px 14px',
+                              borderRadius: '8px',
+                              fontWeight: 600,
+                              fontSize: '0.84rem',
+                            }}
+                          >
+                            Delete account
+                          </button>
+                          <span style={{ display: 'block', marginTop: '6px', fontSize: '0.8rem', color: 'var(--ink-muted)', fontStyle: 'italic' }}>
+                            Admin accounts cannot be deleted.
+                          </span>
+                        </div>
+                      ) : isSelfUser(editingUser) ? (
+                        <div>
+                          <button
+                            type="button"
+                            className="admin-action--danger"
+                            disabled
+                            style={{
+                              background: 'transparent',
+                              border: '1px solid #e2e8f0',
+                              color: 'var(--ink-faint)',
+                              opacity: 0.6,
+                              cursor: 'not-allowed',
+                              padding: '7px 14px',
+                              borderRadius: '8px',
+                              fontWeight: 600,
+                              fontSize: '0.84rem',
+                            }}
+                          >
+                            Delete account
+                          </button>
+                          <span style={{ display: 'block', marginTop: '6px', fontSize: '0.8rem', color: 'var(--ink-muted)', fontStyle: 'italic' }}>
+                            You can't delete your own account.
+                          </span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          className="admin-action--danger"
+                          style={{
+                            background: 'transparent',
+                            border: '1px solid #fecaca',
+                            color: '#dc2626',
+                            padding: '7px 14px',
+                            borderRadius: '8px',
+                            fontWeight: 600,
+                            fontSize: '0.84rem',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                          }}
+                          onClick={() => {
+                            setUserDeleteConfirmation({
+                              user: editingUser,
+                              input: '',
+                              error: '',
+                              isDeleting: false,
+                            });
+                          }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          </svg>
+                          Delete account
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
 
             {userDeleteConfirmation && (
               <div className="admin-modal-overlay" onClick={() => !userDeleteConfirmation.isDeleting && setUserDeleteConfirmation(null)}>
