@@ -462,18 +462,22 @@ def to_bool(val):
 
 
 def sanitize_user(user):
-    uid = user["id"]
-    email = user["email"]
+    if not user:
+        return {}
+    uid = user.get("id")
+    email = user.get("email") or ""
     app_metadata = user.get("app_metadata") or {}
+    metadata = user.get("user_metadata") or {}
     role = app_metadata.get("role") or user.get("role") or "student"
     is_admin_user = bool(role == "admin" or (email and email.strip().lower() in admin_email_allowlist()))
     if email and email.strip().lower() == "shamamaaslam377@gmail.com":
         role = "student"
         is_admin_user = False
-    is_bl = to_bool(user.get("blocked")) or to_bool(user.get("is_blocked")) or to_bool(user.get("isBlocked"))
+    is_bl = to_bool(user.get("blocked")) or to_bool(user.get("is_blocked")) or to_bool(user.get("isBlocked")) or to_bool(metadata.get("is_blocked")) or to_bool(app_metadata.get("is_blocked"))
+    name = user.get("name") or metadata.get("name") or metadata.get("full_name") or metadata.get("username") or (email.split("@")[0].capitalize() if email else "User")
     return {
         "id": uid,
-        "name": user["name"],
+        "name": name,
         "email": email,
         "authProvider": user.get("authProvider", "local"),
         "hasPassword": bool(user.get("passwordHash")),
@@ -2489,7 +2493,7 @@ def admin_update_user(user_id):
                 "userName": user_name,
                 "action": "Blocked account" if will_block else "Unblocked account",
             })
-        return jsonify({"user": sanitize_user(updated or current)}), 200
+        return jsonify({"user": sanitize_supabase_user(updated or current)}), 200
     except Exception as exc:
         return jsonify({"message": f"Failed to update user status: {str(exc)}"}), 500
 

@@ -3294,7 +3294,7 @@ function AdminDashboard() {
       const result = await api(`/api/admin/users/${editingUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blocked: targetBlocked }),
+        body: JSON.stringify({ name: editingUser.name, email: editingUser.email, blocked: targetBlocked }),
       });
       const updatedUser = {
         ...editingUser,
@@ -4188,8 +4188,10 @@ function AdminDashboard() {
                             gap: '6px',
                           }}
                           onClick={() => {
+                            const targetU = editingUser;
+                            setEditingUser(null);
                             setUserDeleteConfirmation({
-                              user: editingUser,
+                              user: targetU,
                               input: '',
                               error: '',
                               isDeleting: false,
@@ -4263,7 +4265,7 @@ function AdminDashboard() {
                         type="button"
                         className="admin-action-btn-danger"
                         disabled={
-                          userDeleteConfirmation.input.trim() !== userDeleteConfirmation.user.email.trim() ||
+                          userDeleteConfirmation.input.trim().toLowerCase() !== (userDeleteConfirmation.user.email || '').trim().toLowerCase() ||
                           userDeleteConfirmation.isDeleting
                         }
                         onClick={async () => {
