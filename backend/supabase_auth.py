@@ -25,9 +25,17 @@ def _jwks_client(jwks_url):
     return jwt.PyJWKClient(jwks_url, cache_jwk_set=True, lifespan=300)
 
 
+_token_cache = {}  # {token_hash: (claims, exp_timestamp)}
+
 def verify_access_token(token):
     if not token:
         raise SupabaseAuthError("Authentication required.")
+
+    now = time.time()
+    t_hash = hash(token)
+    cached = _token_cache.get(t_hash)
+    if cached and cached[1] > now:
+        return cached[0]
 
     supabase_url, audience = _supabase_settings()
     issuer = f"{supabase_url}/auth/v1"
@@ -50,6 +58,8 @@ def verify_access_token(token):
     if not isinstance(subject, str) or not subject.strip():
         raise SupabaseAuthError("Supabase access token has no valid subject.")
 
+    token_exp = claims.get("exp", now + 60)
+    _token_cache[t_hash] = (claims, min(now + 60, token_exp))
     return claims
 
 
@@ -73,15 +83,26 @@ def _service_role_user(token):
         return None
 
 
+_verified_emails_cache = {}  # {email: timestamp}
+
 def require_verified_email(claims, token):
+    email = str(claims.get("email") or "").strip().lower()
     email_verified = claims.get("email_verified")
     confirmed_at = claims.get("email_confirmed_at")
     if email_verified is True or confirmed_at:
+        if email:
+            _verified_emails_cache[email] = time.time()
+        return
+
+    now = time.time()
+    if email and (now - _verified_emails_cache.get(email, 0) < 300):
         return
 
     user = _service_role_user(token)
     if not user or not user.get("email_confirmed_at"):
         raise SupabaseAuthError("Email verification is required.")
+    if email:
+        _verified_emails_cache[email] = now
 
 
 def admin_email_allowlist():

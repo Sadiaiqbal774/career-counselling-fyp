@@ -1,3 +1,5 @@
+import requests
+from requests.adapters import HTTPAdapter
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib
@@ -33,6 +35,18 @@ from supabase_auth import (
 )
 
 app = Flask(__name__)
+_http_session = None
+
+def get_http_session():
+    global _http_session
+    if _http_session is None:
+        s = requests.Session()
+        adapter = HTTPAdapter(pool_connections=20, pool_maxsize=50)
+        s.mount("https://", adapter)
+        s.mount("http://", adapter)
+        _http_session = s
+    return _http_session
+
 
 # Allow requests from localhost, configured FRONTEND_URL, and Vercel deployments
 _allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
@@ -320,7 +334,7 @@ def get_supabase_storage_client():
     }
 
 
-def read_supabase_storage_object(filename, max_age_seconds=45):
+def read_supabase_storage_object(filename, max_age_seconds=300):
     global _supabase_storage_cache
     now = time.time()
     cached = _supabase_storage_cache.get(filename)
@@ -335,15 +349,21 @@ def read_supabase_storage_object(filename, max_age_seconds=45):
         "apikey": client["key"],
         "Authorization": f"Bearer {client['key']}"
     }
-    req = Request(url, headers=headers)
+    session = get_http_session()
     try:
-        with urlopen(req, timeout=4) as resp:
-            data = resp.read().decode("utf-8")
+        resp = session.get(url, headers=headers, timeout=3)
+        if resp.ok and resp.content:
+            data = resp.text
             _supabase_storage_cache[filename] = {"data": data, "timestamp": now}
             return data
+        else:
+            # Cache miss for 180s to prevent repeating failed network calls
+            _supabase_storage_cache[filename] = {"data": None, "timestamp": now}
+            return None
     except Exception:
         if cached:
             return cached.get("data")
+        _supabase_storage_cache[filename] = {"data": None, "timestamp": now}
         return None
 
 
@@ -967,7 +987,7 @@ def invalidate_quiz_scores_cache():
 def load_supabase_quiz_scores(force_refresh=False):
     global _quiz_scores_cache
     now = time.time()
-    if not force_refresh and _quiz_scores_cache["data"] is not None and (now - _quiz_scores_cache["timestamp"] < 5):
+    if not force_refresh and _quiz_scores_cache["data"] is not None and (now - _quiz_scores_cache["timestamp"] < 60):
         return list(_quiz_scores_cache["data"])
 
     supabase_url = os.environ.get("SUPABASE_URL", "").strip().rstrip("/") or SUPABASE_URL
@@ -1145,9 +1165,6 @@ def supabase_admin_request(method, path, body=None, params=None, extra_headers=N
         raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for admin user management.")
 
     url = f"{SUPABASE_URL}{path}"
-    if params:
-        url = f"{url}?{urlencode(params)}"
-
     headers = {
         "apikey": SUPABASE_SERVICE_ROLE_KEY,
         "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
@@ -1156,23 +1173,29 @@ def supabase_admin_request(method, path, body=None, params=None, extra_headers=N
     }
     if extra_headers:
         headers.update(extra_headers)
-    data = json.dumps(body).encode("utf-8") if body is not None else None
-    admin_request = Request(url, data=data, headers=headers, method=method)
 
+    session = get_http_session()
     try:
-        with urlopen(admin_request, timeout=10) as response:
-            raw = response.read()
-            return json.loads(raw.decode("utf-8")) if raw else None
-    except HTTPError as error:
-        raw = error.read().decode("utf-8", errors="ignore")
-        message = raw
-        try:
-            parsed = json.loads(raw)
-            message = parsed.get("msg") or parsed.get("message") or parsed.get("error_description") or raw
-        except (json.JSONDecodeError, AttributeError):
-            pass
-        raise RuntimeError(message or f"Supabase admin request failed ({error.code})")
+        resp = session.request(
+            method=method,
+            url=url,
+            params=params,
+            json=body if body is not None else None,
+            headers=headers,
+            timeout=8
+        )
+        if not resp.ok:
+            msg = resp.text
+            try:
+                parsed = resp.json()
+                msg = parsed.get("msg") or parsed.get("message") or parsed.get("error_description") or resp.text
+            except Exception:
+                pass
+            raise RuntimeError(msg or f"Supabase admin request failed ({resp.status_code})")
+        return resp.json() if resp.content else None
     except Exception as error:
+        if isinstance(error, RuntimeError):
+            raise
         raise RuntimeError(f"Database connection error: {str(error)}")
 
 
@@ -1189,7 +1212,7 @@ def invalidate_supabase_users_cache():
 def list_supabase_users(force_refresh=False):
     global _supabase_users_cache
     now = time.time()
-    if not force_refresh and _supabase_users_cache["data"] is not None and (now - _supabase_users_cache["timestamp"] < 60):
+    if not force_refresh and _supabase_users_cache["data"] is not None and (now - _supabase_users_cache["timestamp"] < 120):
         return _supabase_users_cache["data"]
 
     users = []
@@ -2699,7 +2722,7 @@ def admin_resource(resource):
 
             # 2. Dynamically synthesize assessment completion events from Supabase quiz results
             try:
-                supabase_assessments = load_supabase_quiz_scores(force_refresh=True)
+                supabase_assessments = load_supabase_quiz_scores(force_refresh=False)
                 for sa in supabase_assessments:
                     # Skip admin/internal accounts — they should never appear as quiz takers
                     sa_email = str(sa.get("userEmail") or "").strip().lower()

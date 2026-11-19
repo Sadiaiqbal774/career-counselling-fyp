@@ -119,6 +119,17 @@ function AppLayout() {
     }
   }, [location.pathname, navigate]);
 
+  // Pre-warm backend immediately when any visitor lands
+  useEffect(() => {
+    const apiUrl = (() => {
+      if (typeof window !== 'undefined' && window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        return 'http://localhost:5000';
+      }
+      return (process.env.REACT_APP_API_URL || '').trim().replace(/\/+$/, '') || 'https://career-counselling-fyp.onrender.com';
+    })();
+    fetch(`${apiUrl}/api/health`).catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (isAdminPortal) {
       applyTheme(false);

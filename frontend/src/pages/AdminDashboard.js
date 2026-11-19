@@ -3226,11 +3226,11 @@ function AdminDashboard() {
     if (tab === 'users') {
       interval = setInterval(() => {
         load('users').catch(() => {});
-      }, 5000);
+      }, 30000);
     } else if (tab === 'dashboard') {
       interval = setInterval(() => {
         loadDashboard().catch(() => {});
-      }, 15000);
+      }, 60000);
     }
 
     return () => {
