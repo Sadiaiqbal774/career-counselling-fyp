@@ -8,7 +8,7 @@ import { exportElementToPdf } from '../utils/pdfExport';
 import {
   careerRecommendations,
   getHighestCategory,
-  getTopCategories,
+  getTopTiedCategories,
   storageKeys,
   userStorageKey,
 } from '../data/quizData';
@@ -89,8 +89,24 @@ function Result() {
   }
 
   const highestCategory = getHighestCategory(storedScores);
-  const topMatchTitle = careerFieldTitleMap[highestCategory] || highestCategory;
-  const heroDescription = careerDescriptions[highestCategory] || `Your answers show strong alignment with the ${highestCategory} field.`;
+  const tiedTopCategories = getTopTiedCategories(storedScores);
+  const isFullTie = tiedTopCategories.length === 4; // 4 = total number of categories
+  const isPartialTie = tiedTopCategories.length > 1 && !isFullTie;
+
+  // Hero labels — change when all (or multiple) are tied
+  const topMatchTitle = isFullTie
+    ? 'All Fields'
+    : isPartialTie
+    ? tiedTopCategories.map((c) => careerFieldTitleMap[c] || c).join(' & ')
+    : careerFieldTitleMap[highestCategory] || highestCategory;
+
+  const heroLabel = isFullTie || isPartialTie ? "It's a Tie!" : 'Your top match';
+
+  const heroDescription = isFullTie
+    ? 'Your scores are equal across all four fields. Take the Specific Quiz to discover where your deeper interest truly lies!'
+    : isPartialTie
+    ? `${tiedTopCategories.join(' and ')} are equally matched. Take the Specific Quiz to find your best fit!`
+    : careerDescriptions[highestCategory] || `Your answers show strong alignment with the ${highestCategory} field.`;
 
   // Dynamic user name, initial, and date
   const userName = currentUser?.name || currentUser?.full_name || 'Student';
@@ -111,7 +127,11 @@ function Result() {
       const pct = Math.round((pts / totalPoints) * 100);
       return { category: cat, points: pts, percent: pct };
     })
-    .sort((a, b) => b.points - a.points);
+    // Stable sort: sort by points descending, ties broken by categoryOrder index
+    .sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      return categoryKeys.indexOf(a.category) - categoryKeys.indexOf(b.category);
+    });
 
   const topCategoryPoints = Number(storedScores[highestCategory]) || sortedCategories[0].points;
   const topPercent = Math.round((topCategoryPoints / totalPoints) * 100);
@@ -121,14 +141,14 @@ function Result() {
   const minPoints = Math.min(...sortedCategories.map((c) => c.points));
   const maxPoints = sortedCategories[0].points || 1;
 
-  // Dynamic tie detection
+  // Dynamic tie detection — tiedTopCategories already computed above
   let tieMessage = null;
-  if (sortedCategories[0].points === sortedCategories[1].points && sortedCategories[0].points > 0) {
-    tieMessage = `${sortedCategories[0].category} and ${sortedCategories[1].category} tied for the top match, so both are strong career directions to explore.`;
-  } else if (sortedCategories[1].points === sortedCategories[2].points && sortedCategories[1].points > 0) {
-    tieMessage = `${sortedCategories[1].category} and ${sortedCategories[2].category} tied for second place, so both are worth exploring as backup paths.`;
-  } else if (sortedCategories[2].points === sortedCategories[3].points && sortedCategories[2].points > 0) {
-    tieMessage = `${sortedCategories[2].category} and ${sortedCategories[3].category} tied with ${sortedCategories[2].points} points.`;
+  if (tiedTopCategories.length === 4) {
+    tieMessage = 'All four categories — Technology, Medical, Business, and Arts — are tied. Every field is a strong career direction for you!';
+  } else if (tiedTopCategories.length === 3) {
+    tieMessage = `${tiedTopCategories[0]}, ${tiedTopCategories[1]}, and ${tiedTopCategories[2]} are tied for the top match — all three are strong career directions to explore.`;
+  } else if (tiedTopCategories.length === 2) {
+    tieMessage = `${tiedTopCategories[0]} and ${tiedTopCategories[1]} tied for the top match, so both are strong career directions to explore.`;
   }
 
   // Circular ring calculations (r=38, C ≈ 238.76)
@@ -195,7 +215,7 @@ function Result() {
           <section className="result-hero-card">
             <div className="result-hero-row1">
               <div className="result-hero-titles">
-                <span className="result-hero-label">Your top match</span>
+                <span className="result-hero-label">{heroLabel}</span>
                 <h1 className="result-hero-h1">{topMatchTitle}</h1>
               </div>
 
@@ -362,20 +382,32 @@ function Result() {
             {/* Column 2: Career Pathways & Next Steps */}
             <section className="result-actions-card">
               <div className="result-actions-card__header">
-                <span className="result-actions-eyebrow">CAREER PATHWAYS & NEXT STEPS</span>
+                <span className="result-actions-eyebrow">CAREER PATHWAYS &amp; NEXT STEPS</span>
                 <h2 className="result-actions-heading">Take Action on Your Results</h2>
                 <p className="result-actions-desc">
-                  Based on your strong compatibility with {topMatchTitle}, explore programs, estimate merit eligibility, and secure financial aid.
+                  {isFullTie || isPartialTie
+                    ? 'Your scores are equally distributed. Take the Specific Quiz to pinpoint your strongest career direction.'
+                    : `Based on your strong compatibility with ${topMatchTitle}, explore programs, estimate merit eligibility, and secure financial aid.`}
                 </p>
               </div>
 
               <div className="result-recommended-path-box">
-                <span className="result-recommended-tag">PRIMARY CAREER MATCH</span>
+                <span className="result-recommended-tag">
+                  {isFullTie || isPartialTie ? 'ALL FIELDS TIED' : 'PRIMARY CAREER MATCH'}
+                </span>
                 <div className="result-recommended-role">
-                  {careerRecommendations[highestCategory] || topMatchTitle}
+                  {isFullTie
+                    ? 'Technology · Medical · Business · Arts'
+                    : isPartialTie
+                    ? tiedTopCategories.map((c) => careerRecommendations[c] || c).join(' / ')
+                    : careerRecommendations[highestCategory] || topMatchTitle}
                 </div>
                 <p className="result-recommended-detail">
-                  Your assessment reflects aptitude for structured problem solving, strategic thinking, and applied expertise in {topMatchTitle.toLowerCase()}.
+                  {isFullTie
+                    ? 'All four fields scored equally. Your interests are broad — the Specific Quiz will reveal your strongest passion.'
+                    : isPartialTie
+                    ? `${tiedTopCategories.join(' and ')} scored equally. The Specific Quiz will help identify your best fit.`
+                    : `Your assessment reflects aptitude for structured problem solving, strategic thinking, and applied expertise in ${topMatchTitle.toLowerCase()}.`}
                 </p>
               </div>
 
@@ -384,6 +416,29 @@ function Result() {
                 <button
                   type="button"
                   className="result-btn-solid"
+                  onClick={() => navigate('/specific-quiz')}
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 8 16 12 12 16" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                  <span>Take Specific Quiz</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="result-btn-outline"
                   onClick={() => navigate('/university-recommender')}
                 >
                   <svg

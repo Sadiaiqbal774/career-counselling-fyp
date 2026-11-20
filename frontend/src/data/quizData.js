@@ -172,7 +172,27 @@ export function getTopCategories(scores, amount = 2) {
     .map(([category]) => category);
 }
 
+/**
+ * Returns ALL categories that share the single highest score.
+ * - 1 clear winner  → [winner]
+ * - 2 tied for top  → [cat1, cat2]
+ * - 3 tied for top  → [cat1, cat2, cat3]
+ * - all 4 tied      → [cat1, cat2, cat3, cat4]
+ * Order is preserved by categoryOrder.
+ */
+export function getTopTiedCategories(scores) {
+  const entries = Object.entries(scores);
+  if (!entries.length) return ['Technology'];
+  const maxScore = Math.max(...entries.map(([, v]) => v));
+  // Keep stable ordering consistent with categoryOrder
+  return categoryOrder.filter((cat) => (scores[cat] ?? 0) === maxScore);
+}
+
 export function getHighestCategory(scores) {
-  return Object.entries(scores).sort((first, second) => second[1] - first[1])[0]?.[0] ?? 'Technology';
+  if (!scores || !Object.keys(scores).length) return 'Technology';
+  const maxScore = Math.max(...Object.values(scores));
+  // When tied, pick the first category by categoryOrder (Technology → Medical → Business → Arts)
+  // This prevents an unstable sort from randomly picking Arts or any other trailing category
+  return categoryOrder.find((cat) => (scores[cat] ?? 0) === maxScore) ?? 'Technology';
 }
 

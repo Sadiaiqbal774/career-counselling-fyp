@@ -20,7 +20,7 @@ function SpecificQuiz() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
-  // Read from localStorage first
+  // ── Persist / load from localStorage + Supabase ───────────────────────────
   const [storedScores, setStoredScores] = useState(() =>
     JSON.parse(localStorage.getItem(userStorageKey(storageKeys.scores, currentUser?.id)) || 'null')
   );
@@ -29,10 +29,9 @@ function SpecificQuiz() {
   );
   const [loadingFromSupabase, setLoadingFromSupabase] = useState(false);
 
-  // If localStorage is empty, try fetching from Supabase (cross-device support)
   useEffect(() => {
     if (!currentUser?.id) return;
-    if (storedScores && storedTopCategories) return; // already have data locally
+    if (storedScores && storedTopCategories) return;
 
     setLoadingFromSupabase(true);
     supabase
@@ -58,24 +57,59 @@ function SpecificQuiz() {
       .catch(() => setLoadingFromSupabase(false));
   }, [currentUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const focusCategory = storedTopCategories?.[0] || 'Technology';
-  const questions = specificQuestionsByCategory[focusCategory] || specificQuestionsByCategory.Technology;
-  const baseScores = { ...getEmptyScores(), ...(storedScores || {}) };
+  // ── Derive the ordered list of tied-top categories ────────────────────────
+  // storedTopCategories now contains ALL categories that share the highest
+  // general-quiz score (saved by GeneralQuiz using getTopTiedCategories).
+  const focusCategories = useMemo(() => {
+    if (!storedTopCategories || !storedTopCategories.length) return ['Technology'];
+    return storedTopCategories;
+  }, [storedTopCategories]);
 
+  // Build a flat question list: all questions for every tied category, in order.
+  // Each question gets a unique compound id so answers don't collide across categories.
+  const allQuestions = useMemo(() => {
+    return focusCategories.flatMap((cat) =>
+      (specificQuestionsByCategory[cat] || []).map((q) => ({
+        ...q,
+        id: `${cat}__${q.id}`,   // e.g. "Technology__1"
+        category: cat,
+      }))
+    );
+  }, [focusCategories]);
+
+  // ── Quiz state ─────────────────────────────────────────────────────────────
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [errorMessage, setErrorMessage] = useState('');
 
-  const currentQuestion = questions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === questions.length - 1;
-  const currentAnswer = answers[currentQuestion.id] ?? '';
-
-  const progressText = useMemo(
-    () => `Question ${currentQuestionIndex + 1} of ${questions.length}`,
-    [currentQuestionIndex, questions.length],
+  const baseScores = useMemo(
+    () => ({ ...getEmptyScores(), ...(storedScores || {}) }),
+    [storedScores]
   );
 
-  // Show loading while fetching from Supabase
+  const currentQuestion = allQuestions[currentQuestionIndex];
+  const isLastQuestion = currentQuestionIndex === allQuestions.length - 1;
+  const currentAnswer = currentQuestion ? (answers[currentQuestion.id] ?? '') : '';
+
+  const progressText = useMemo(
+    () => `Question ${currentQuestionIndex + 1} of ${allQuestions.length}`,
+    [currentQuestionIndex, allQuestions.length]
+  );
+
+  // ── Derived score boost per category from current answers ──────────────────
+  const updatedScoresFromAnswers = useMemo(() => {
+    const updated = { ...baseScores };
+    focusCategories.forEach((cat) => {
+      const catAnswers = {};
+      allQuestions.forEach((q) => {
+        if (q.category === cat && answers[q.id]) catAnswers[q.id] = answers[q.id];
+      });
+      updated[cat] = baseScores[cat] + calculateStagePoints(catAnswers);
+    });
+    return updated;
+  }, [answers, baseScores, focusCategories, allQuestions]);
+
+  // ── Loading / gate states ──────────────────────────────────────────────────
   if (loadingFromSupabase) {
     return (
       <main className="page-shell">
@@ -86,7 +120,6 @@ function SpecificQuiz() {
     );
   }
 
-  // If no data even after Supabase fetch, redirect to general quiz
   if (!storedScores || !storedTopCategories) {
     return (
       <main className="page-shell">
@@ -100,11 +133,11 @@ function SpecificQuiz() {
     );
   }
 
+  if (!currentQuestion) return null;
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
   const handleAnswerSelect = (answer) => {
-    setAnswers((prevAnswers) => ({
-      ...prevAnswers,
-      [currentQuestion.id]: answer,
-    }));
+    setAnswers((prev) => ({ ...prev, [currentQuestion.id]: answer }));
     setErrorMessage('');
   };
 
@@ -114,31 +147,27 @@ function SpecificQuiz() {
       return;
     }
 
-    const nextAnswers = {
-      ...answers,
-      [currentQuestion.id]: currentAnswer,
-    };
-    const updatedScores = {
-      ...baseScores,
-      [focusCategory]: baseScores[focusCategory] + calculateStagePoints(nextAnswers),
-    };
+    const nextAnswers = { ...answers, [currentQuestion.id]: currentAnswer };
 
     if (isLastQuestion) {
-      // Determine highest category from final updated scores
-      const highestCategory = Object.entries(updatedScores)
-        .sort((a, b) => b[1] - a[1])[0]?.[0] || focusCategory;
-      const recommendation = careerRecommendations[highestCategory] || highestCategory;
+      // Build final scores from all specific-quiz answers
+      const finalScores = { ...baseScores };
+      focusCategories.forEach((cat) => {
+        const catAnswers = {};
+        allQuestions.forEach((q) => {
+          if (q.category === cat && nextAnswers[q.id]) catAnswers[q.id] = nextAnswers[q.id];
+        });
+        finalScores[cat] = baseScores[cat] + calculateStagePoints(catAnswers);
+      });
 
-      localStorage.setItem(userStorageKey(storageKeys.scores, currentUser?.id), JSON.stringify(updatedScores));
+      localStorage.setItem(userStorageKey(storageKeys.scores, currentUser?.id), JSON.stringify(finalScores));
       localStorage.setItem(userStorageKey(storageKeys.topCategories, currentUser?.id), JSON.stringify(storedTopCategories));
 
-      // Persist final scores to Supabase (await so data saves before navigation)
-      // Only save columns that exist in the quiz_scores table
       if (currentUser?.id) {
         try {
           await supabase.from('quiz_scores').upsert({
             user_id: currentUser.id,
-            scores: updatedScores,
+            scores: finalScores,
             top_categories: storedTopCategories,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' });
@@ -149,19 +178,25 @@ function SpecificQuiz() {
     }
 
     setAnswers(nextAnswers);
-    setCurrentQuestionIndex((value) => value + 1);
+    setCurrentQuestionIndex((v) => v + 1);
     setErrorMessage('');
   };
 
   const handleBack = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((value) => value - 1);
+      setCurrentQuestionIndex((v) => v - 1);
       setErrorMessage('');
       return;
     }
-
     navigate('/general-quiz');
   };
+
+  // ── Category banner (which category are we on right now?) ─────────────────
+  const currentCategory = currentQuestion.category;
+  const categoryLabel =
+    focusCategories.length > 1
+      ? `${currentCategory} (${focusCategories.indexOf(currentCategory) + 1} of ${focusCategories.length})`
+      : currentCategory;
 
   return (
     <main className="page-shell">
@@ -171,9 +206,17 @@ function SpecificQuiz() {
           <span className="progress-pill">{progressText}</span>
         </div>
 
+        {/* Show all categories this quiz covers */}
+        {focusCategories.length > 1 && (
+          <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginBottom: '4px', marginTop: '0' }}>
+            Covering: {focusCategories.join(' · ')}
+          </p>
+        )}
+
         <h2>{currentQuestion.text}</h2>
-        <p className="category-label">Focus category: {focusCategory}</p>
-        <p className="muted-text">{careerRecommendations[focusCategory]}</p>
+
+        {/* Career recommendation for the current category */}
+        <p className="muted-text">{careerRecommendations[currentCategory]}</p>
 
         <div className="option-grid">
           {answerOptions.map((option) => (

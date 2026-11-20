@@ -6,7 +6,7 @@ import {
   answerScores,
   generalQuestions,
   getEmptyScores,
-  getTopCategories,
+  getTopTiedCategories,
   storageKeys,
   userStorageKey,
 } from '../data/quizData';
@@ -62,7 +62,7 @@ function GeneralQuiz() {
     const updatedScores = calculateScores(nextAnswers);
 
     if (isLastQuestion) {
-      const topCategories = getTopCategories(updatedScores);
+      const topCategories = getTopTiedCategories(updatedScores);
       localStorage.setItem(userStorageKey(storageKeys.scores, currentUser?.id), JSON.stringify(updatedScores));
       localStorage.setItem(userStorageKey(storageKeys.topCategories, currentUser?.id), JSON.stringify(topCategories));
       // Save to Supabase first (await so data is committed before navigation)
@@ -105,7 +105,6 @@ function GeneralQuiz() {
         </div>
 
         <h2>{currentQuestion.text}</h2>
-        <p className="category-label">Category: {currentQuestion.category}</p>
 
         <div className="option-grid">
           {answerOptions.map((option) => (
