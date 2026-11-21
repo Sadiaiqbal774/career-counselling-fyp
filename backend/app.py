@@ -35,6 +35,25 @@ from supabase_auth import (
 )
 
 app = Flask(__name__)
+
+try:
+    from flask_limiter import Limiter
+    from flask_limiter.util import get_remote_address
+
+    limiter = Limiter(
+        key_func=get_remote_address,
+        app=app,
+        default_limits=[],
+        storage_uri="memory://",
+    )
+except ImportError:
+    class _DummyLimiter:
+        def limit(self, *args, **kwargs):
+            def decorator(f):
+                return f
+            return decorator
+
+    limiter = _DummyLimiter()
 _http_session = None
 
 def get_http_session():
@@ -113,11 +132,10 @@ admin_csv_resources = {
 }
 active_sessions = {}
 active_user_presence = {}
-admin_sessions = {}
 password_reset_tokens = {}
 # The admin username is public configuration; the password is verified by Supabase Auth.
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "").strip() or "admin"
-ADMIN_PASSWORD = "admin123"
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "").strip()
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "").strip()
 ADMIN_SESSION_TTL = 60 * 60 * 8
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
@@ -125,7 +143,6 @@ SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").stri
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000").strip().rstrip("/")
 PENDING_REGISTRATION_TTL = 60 * 60
 PENDING_PASSWORD_ENCRYPTION_KEY = os.environ.get("PENDING_PASSWORD_ENCRYPTION_KEY", "").strip()
-
 
 def hash_text(value):
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
@@ -490,9 +507,6 @@ def sanitize_user(user):
     metadata = user.get("user_metadata") or {}
     role = app_metadata.get("role") or user.get("role") or "student"
     is_admin_user = bool(role == "admin" or (email and email.strip().lower() in admin_email_allowlist()))
-    if email and email.strip().lower() == "shamamaaslam377@gmail.com":
-        role = "student"
-        is_admin_user = False
     is_bl = to_bool(user.get("blocked")) or to_bool(user.get("is_blocked")) or to_bool(user.get("isBlocked")) or to_bool(metadata.get("is_blocked")) or to_bool(app_metadata.get("is_blocked"))
     name = user.get("name") or metadata.get("name") or metadata.get("full_name") or metadata.get("username") or (email.split("@")[0].capitalize() if email else "User")
     return {
@@ -577,8 +591,6 @@ def _is_protected_admin_target(target_id, target_email=None, target_app_meta=Non
     Check app_metadata.role (server-controlled, never user_metadata).
     Also check against the ADMIN_EMAILS environment variable.
     """
-    if target_email and str(target_email).strip().lower() == "shamamaaslam377@gmail.com":
-        return False
     allowlist = admin_email_allowlist()
     if target_email and str(target_email).strip().lower() in allowlist:
         return True
@@ -605,8 +617,6 @@ def _refuse_if_admin_target(target_id, action_verb="modify"):
     local_user = next((u for u in users if str(u.get("id")) == str(target_id)), None)
     if local_user:
         local_email = str(local_user.get("email") or "").strip().lower()
-        if local_email == "shamamaaslam377@gmail.com":
-            return None
         local_meta = local_user.get("app_metadata") or {}
         if _is_protected_admin_target(target_id, local_email, local_meta):
             return jsonify({"message": f"Cannot {action_verb} an administrator account."}), 403
@@ -618,8 +628,6 @@ def _refuse_if_admin_target(target_id, action_verb="modify"):
             current = supabase_admin_request("GET", f"/auth/v1/admin/users/{target_id}")
             if current and current.get("id"):
                 target_email = str(current.get("email") or "").strip().lower()
-                if target_email == "shamamaaslam377@gmail.com":
-                    return None
                 target_meta = current.get("app_metadata") or {}
                 if _is_protected_admin_target(target_id, target_email, target_meta):
                     return jsonify({"message": f"Cannot {action_verb} an administrator account."}), 403
@@ -628,9 +636,7 @@ def _refuse_if_admin_target(target_id, action_verb="modify"):
 
     # Refuse self-targeting: an admin must not delete/ban their own account
     if admin.get("id") and str(admin["id"]) == str(target_id):
-        admin_email = str(admin.get("email") or "").strip().lower()
-        if admin_email != "shamamaaslam377@gmail.com":
-            return jsonify({"message": f"Cannot {action_verb} your own admin account."}), 403
+        return jsonify({"message": f"Cannot {action_verb} your own admin account."}), 403
 
     return None  # allowed
 
@@ -1248,9 +1254,6 @@ def sanitize_supabase_user(user):
     last_sign_in = user.get("last_sign_in_at")
     role = app_metadata.get("role") or user.get("role") or "student"
     is_admin_user = bool(role == "admin" or (email and email.strip().lower() in admin_email_allowlist()))
-    if email and email.strip().lower() == "shamamaaslam377@gmail.com":
-        role = "student"
-        is_admin_user = False
 
     banned_until = user.get("banned_until")
     is_banned = False
@@ -2191,6 +2194,7 @@ def delete_account():
 
 
 @app.route("/api/admin/login", methods=["POST"])
+@limiter.limit("5 per minute")
 def admin_login():
     payload = request.get_json(silent=True) or {}
     username = (payload.get("username") or payload.get("email") or "").strip()
@@ -2209,22 +2213,18 @@ def admin_login():
     ]
     if not username or not password or missing:
         return jsonify({"message": "Admin login not configured. Missing: " + ", ".join(missing or ["username/password"])}), 503
-    
-    input_un = username.strip().lower()
-    valid_usernames = {admin_un.strip().lower(), "admin"} | {e.strip().lower() for e in admin_emails}
-    if input_un not in valid_usernames:
-        return jsonify({"message": "Invalid admin username or password. Username must be 'admin' or your admin email."}), 401
 
-    pw_clean = password.strip() if isinstance(password, str) else ""
-    if input_un in {e.strip().lower() for e in admin_emails}:
-        admin_target_email = input_un
-    else:
-        admin_target_email = "admin@careerguide.internal"
-        # For system admin username ("admin"), strictly verify against ADMIN_PASSWORD ("admin123")
-        if pw_clean != ADMIN_PASSWORD and password != ADMIN_PASSWORD:
-            return jsonify({"message": "Invalid admin username or password."}), 401
-        password = ADMIN_PASSWORD
+    if not ADMIN_PASSWORD or len(ADMIN_PASSWORD) < 12:
+        return jsonify({"message": "Admin login is not configured."}), 503
 
+    # Only the fixed admin username is accepted. Emails are not valid admin logins.
+    if username.strip().lower() != ADMIN_USERNAME.strip().lower():
+        return jsonify({"message": "Invalid admin username or password."}), 401
+
+    if not hmac.compare_digest(password.encode("utf-8"), ADMIN_PASSWORD.encode("utf-8")):
+        return jsonify({"message": "Invalid admin username or password."}), 401
+
+    admin_target_email = "admin@careerguide.internal"
     def _exchange_admin_token(target_email, pass_val):
         auth_request = Request(
             f"{supabase_url}/auth/v1/token?grant_type=password",
@@ -2670,7 +2670,7 @@ def admin_resource(resource):
                 raw_email = item.get("userEmail")
                 msg_lower = str(item.get("message") or "").strip().lower()
 
-                # Retroactively enrich if message is "scholarship" from Sadia
+                # Retroactively enrich if message is "scholarship"
                 if (not uid or uid.lower() in ("none", "null", "")) and (not raw_email or raw_name in ("Visitor", None, "")):
                     if "scholarship" in msg_lower:
                         uid = "2506948e-be8a-49b2-8da8-20fb1bbf7084"
@@ -3749,6 +3749,13 @@ def handle_404(e):
 @app.errorhandler(405)
 def handle_405(e):
     return jsonify({"message": "Method not allowed for this endpoint."}), 405
+
+
+@app.errorhandler(429)
+def handle_429(e):
+    return jsonify({
+        "message": "Too many login attempts. Please try again in 1 minute."
+    }), 429
 
 
 @app.errorhandler(500)

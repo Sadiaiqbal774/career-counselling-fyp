@@ -9,17 +9,18 @@ This project deploys across two free services (no credit card required for eithe
 - **Root Directory**: `frontend`
 - **Build Command**: `npm run build` (auto-detected)
 - **Environment variables** (set in Vercel → Settings → Environment Variables, not the initial import screen):
-  - `REACT_APP_API_URL` — your live backend URL from Zeabur
+  - `REACT_APP_API_URL` — your live backend URL from Render
   - `REACT_APP_SUPABASE_URL`
   - `REACT_APP_SUPABASE_ANON_KEY`
 
 ### Backend (Flask)
-- **Platform**: Zeabur
+- **Platform**: Render
 - **Root Directory**: `backend`
 - **Start command**: comes from `backend/Procfile` (`web: gunicorn app:app`)
-- **Environment variables** (set in Zeabur → Variables):
+- **Environment variables** (set in Render → Environment):
+  - `ADMIN_USERNAME` — username used on the admin login form (default: `admin`)
+  - `ADMIN_PASSWORD` — admin password, at least 12 characters (**required**, without it admin login returns 503)
   - `ADMIN_EMAILS` — comma-separated Supabase administrator emails
-  - `ADMIN_USERNAME` — username used on the admin login form
   - `SUPABASE_URL`
   - `SUPABASE_ANON_KEY`
   - `SUPABASE_SERVICE_ROLE_KEY`
@@ -65,10 +66,10 @@ Access: http://localhost:3000
 - **Frontend**: 
 - **Backend API**: 
 - **Admin Login**: `[Frontend URL]/admin/login`
-  - Sign in with the verified Supabase administrator account.
-  - Flask checks the verified token email against `ADMIN_EMAILS`.
+    - Sign in with the admin username and `ADMIN_PASSWORD`.
+  - Flask maps the username to the internal Supabase admin account and checks the admin role from server-controlled `app_metadata`.
 
 ## Known limitations (expected on free tiers, fine for a demo)
 
-- Both Vercel/Zeabur cold-start after ~15 minutes of inactivity; first request after idle can take 30-60 seconds.
+- Both Vercel/Render cold-start after ~15 minutes of inactivity; first request after idle can take 30-60 seconds.
 - Data stored in local JSON/CSV files (chatbot logs, chatbot rules, eligibility criteria, activity log, admin edits to scholarships/universities/programs) resets whenever the backend restarts or redeploys, since free hosting doesn't include a persistent disk. Data seeded in the repo always reloads fine; only *runtime* additions are affected.
