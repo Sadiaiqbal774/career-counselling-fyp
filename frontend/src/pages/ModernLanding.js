@@ -135,30 +135,6 @@ function ModernLanding() {
     },
   ];
 
-  const testimonials = [
-    {
-      name: 'Ayesha Khan',
-      city: 'HSC Pre-Engineering, Lahore',
-      text: 'I was torn between Software Engineering and electrical engineering. This assessment clarified my logical strengths and pointed me straight toward FAST and NUST with clear merit cutoffs.',
-      avatar: 'AK',
-      stars: 5,
-    },
-    {
-      name: 'Hamza Ali',
-      city: 'ICS Student, Islamabad',
-      text: 'The scholarship directory alone saved me weeks of searching. I found the HEC Need-Based scholarship details and eligibility requirements in one place without asking anyone.',
-      avatar: 'HA',
-      stars: 5,
-    },
-    {
-      name: 'Dr. Sara Malik',
-      city: 'Academic Counselor, Karachi',
-      text: 'I recommend CareerGuide to all my high school and college students. The 2-stage assessment is objective, scientific, and far superior to traditional random quiz sites.',
-      avatar: 'SM',
-      stars: 5,
-    },
-  ];
-
   return (
     <div className="landing-wrapper">
       {/* ========================================================
@@ -309,35 +285,6 @@ function ModernLanding() {
               <span className="landing-feat-card__icon">{feat.icon}</span>
               <h3 className="landing-feat-card__title">{feat.title}</h3>
               <p className="landing-feat-card__desc">{feat.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ========================================================
-          TESTIMONIALS
-      ======================================================== */}
-      <section className="landing-section landing-section--tinted">
-        <div className="landing-section-header">
-          <span className="landing-section-eyebrow">STUDENT SUCCESS</span>
-          <h2 className="landing-section-title">Loved by Students & Counselors</h2>
-          <p className="landing-section-subtitle">
-            Read how CareerGuide helped students across Pakistan find direction and clarity.
-          </p>
-        </div>
-
-        <div className="landing-testimonials-grid">
-          {testimonials.map((t) => (
-            <div key={t.name} className="landing-test-card">
-              <div className="landing-test-card__stars">{'★'.repeat(t.stars)}</div>
-              <blockquote className="landing-test-card__quote">&ldquo;{t.text}&rdquo;</blockquote>
-              <div className="landing-test-card__author">
-                <div className="landing-test-card__avatar">{t.avatar}</div>
-                <div>
-                  <div className="landing-test-card__name">{t.name}</div>
-                  <div className="landing-test-card__city">{t.city}</div>
-                </div>
-              </div>
             </div>
           ))}
         </div>
