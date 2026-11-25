@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import interestExamples from "../data/interestExamples.json";
 import { useAuth } from "../context/AuthContext";
 import supabase from "../lib/supabase";
 import { readUserProfile, readUserQuizData } from "../data/userData";
@@ -727,11 +726,11 @@ function ScholarshipCard({ scholarship, index, yourMerit, isSaved, onToggleBookm
 
 
 const INTEREST_OPTS = [
-  { val: "1", label: "Low" },
-  { val: "2", label: "Below Avg" },
-  { val: "3", label: "Average" },
-  { val: "4", label: "Good" },
-  { val: "5", label: "Excellent" },
+  { val: "1", label: "1" },
+  { val: "2", label: "2" },
+  { val: "3", label: "3" },
+  { val: "4", label: "4" },
+  { val: "5", label: "5" },
 ];
 
 const BG_OPTS = ["ICS", "Pre-Medical", "Pre-Engineering", "Commerce", "Arts"].map(v => ({ val: v, label: v }));
@@ -748,17 +747,6 @@ const CITY_OPTS = [
   { val: "Quetta", label: "Quetta" },
 ];
 
-function getInterestDefaults(statement) {
-  const category = Object.entries(interestExamples).find(([, statements]) => statements.includes(statement))?.[0] || '';
-  const defaults = { Math: '3', Biology: '3', Computer: '3', Communication: '3', Leadership: '3' };
-  if (category.includes('Computer') || category === 'Engineering') defaults.Computer = '5';
-  if (category.includes('Computer') || category === 'Engineering' || category.includes('Natural')) defaults.Math = '4';
-  if (category.includes('Medicine')) defaults.Biology = '5';
-  if (category.includes('Business')) { defaults.Communication = '5'; defaults.Leadership = '5'; }
-  if (category.includes('Social') || category.includes('Arts')) defaults.Communication = '4';
-  return defaults;
-}
-
 // ─── Main App ─────────────────────────────────────────────────────
 function UniversityRecommender() {
   const { currentUser } = useAuth();
@@ -766,14 +754,12 @@ function UniversityRecommender() {
   const [formData, setFormData] = useState({
     Math: "", Biology: "", Computer: "",
     Communication: "", Leadership: "",
-    Matric: "", Inter: "", Background: "", City: "",
-    Interests: ""
+    Matric: "", Inter: "", Background: "", City: ""
   });
 
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [useCustomText, setUseCustomText] = useState(false);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [resultCityFilter, setResultCityFilter] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -800,7 +786,6 @@ function UniversityRecommender() {
       const localProfile = readUserProfile(currentUser?.id);
       const _quizData = readUserQuizData(currentUser?.id) || {};
       const modelAnswers = _quizData.modelAnswers || {};
-      const savedScores = _quizData.scores || {};
 
       let remoteData = null;
       if (currentUser?.id) {
@@ -825,29 +810,6 @@ function UniversityRecommender() {
         intermediate_group: localProfile?.intermediateGroup ?? remoteData?.intermediate_group,
       };
 
-      const interestDefaults = getInterestDefaults(savedProfile.interests || savedProfile.Interests);
-
-      // Determine smart scores from model quiz OR general quiz scores OR interest defaults
-      const calcMath = modelAnswers.Math 
-        ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Math) / 20)))) 
-        : (savedScores.Technology ? '4' : (interestDefaults.Math || ''));
-
-      const calcBiology = modelAnswers.Biology 
-        ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Biology) / 20)))) 
-        : (savedScores.Medical ? '5' : (interestDefaults.Biology || ''));
-
-      const calcComputer = modelAnswers.Computer 
-        ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Computer) / 20)))) 
-        : (savedScores.Technology ? '5' : (interestDefaults.Computer || ''));
-
-      const calcCommunication = modelAnswers.Communication 
-        ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Communication) / 20)))) 
-        : (savedScores.Arts || savedScores.SocialSciences || savedScores.Business ? '4' : (interestDefaults.Communication || ''));
-
-      const calcLeadership = modelAnswers.Leadership 
-        ? String(Math.min(5, Math.max(1, Math.round(Number(modelAnswers.Leadership) / 20)))) 
-        : (savedScores.Business ? '5' : (interestDefaults.Leadership || ''));
-
       const calcMatric = savedProfile.marks !== null && savedProfile.marks !== undefined && String(savedProfile.marks).trim() !== ''
         ? String(savedProfile.marks)
         : (modelAnswers.Marks ? String(modelAnswers.Marks) : '');
@@ -855,19 +817,17 @@ function UniversityRecommender() {
       const calcInter = savedProfile.intermediate_marks || savedProfile.intermediateMarks || '';
       const calcBackground = savedProfile.intermediate_group || savedProfile.intermediateGroup || modelAnswers.Background || '';
       const calcCity = (savedProfile.city && ["Lahore", "Islamabad"].includes(savedProfile.city)) ? savedProfile.city : (savedProfile.city || '');
-      const calcInterests = savedProfile.interests || "";
 
       setFormData({
-        Math: calcMath,
-        Biology: calcBiology,
-        Computer: calcComputer,
-        Communication: calcCommunication,
-        Leadership: calcLeadership,
+        Math: "",
+        Biology: "",
+        Computer: "",
+        Communication: "",
+        Leadership: "",
         Matric: calcMatric,
         Inter: calcInter,
         Background: calcBackground,
         City: calcCity,
-        Interests: calcInterests,
       });
 
       setProfileLoaded(true);
@@ -887,15 +847,16 @@ function UniversityRecommender() {
   };
 
   const validateForm = () => {
-    const { Math, Biology, Computer, Communication, Leadership, Matric, Inter, Background, City, Interests } = formData;
+    const { Math: mathVal, Biology: bioVal, Computer: compVal, Communication: commVal, Leadership: leadVal, Matric, Inter, Background, City } = formData;
 
-    // Check all fields are filled
-    if (!Math || !Biology || !Computer || !Communication || !Leadership || !Matric || !Inter || !Background || !City) {
-      return "Please fill all fields before submitting.";
+    // Check all 5 sliders are chosen
+    if (!mathVal || !bioVal || !compVal || !commVal || !leadVal) {
+      return "Please select your rating (1 to 5) for all five interest areas (Math Interest, Biology Interest, Computer Interest, Communication Interest, Leadership Interest) before submitting.";
     }
 
-    if (!Interests || Interests.trim().split(/\s+/).length < 6) {
-      return "Please describe your interests in a full sentence (at least a few words) so the AI can make a confident prediction.";
+    // Check academic and location fields are filled
+    if (!Matric || !Inter || !Background || !City) {
+      return "Please fill all academic marks, background, and city fields before submitting.";
     }
 
     // Validate Matric and Inter are numbers and in valid range
@@ -935,7 +896,6 @@ function UniversityRecommender() {
       Marks: avgMarks,
       Background: formData.Background,
       City: formData.City,
-      Interests: formData.Interests,
       quizScores: readUserQuizData(currentUser?.id)?.scores || {},
       userId: currentUser?.id || null,
       userName: currentUser?.name || currentUser?.full_name || currentUser?.displayName || (currentUser?.email ? currentUser.email.split('@')[0] : 'Visitor'),
@@ -968,8 +928,7 @@ function UniversityRecommender() {
     setFormData({
       Math: "", Biology: "", Computer: "",
       Communication: "", Leadership: "",
-      Matric: "", Inter: "", Background: "", City: "",
-      Interests: ""
+      Matric: "", Inter: "", Background: "", City: ""
     });
     setResult(null);
     setError("");
@@ -1020,7 +979,7 @@ function UniversityRecommender() {
             </h1>
           </div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(45, 122, 79, 0.12)', border: '1px solid #2d7a4f', borderRadius: '6px', padding: '4px 10px', fontSize: '12px', color: '#2d7a4f', fontWeight: 600, marginTop: '4px', marginBottom: '8px' }}>
-            ✓ Auto-populated from your Profile &amp; Quiz results
+            ✓ Academic information loaded from your profile
           </div>
           <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.6 }}>
             Answer the questions below based on your interests and academic performance to receive personalised university recommendations.
@@ -1045,14 +1004,17 @@ function UniversityRecommender() {
           </p>
 
           {[
-            { name: "Math", label: "Mathematics Interest" },
+            { name: "Math", label: "Math Interest" },
             { name: "Biology", label: "Biology Interest" },
-            { name: "Computer", label: "Computer / IT Interest" },
-            { name: "Communication", label: "Communication Skills" },
-            { name: "Leadership", label: "Leadership Qualities" },
+            { name: "Computer", label: "Computer Interest" },
+            { name: "Communication", label: "Communication Interest" },
+            { name: "Leadership", label: "Leadership Interest" },
           ].map(({ name, label }) => (
             <div className="field-group" key={name}>
               <span className="field-label">{label}</span>
+              <p className="field-desc" style={{ margin: "2px 0 6px", fontSize: "12px", color: "var(--text-muted)" }}>
+                Scale 1 to 5 (1 = not interested, 5 = very interested)
+              </p>
               <RadioPills
                 name={name}
                 options={INTEREST_OPTS}
@@ -1061,65 +1023,6 @@ function UniversityRecommender() {
               />
             </div>
           ))}
-
-          <div className="field-group">
-            <span className="field-label">What describes you best?</span>
-            <p className="field-desc">Pick the statement closest to your interests — these give the AI the clearest signal to predict your field</p>
-
-            {!useCustomText && (
-              <>
-                <select
-                  name="Interests"
-                  onChange={handleChange}
-                  value={formData.Interests}
-                  className="mark-input"
-                  style={{ width: "100%" }}
-                >
-                  <option value="">-- Select a statement --</option>
-                  {Object.entries(interestExamples).map(([category, statements]) => (
-                    <optgroup label={category} key={category}>
-                      {statements.map((statement) => (
-                        <option value={statement} key={statement}>{statement}</option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  onClick={() => setUseCustomText(true)}
-                  className="clear-btn"
-                  style={{ marginTop: "8px", padding: "8px 14px", fontSize: "13px" }}
-                >
-                  None of these — let me write my own
-                </button>
-              </>
-            )}
-
-            {useCustomText && (
-              <>
-                <textarea
-                  name="Interests"
-                  rows="3"
-                  placeholder="I enjoy coding and building apps in my free time"
-                  onChange={handleChange}
-                  value={formData.Interests}
-                  className="mark-input"
-                  style={{ width: "100%", resize: "vertical" }}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUseCustomText(false);
-                    setFormData((prev) => ({ ...prev, Interests: "" }));
-                  }}
-                  className="clear-btn"
-                  style={{ marginTop: "8px", padding: "8px 14px", fontSize: "13px" }}
-                >
-                  Pick from the list instead
-                </button>
-              </>
-            )}
-          </div>
 
           <hr className="divider" />
 
@@ -1172,7 +1075,17 @@ function UniversityRecommender() {
           </div>
 
           <div className="button-group">
-            <button className="submit-btn" disabled={loading}>
+            <button
+              className="submit-btn"
+              disabled={
+                loading ||
+                !formData.Math ||
+                !formData.Biology ||
+                !formData.Computer ||
+                !formData.Communication ||
+                !formData.Leadership
+              }
+            >
               {loading ? "Analysing your profile…" : " Get My Recommendations"}
             </button>
             <button
@@ -1184,6 +1097,12 @@ function UniversityRecommender() {
               Clear
             </button>
           </div>
+
+          {(!formData.Math || !formData.Biology || !formData.Computer || !formData.Communication || !formData.Leadership) && (
+            <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "6px", textAlign: "center" }}>
+              Please select all 5 interest ratings above (Math, Biology, Computer, Communication, Leadership) to submit.
+            </p>
+          )}
 
           {error && <div className="error-box">⚠️ {error}</div>}
 
@@ -1243,7 +1162,62 @@ function UniversityRecommender() {
               <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--accent)", letterSpacing: ".08em", textTransform: "uppercase", marginBottom: "6px" }}>
                 Recommended Career
               </p>
-              <h3> {result.career}</h3>
+              <h3 style={{ margin: "0 0 4px 0", fontSize: "22px", color: "var(--accent-dk)" }}>
+                {result.predicted_career || result.career}
+              </h3>
+              {(result.matched_field || result.career) && (
+                <p style={{ fontSize: "13.5px", color: "var(--text-muted)", margin: "0 0 10px 0", fontWeight: 500 }}>
+                  Academic Field: <strong style={{ color: "var(--text)" }}>{result.matched_field || result.career}</strong>
+                </p>
+              )}
+
+              {/* Other careers considered with percentages */}
+              {result.top_careers && result.top_careers.filter((c) => c.career !== (result.predicted_career || result.career)).length > 0 && (
+                <p style={{ fontSize: "13px", color: "var(--text)", marginTop: "8px", lineHeight: 1.5 }}>
+                  <strong style={{ color: "var(--accent-dk)" }}>Other careers the model considered:</strong>{" "}
+                  {result.top_careers
+                    .filter((c) => c.career !== (result.predicted_career || result.career))
+                    .map((c) => `${c.career} (${Math.round(c.probability * 100)}%)`)
+                    .join(", ")}
+                </p>
+              )}
+
+              {/* Background notice if present */}
+              {result.background_notice && (
+                <div style={{ fontSize: "12.5px", color: "#854d0e", background: "#fef9c3", border: "1px solid #fde047", padding: "8px 12px", borderRadius: "8px", marginTop: "10px", lineHeight: 1.5 }}>
+                  ⚠️ <strong>Background Eligibility Notice:</strong> {result.background_notice}
+                </div>
+              )}
+
+              {/* Marks notice if present */}
+              {result.marks_notice && (
+                <div style={{ fontSize: "12.5px", color: "var(--accent-dk)", background: "var(--accent-lt)", border: "1px solid var(--border)", padding: "8px 12px", borderRadius: "8px", marginTop: "10px", lineHeight: 1.5 }}>
+                  ℹ️ {result.marks_notice}
+                </div>
+              )}
+
+              {/* City notice */}
+              {result.city_notice && (
+                <p style={{ fontSize: "12.5px", color: "var(--accent-dk)", marginTop: "8px", background: "var(--accent-lt)", padding: "6px 12px", borderRadius: "6px" }}>
+                  ℹ️ {result.city_notice}
+                </p>
+              )}
+
+              {/* Close top careers or low confidence warning */}
+              {(() => {
+                const top1 = result.top_careers?.[0]?.probability ?? result.confidence ?? 0;
+                const top2 = result.top_careers?.[1]?.probability ?? 0;
+                const isWithin10 = result.top_careers?.length >= 2 && Math.abs(top1 - top2) <= 0.10;
+                if (result.low_confidence || isWithin10) {
+                  return (
+                    <div style={{ fontSize: "12.5px", color: "#92400e", background: "#fef3c7", border: "1px solid #fcd34d", padding: "8px 12px", borderRadius: "8px", marginTop: "10px", lineHeight: 1.5 }}>
+                      ⚡ <strong>Close Career Match:</strong> The top recommended careers are very close in match score. We recommend exploring the other considered careers above as well to explore all suitable options.
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
               {result.explanation && result.explanation.length > 0 && (
                 <div style={{ marginTop: "10px" }}>
                   <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--accent-dk)", marginBottom: "2px" }}>Why this career?</p>
@@ -1256,23 +1230,6 @@ function UniversityRecommender() {
                 <ul className="reasons-list">
                   {result.reasons.map((r, i) => <li key={i}>{r}</li>)}
                 </ul>
-              )}
-              {result.city_notice && (
-                <p style={{ fontSize: "12.5px", color: "var(--accent-dk)", marginTop: "8px", background: "var(--accent-lt)", padding: "6px 12px", borderRadius: "6px" }}>
-                  ℹ️ {result.city_notice}
-                </p>
-              )}
-              {result.matched_field && result.matched_field !== result.career && (
-                <p style={{ fontSize: "12.5px", color: "var(--text-muted)", marginTop: "10px" }}>
-                  We don't have {result.career} programs in our university database yet —
-                  showing your next closest match, <strong>{result.matched_field}</strong>, instead.
-                </p>
-              )}
-              {result.low_confidence && (
-                <p style={{ fontSize: "12.5px", color: "var(--danger)", marginTop: "10px" }}>
-                  This prediction has low confidence. Try describing your interests in more
-                  detail for a more reliable match.
-                </p>
               )}
             </div>
 

@@ -1,0 +1,64 @@
+Algorithm: RandomForestClassifier (only model used by the website)
+======================================================================
+MODEL TRAINING & EVALUATION REPORT
+======================================================================
+
+1. DATASET SUMMARY
+  - Dataset file:          student_dataset_v2.csv
+  - Initial rows read:     1000
+  - Duplicate rows dropped:155
+  - Final training rows:   845
+  - Features used:         Math, Biology, Computer, Communication, Leadership, Background
+  - Target column:         Career (14 classes)
+  - Note:                  Marks column was NOT included.
+
+2. 5-FOLD STRATIFIED CROSS-VALIDATION COMPARISON (random_state=42)
+----------------------------------------------------------------------
+  Setting 1: RandomForestClassifier(n_estimators=100, random_state=42):
+    - Accuracy (Top-1):                0.6402 (64.02%)
+    - Top-3 Accuracy:                  0.9361 (93.61%)
+    - Log Loss:                        2.0798
+    - Average Confidence:              0.6980 (69.80%)
+    - Share with Confidence >= 99%:    0.0142 (1.42%)
+
+  Setting 2: RandomForestClassifier(n_estimators=300, min_samples_leaf=3, random_state=42):
+    - Accuracy (Top-1):                0.7041 (70.41%)
+    - Top-3 Accuracy:                  0.9515 (95.15%)
+    - Log Loss:                        0.9889
+    - Average Confidence:              0.5830 (58.30%)
+    - Share with Confidence >= 99%:    0.0000 (0.00%)
+
+3. MODEL SELECTION
+  - Chosen Setting:        Setting 2: RandomForestClassifier(n_estimators=300, min_samples_leaf=3, random_state=42)
+  - Selection Criterion:   Lower log_loss (difference of 1.0908)
+
+4. STRATIFIED 80/20 HOLD-OUT EVALUATION
+  - Train samples:         676 (80%)
+  - Test samples:          169 (20%)
+  - Hold-out Accuracy (Top-1):         0.6982 (69.82%)
+  - Hold-out Top-3 Accuracy:           0.9527 (95.27%)
+
+5. CONFUSION MATRIX (Hold-out Test Set):
+----------------------------------------------------------------------
+                      Accounting  BBA  BSCS  Biotechnology  Data Science  Economics  Education  Engineering  Law  MBBS  Media Studies  Pharmacy  Psychology  Software Engineering
+Accounting                     7    0     0              0             0          0          0            0    0     0              0         0           0                     0
+BBA                            0   24     0              0             0          1          1            0    1     0              0         0           0                     1
+BSCS                           0    0     7              0             5          0          0            1    0     0              0         0           0                     0
+Biotechnology                  0    0     0              7             0          0          0            0    0     0              0         0           0                     0
+Data Science                   0    0     4              0             4          0          0            5    0     0              0         0           0                     1
+Economics                      0    0     0              0             0          7          0            0    0     0              0         0           0                     0
+Education                      0    2     0              0             0          0          2            0    0     0              0         0           2                     0
+Engineering                    0    1     0              0             3          0          0            8    0     0              0         0           0                     1
+Law                            0    4     0              0             0          1          3            0   11     0              0         0           1                     0
+MBBS                           0    0     0              0             0          0          0            0    1     4              0         1           0                     0
+Media Studies                  0    0     0              0             0          0          0            0    0     0             12         0           1                     0
+Pharmacy                       0    0     0              2             0          0          0            0    0     0              0         5           0                     0
+Psychology                     0    0     0              0             0          0          0            0    2     1              0         3           8                     0
+Software Engineering           0    0     0              0             1          0          0            1    0     0              0         0           0                    12
+----------------------------------------------------------------------
+
+6. ARTIFACT PERSISTENCE
+  - Saved Pipeline:        C:\Users\PMLS\Downloads\career-counselling-fyp-main\backend\career_model.pkl
+  - Model Classes (14):     Accounting, BBA, BSCS, Biotechnology, Data Science, Economics, Education, Engineering, Law, MBBS, Media Studies, Pharmacy, Psychology, Software Engineering
+  - LabelEncoders:         None needed (classes are native strings in the Pipeline).
+======================================================================

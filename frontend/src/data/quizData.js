@@ -3,6 +3,7 @@ export const answerScores = {
   Agree: 4,
   Neutral: 3,
   Disagree: 2,
+  'Strongly Disagree': 1,
 };
 
 export const storageKeys = {

@@ -1165,6 +1165,10 @@ h2 {
   margin: 22px 0 18px;
 }
 
+.option-grid .option-button:nth-child(5) {
+  grid-column: 1 / -1;
+}
+
 .option-button {
   background: rgba(255, 255, 255, 0.68);
   color: #2b1b0e;

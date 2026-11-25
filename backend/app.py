@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib
 import pandas as pd
+import numpy as np
 from pathlib import Path
 import hashlib
 import hmac
@@ -1343,9 +1344,11 @@ def get_university_link(name):
     search_query = (name or "University").replace(" ", "+") + "+Pakistan+official+website"
     return f"https://www.google.com/search?q={search_query}"
 
-# LOAD MODEL
-field_classifier = joblib.load(backend_dir / "field_classifier.pkl")
-tfidf_vectorizer = joblib.load(backend_dir / "tfidf_vectorizer.pkl")
+# LOAD MODEL & ELIGIBILITY CONFIG
+career_model = joblib.load(backend_dir / "career_model.pkl")
+
+with (backend_dir / "background_eligibility.json").open("r", encoding="utf-8") as _f:
+    BACKGROUND_ELIGIBILITY = json.load(_f)
 
 
 # CAREER FIELD -> UNIVERSITY PROGRAM KEYWORDS
@@ -3235,92 +3238,41 @@ def chatbot_history():
     return jsonify({"history": records[-100:]}), 200
 
 
-# CAREER EXPLANATION
-# Sliders (1-5) that support each AI field. Used for BOTH scoring and reasons.
-FIELD_SKILLS = {
-    "Computer Science & Technology": ["Computer", "Math"],
-    "Engineering": ["Math", "Computer"],
-    "Business & Commerce": ["Communication", "Leadership", "Math"],
-    "Medicine & Health Sciences": ["Biology"],
-    "Law": ["Communication", "Leadership"],
-    "Natural & Applied Sciences": ["Biology", "Math"],
-    "Social Sciences & Humanities": ["Communication", "Leadership"],
-}
-
-# Quiz categories (Technology/Medical/Business/Arts) -> AI fields
-QUIZ_TO_FIELDS = {
-    "Technology": ["Computer Science & Technology", "Engineering"],
-    "Medical": ["Medicine & Health Sciences", "Natural & Applied Sciences"],
-    "Business": ["Business & Commerce", "Law"],
-    "Arts": ["Social Sciences & Humanities", "Law"],
-}
-
-# Final score = TEXT_WEIGHT * text model + SKILL_WEIGHT * sliders (+ quiz boost)
-TEXT_WEIGHT = 0.6
-SKILL_WEIGHT = 0.4
-QUIZ_BOOST = 0.1
+VALID_BACKGROUNDS = ["Pre-Medical", "Pre-Engineering", "ICS", "Commerce", "Arts"]
 
 
-def skill_score(field, data):
-    skills = FIELD_SKILLS.get(field, [])
-    vals = []
-    for s in skills:
-        try:
-            vals.append(float(data.get(s)))
-        except (TypeError, ValueError):
-            pass
-    return (sum(vals) / len(vals)) / 5.0 if vals else 0.0
-
-
-def quiz_boosts(quiz_scores):
-    boosts = {}
-    if not isinstance(quiz_scores, dict):
-        return boosts
-    nums = {}
-    for k in QUIZ_TO_FIELDS:
-        try:
-            nums[k] = float(quiz_scores.get(k) or 0)
-        except (TypeError, ValueError):
-            nums[k] = 0.0
-    top = max(nums.values()) if nums else 0
-    if top <= 0:
-        return boosts
-    for cat, value in nums.items():
-        if value == top:
-            for f in QUIZ_TO_FIELDS[cat]:
-                boosts[f] = QUIZ_BOOST
-    return boosts
-
-
-def generate_reason(data, field):
+def generate_career_reasons(data, career, field, background):
+    dominant = BACKGROUND_ELIGIBILITY.get("career_interest_labels", {}).get(career, [])
+    skill_names = {
+        "Math": "Mathematics",
+        "Biology": "Biology",
+        "Computer": "Computer / IT",
+        "Communication": "Communication",
+        "Leadership": "Leadership",
+    }
     reasons = []
-    labels = {
-        "Computer": "Strong computer skills",
-        "Biology": "Strong biology interest",
-        "Math": "Strong mathematical ability",
-        "Communication": "Strong communication skills",
-        "Leadership": "Good leadership qualities",
-    }
-    for skill in FIELD_SKILLS.get(field, []):
-        try:
-            if int(data.get(skill)) >= 4:
-                reasons.append(labels[skill])
-        except (TypeError, ValueError):
-            pass
-
-    bg = data.get("Background")
-    bg_map = {
-        "Computer Science & Technology": ["ICS"],
-        "Engineering": ["Pre-Engineering", "ICS"],
-        "Medicine & Health Sciences": ["Pre-Medical"],
-        "Business & Commerce": ["Commerce"],
-        "Social Sciences & Humanities": ["Arts"],
-        "Law": ["Arts", "Commerce"],
-    }
-    if bg in bg_map.get(field, []):
-        reasons.append(f"Your {bg} background supports this field")
-
+    for s in dominant:
+        if s in data:
+            reasons.append(f"Strong rating in {skill_names.get(s, s)} ({data[s]}/5)")
+    reasons.append(f"Eligible for {field} through your {background} background")
     return reasons
+
+
+def build_career_explanation(predicted_career, predicted_field, confidence, data, marks, background):
+    points = []
+    dominant = BACKGROUND_ELIGIBILITY.get("career_interest_labels", {}).get(predicted_career, [])
+    skill_names = {
+        "Math": "Mathematics",
+        "Biology": "Biology",
+        "Computer": "Computer / IT",
+        "Communication": "Communication",
+        "Leadership": "Leadership",
+    }
+    dom_str = ", ".join([skill_names.get(s, s) for s in dominant]) if dominant else "your profile"
+    points.append(f"Your interest ratings (especially {dom_str}) strongly align with {predicted_career} ({round(confidence * 100)}% model confidence).")
+    points.append(f"Your {background} academic background qualifies for degree programs in {predicted_field}.")
+    points.append(f"Your average marks of {marks:.0f}% were used to filter university programs you are eligible for.")
+    return points
 
 
 CITY_PROVINCE = {
@@ -3394,36 +3346,6 @@ def score_scholarship(row, marks, city, field):
     return round(min(max(score, 0), 100), 1), "; ".join(why)
 
 
-def build_explanation(career, text_prob, interests, data, boosts, marks):
-    points = []
-    words = []
-    try:
-        vec = tfidf_vectorizer.transform([interests])
-        names = tfidf_vectorizer.get_feature_names_out()
-        idx = list(field_classifier.classes_).index(career)
-        coefs = getattr(field_classifier, "coef_", None)
-        row = vec.tocoo()
-        weighted = []
-        for j, v in zip(row.col, row.data):
-            w = float(coefs[idx][j]) * v if coefs is not None else v
-            weighted.append((w, names[j]))
-        words = [w for _, w in sorted(weighted, reverse=True)[:4]]
-    except Exception:
-        pass
-    pct = round(text_prob * 100)
-    if words:
-        points.append(f"Your interest description matches {career} ({pct}% text match), especially: {', '.join(words)}.")
-    else:
-        points.append(f"Your interest description matches {career} ({pct}% text match).")
-    skills = [f"{s} {data.get(s)}/5" for s in FIELD_SKILLS.get(career, []) if str(data.get(s) or "").isdigit() and int(data.get(s)) >= 4]
-    if skills:
-        points.append(f"Your self-rated skills support it: {', '.join(skills)}.")
-    if career in boosts:
-        points.append("Your career quiz result also points toward this field.")
-    points.append(f"Your average marks of {marks:.0f}% were used to filter programs you are eligible for.")
-    return points
-
-
 def eligibility_overrides():
     criteria = load_json_records("eligibility") or []
     return {
@@ -3437,142 +3359,198 @@ def eligibility_overrides():
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
-        data = request.json
+        data = request.get_json(silent=True) or {}
 
+        # 1. Validate Background (required, must be one of the 5)
+        background = data.get("Background")
+        if not background or background not in VALID_BACKGROUNDS:
+            return jsonify({
+                "error": f"Invalid or missing Background. Must be one of: {', '.join(VALID_BACKGROUNDS)}."
+            }), 400
+
+        # 2. Validate Marks (0-100, float)
+        marks_raw = data.get("Marks")
+        if marks_raw is None or str(marks_raw).strip() == "":
+            return jsonify({"error": "Marks is required and must be a number between 0 and 100."}), 400
+        try:
+            marks = float(marks_raw)
+        except (ValueError, TypeError):
+            return jsonify({"error": "Marks must be a valid number between 0 and 100."}), 400
+        if marks < 0 or marks > 100:
+            return jsonify({"error": "Marks must be between 0 and 100."}), 400
+
+        # 3. Validate the 5 interest ratings (Math, Biology, Computer, Communication, Leadership: int 1-5)
+        ratings = {}
+        for skill in ["Math", "Biology", "Computer", "Communication", "Leadership"]:
+            raw_val = data.get(skill)
+            if raw_val is None or str(raw_val).strip() == "":
+                return jsonify({"error": f"Missing interest rating for {skill}. Must be an integer from 1 to 5."}), 400
+            try:
+                val = int(raw_val)
+            except (ValueError, TypeError):
+                return jsonify({"error": f"Invalid rating for {skill}. Must be an integer from 1 to 5."}), 400
+            if val < 1 or val > 5:
+                return jsonify({"error": f"Rating for {skill} must be an integer between 1 and 5 (got {val})."}), 400
+            ratings[skill] = val
+
+        # 4. Normalize City
         city = data.get("City", None)
-        # Treat "All" (All Cities / Nationwide) as no city filter
-        if city and str(city).strip().lower() == "all":
+        if city and str(city).strip().lower() in ("all", "all cities", "nationwide", ""):
             city = None
 
-        interests = (data.get("Interests") or "").strip()
+        # 5. Build one-row DataFrame matching model feature_names_in_ and predict_proba
+        features = {
+            **ratings,
+            "Background": background,
+        }
+        input_df = pd.DataFrame([features])[career_model.feature_names_in_]
+        proba = career_model.predict_proba(input_df)[0]
+        classes = list(career_model.classes_)
 
-        if not interests:
-            return jsonify({
-                "error": "Please describe your interests before submitting."
-            }), 400
+        # 6. HARD RULE: mask disallowed fields per student's Background, re-normalize
+        career_to_field = BACKGROUND_ELIGIBILITY.get("career_to_field", {})
+        eligibility_rules = BACKGROUND_ELIGIBILITY.get("rules", {})
+        allowed_fields = set(eligibility_rules.get(background, []))
 
-        if len(interests.split()) < 6:
-            return jsonify({
-                "error": "Please describe your interests in a full sentence "
-                "(at least a few words of context) so the AI can make a "
-                "confident prediction — e.g. \"I enjoy coding and building apps\"."
-            }), 400
+        unmasked_idx = int(np.argmax(proba))
+        unmasked_top_career = classes[unmasked_idx]
+        unmasked_top_field = career_to_field.get(unmasked_top_career, "")
 
-        vec = tfidf_vectorizer.transform([interests])
-        proba = field_classifier.predict_proba(vec)[0]
-        classes = field_classifier.classes_
+        masked_proba = np.copy(proba)
+        for i, c in enumerate(classes):
+            c_field = career_to_field.get(c, "")
+            if c_field not in allowed_fields:
+                masked_proba[i] = 0.0
 
-        boosts = quiz_boosts(data.get("quizScores"))
-        blended = [
-            (
-                c,
-                TEXT_WEIGHT * float(p)
-                + SKILL_WEIGHT * skill_score(str(c), data)
-                + boosts.get(str(c), 0.0),
+        sum_proba = np.sum(masked_proba)
+        if sum_proba > 0:
+            masked_proba = masked_proba / sum_proba
+        else:
+            masked_proba = np.ones(len(classes)) / len(classes)
+
+        ranked_indices = np.argsort(masked_proba)[::-1]
+        predicted_career = classes[ranked_indices[0]]
+        predicted_field = career_to_field.get(predicted_career, "")
+        confidence = round(float(masked_proba[ranked_indices[0]]), 3)
+        low_confidence = bool(confidence < 0.4)
+
+        # Background notice if unmasked top career was blocked by eligibility rules
+        background_notice = None
+        if unmasked_top_field not in allowed_fields:
+            needed_bgs = [bg for bg, flds in eligibility_rules.items() if unmasked_top_field in flds]
+            background_notice = (
+                f"Your interest ratings strongly align with {unmasked_top_career} ({unmasked_top_field}), "
+                f"but students with a {background} background are not eligible for this field in Pakistan. "
+                f"Eligible backgrounds for this career include: {', '.join(needed_bgs)}."
             )
-            for c, p in zip(classes, proba)
-        ]
-        ranked = sorted(blended, key=lambda x: -x[1])
-        career = str(ranked[0][0])
-        # confidence stays the text model's own probability for the chosen field
-        text_prob = {str(c): float(p) for c, p in zip(classes, proba)}
-        confidence = round(text_prob[career], 3)
-        low_confidence = confidence < 0.25
 
-        reasons = generate_reason(data, career)
-        criteria = eligibility_overrides()
+        # Top 3 careers
+        top_careers = []
+        for idx in ranked_indices[:3]:
+            c_name = classes[idx]
+            top_careers.append({
+                "career": c_name,
+                "field": career_to_field.get(c_name, ""),
+                "probability": round(float(masked_proba[idx]), 3),
+            })
 
-        # UNIVERSITIES
+        # Field scores (summed probability per field for frontend / admin analytics)
+        field_scores = {}
+        for c, p in zip(classes, masked_proba):
+            fld = career_to_field.get(c, "Other")
+            field_scores[fld] = round(field_scores.get(fld, 0.0) + float(p), 3)
+
+        reasons = generate_career_reasons(ratings, predicted_career, predicted_field, background)
+        explanation = build_career_explanation(predicted_career, predicted_field, confidence, ratings, marks, background)
+
+        # 7. University Programs matching
         uni_df = load_university_programs_df()
+        career_keywords = BACKGROUND_ELIGIBILITY.get("career_program_keywords", {}).get(predicted_career, [])
 
-        def find_matches(field, filter_city=True):
-            minimum_marks = criteria.get(field)
-            matches = uni_df[
-                (
-                    uni_df["program"].apply(
-                        lambda program: field_matches_program(
-                            program, field
-                        )
-                    )
-                )
-                &
-                (
-                    uni_df["eligibility_pct"].isna()
-                    | (uni_df["eligibility_pct"] <= data["Marks"])
-                )
-                & (
-                    minimum_marks is None
-                    or data["Marks"] >= minimum_marks
-                )
-            ]
+        def matches_career(prog):
+            p_lower = str(prog).lower()
+            return any(kw in p_lower for kw in career_keywords)
 
-            if filter_city and city and str(city).strip():
-                clean_city = str(city).strip().lower()
-                matches = matches[
-                    matches["city_norm"].str.lower().str.contains(clean_city, na=False)
-                ]
+        def matches_field(prog):
+            return field_matches_program(str(prog), predicted_field)
 
-            return matches.drop_duplicates(
-                subset=["university", "program"]
-            )
+        career_progs = uni_df[uni_df["program"].apply(matches_career)].drop_duplicates(subset=["university", "program"])
+        field_progs = uni_df[uni_df["program"].apply(matches_field)].drop_duplicates(subset=["university", "program"])
 
-        # 1. Try predicted career field in the selected city
-        matched_field = career
+        clean_city = str(city).strip().lower() if city else ""
+
+        def split_city(sub_df):
+            if not clean_city:
+                return sub_df, pd.DataFrame(columns=sub_df.columns)
+            in_c = sub_df[sub_df["city_norm"].str.lower().str.contains(clean_city, na=False)]
+            out_c = sub_df[~sub_df["city_norm"].str.lower().str.contains(clean_city, na=False)]
+            return in_c, out_c
+
+        career_in_city, career_out_city = split_city(career_progs)
+        field_in_city, field_out_city = split_city(field_progs)
+
+        seen_pairs = set()
+        visible_rows = []
+        hidden_count = 0
+
+        def process_programs(pool_df):
+            nonlocal hidden_count
+            for _, row in pool_df.iterrows():
+                pair = (row["university"], row["program"])
+                if pair in seen_pairs:
+                    continue
+                seen_pairs.add(pair)
+                merit = row["eligibility_pct"]
+                if pd.notna(merit) and marks < float(merit):
+                    hidden_count += 1
+                else:
+                    visible_rows.append(row)
+
+        # First matching career's keywords (student's city first, then nationwide)
+        process_programs(career_in_city)
+        process_programs(career_out_city)
+
+        # If fewer than 4 visible rows, add programs from the same field (city first, then nationwide)
+        if len(visible_rows) < 4:
+            process_programs(field_in_city)
+            process_programs(field_out_city)
+
+        marks_notice = None
+        if hidden_count > 0:
+            marks_notice = f"{hidden_count} program(s) were excluded because their merit cutoff exceeds your average marks of {marks:.0f}%."
+
         city_notice = None
-        recommended = find_matches(career, filter_city=True)
+        if clean_city:
+            has_in_city = any(clean_city in str(r["city_norm"]).lower() for r in visible_rows)
+            if not has_in_city and visible_rows:
+                city_notice = f"No eligible {predicted_career} programs found directly in {city}. Showing top programs across Pakistan instead."
 
-        # 2. If no programs in the specific city, search nationwide for the SAME career field!
-        if recommended.empty and city and str(city).strip():
-            nationwide_matches = find_matches(career, filter_city=False)
-            if not nationwide_matches.empty:
-                recommended = nationwide_matches
-                city_notice = f"No {career} programs found directly in {city}. Showing top programs across Pakistan instead."
-
-        # 3. Only if no programs exist anywhere in Pakistan, fall back to next closest field
-        if recommended.empty:
-            for field, _score in ranked[1:]:
-                fallback_matches = find_matches(field, filter_city=True)
-                if fallback_matches.empty:
-                    fallback_matches = find_matches(field, filter_city=False)
-                if not fallback_matches.empty:
-                    matched_field = field
-                    recommended = fallback_matches
-                    break
-
-        quiz_fields = set(boosts.keys())
         ranked_rows = []
-        for _, row in recommended.iterrows():
-            sc, why = score_university(row, data["Marks"], city, quiz_fields, matched_field)
+        for row in visible_rows:
+            sc, why = score_university(row, marks, city, set(), predicted_field)
             ranked_rows.append((sc, why, row))
         ranked_rows.sort(key=lambda x: -x[0])
         ranked_rows = ranked_rows[:6]
 
         universities_list = []
-
         for uni_score, uni_why, row in ranked_rows:
-
-            merit = (
-                row["eligibility_pct"]
-                if pd.notna(row["eligibility_pct"])
-                else None
-            )
-
+            merit = row["eligibility_pct"] if pd.notna(row["eligibility_pct"]) else None
             if merit is None:
                 eligibility = "Merit not specified"
                 requirements = "Merit criteria not listed — check with the university"
-            elif data["Marks"] >= merit:
+            elif marks >= merit:
                 eligibility = "Eligible"
-                requirements = f"Minimum {merit}% merit required"
+                requirements = f"Minimum {merit:.0f}% merit required"
             else:
                 eligibility = "Not Eligible"
-                requirements = f"Minimum {merit}% merit required"
+                requirements = f"Minimum {merit:.0f}% merit required"
 
             universities_list.append({
                 "University": row["university"],
                 "Program": row["program"],
                 "City": row["city_norm"],
                 "Merit": merit,
-                "your_marks": data["Marks"],
+                "your_marks": marks,
                 "eligibility": eligibility,
                 "requirements": requirements,
                 "match_score": uni_score,
@@ -3589,22 +3567,16 @@ def predict():
                 ],
             })
 
-        # SCHOLARSHIP FILTERING
+        # 8. Scholarships
         scholarship_df = load_scholarships_df()
-
         eligible_scholarships = scholarship_df[
             scholarship_df["min_merit_pct"].isna()
-            | (scholarship_df["min_merit_pct"] <= data["Marks"])
+            | (scholarship_df["min_merit_pct"] <= marks)
         ]
 
         def build_scholarship_entry(row):
-            merit = (
-                row["min_merit_pct"]
-                if pd.notna(row["min_merit_pct"])
-                else None
-            )
-
-            sch_score, sch_why = score_scholarship(row, data["Marks"], city, matched_field)
+            merit = row["min_merit_pct"] if pd.notna(row["min_merit_pct"]) else None
+            sch_score, sch_why = score_scholarship(row, marks, city, predicted_field)
             return {
                 "match_score": sch_score,
                 "why": sch_why,
@@ -3612,11 +3584,7 @@ def predict():
                 "provider": str(row["provider"] or ""),
                 "field": str(row["provider_type"] or row["basis"] or "General"),
                 "min_percentage": merit,
-                "eligibility": (
-                    "Merit not specified"
-                    if merit is None
-                    else "Eligible"
-                ),
+                "eligibility": "Merit not specified" if merit is None else "Eligible",
                 "basis": str(row["basis"] or "Merit + Need"),
                 "provinces": str(row["provinces"] or "National"),
                 "coverage": str(row.get("coverage") or "") if pd.notna(row.get("coverage")) else "",
@@ -3630,8 +3598,7 @@ def predict():
         )
 
         international_scholarships = sorted(
-            (build_scholarship_entry(row)
-             for _, row in eligible_scholarships[is_international].iterrows()),
+            (build_scholarship_entry(row) for _, row in eligible_scholarships[is_international].iterrows()),
             key=lambda e: -e["match_score"],
         )[:6]
 
@@ -3645,18 +3612,23 @@ def predict():
         )[:8]
 
         result = {
-            "career": career,
+            "career": predicted_field,  # Kept as predicted FIELD for existing frontend
+            "predicted_career": predicted_career,
             "confidence": confidence,
             "low_confidence": low_confidence,
-            "matched_field": matched_field,
+            "matched_field": predicted_field,
             "city_notice": city_notice,
+            "background_notice": background_notice,
+            "marks_notice": marks_notice,
             "reasons": reasons,
-            "explanation": build_explanation(career, text_prob[career], interests, data, boosts, data["Marks"]),
-            "field_scores": {str(c): round(float(sc), 3) for c, sc in ranked},
+            "explanation": explanation,
+            "field_scores": field_scores,
+            "top_careers": top_careers,
             "universities": universities_list,
             "international_scholarships": international_scholarships,
             "pakistan_scholarships": pakistan_scholarships,
         }
+
         user_id = data.get("userId")
         user_name = data.get("userName")
         user_email = data.get("userEmail")
@@ -3670,8 +3642,8 @@ def predict():
             )
 
         log_activity("assessment_completed", {
-            "career": career,
-            "matchedField": matched_field,
+            "career": predicted_career,
+            "matchedField": predicted_field,
             "userId": user_id,
             "userName": user_name or "Student",
             "email": user_email
@@ -3691,20 +3663,21 @@ def predict():
             try:
                 rec_payload = {
                     "user_id": user_id,
-                    "recommendation": career,
-                    "highest_category": matched_field,
-                    "top_categories": [matched_field],
+                    "recommendation": predicted_career,
+                    "highest_category": predicted_field,
+                    "top_categories": [predicted_field],
                     "scores": result.get("field_scores") or {},
                 }
                 supabase_admin_request("POST", "/rest/v1/recommendations", body=rec_payload)
             except Exception as e:
                 print(f"Could not persist recommender assessment to Supabase: {e}")
-        return jsonify(result)
+        return jsonify(result), 200
 
     except Exception as e:
+        app.logger.exception("Prediction error: %s", e)
         return jsonify({
             "error": str(e)
-        })
+        }), 500
 
 
 # SCHOLARSHIP API

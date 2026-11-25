@@ -1,0 +1,85 @@
+{
+  "rules": {
+    "Pre-Medical": [
+      "Medicine & Health Sciences",
+      "Natural & Applied Sciences",
+      "Business & Commerce",
+      "Law",
+      "Social Sciences & Humanities"
+    ],
+    "Pre-Engineering": [
+      "Engineering",
+      "Computer Science & Technology",
+      "Natural & Applied Sciences",
+      "Business & Commerce",
+      "Law",
+      "Social Sciences & Humanities"
+    ],
+    "ICS": [
+      "Computer Science & Technology",
+      "Engineering",
+      "Natural & Applied Sciences",
+      "Business & Commerce",
+      "Law",
+      "Social Sciences & Humanities"
+    ],
+    "Commerce": [
+      "Business & Commerce",
+      "Law",
+      "Social Sciences & Humanities"
+    ],
+    "Arts": [
+      "Law",
+      "Social Sciences & Humanities",
+      "Business & Commerce"
+    ]
+  },
+  "career_to_field": {
+    "MBBS": "Medicine & Health Sciences",
+    "Pharmacy": "Medicine & Health Sciences",
+    "Biotechnology": "Natural & Applied Sciences",
+    "Psychology": "Social Sciences & Humanities",
+    "Media Studies": "Social Sciences & Humanities",
+    "Education": "Social Sciences & Humanities",
+    "Law": "Law",
+    "Engineering": "Engineering",
+    "BSCS": "Computer Science & Technology",
+    "Software Engineering": "Computer Science & Technology",
+    "Data Science": "Computer Science & Technology",
+    "BBA": "Business & Commerce",
+    "Accounting": "Business & Commerce",
+    "Economics": "Business & Commerce"
+  },
+  "career_program_keywords": {
+    "MBBS": ["mbbs"],
+    "Pharmacy": ["pharm"],
+    "Biotechnology": ["biotechnology", "biosciences", "microbiology"],
+    "Psychology": ["psychology"],
+    "Media Studies": ["media", "journalism", "mass communication"],
+    "Education": ["education", "b.ed"],
+    "Law": ["llb", "law"],
+    "Engineering": ["civil", "mechanical", "electrical", "engineering"],
+    "BSCS": ["computer science", "bscs"],
+    "Software Engineering": ["software engineering", "software"],
+    "Data Science": ["data science", "data analytics", "artificial intelligence"],
+    "BBA": ["bba", "business administration"],
+    "Accounting": ["accounting", "finance"],
+    "Economics": ["economics"]
+  },
+  "career_interest_labels": {
+    "MBBS": ["Biology", "Communication", "Leadership"],
+    "Pharmacy": ["Biology", "Math", "Computer"],
+    "Biotechnology": ["Biology", "Computer", "Math"],
+    "Psychology": ["Communication", "Biology", "Leadership"],
+    "Law": ["Communication", "Leadership"],
+    "Engineering": ["Math", "Leadership", "Computer"],
+    "BSCS": ["Computer", "Math"],
+    "Software Engineering": ["Computer", "Communication", "Leadership"],
+    "Data Science": ["Math", "Computer"],
+    "BBA": ["Leadership", "Communication", "Math"],
+    "Accounting": ["Math", "Leadership", "Computer"],
+    "Economics": ["Math", "Communication", "Leadership"],
+    "Media Studies": ["Communication", "Computer", "Leadership"],
+    "Education": ["Communication", "Leadership", "Biology"]
+  }
+}
