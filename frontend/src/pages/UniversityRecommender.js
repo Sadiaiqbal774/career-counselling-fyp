@@ -957,13 +957,13 @@ function UniversityRecommender() {
             ← Back to results
           </button>
           <button type="button" onClick={() => navigate('/scholarships')} style={{ padding: "7px 13px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
-            🎓 Scholarship Finder
+            Scholarship Finder
           </button>
           <button type="button" onClick={() => navigate('/profile')} style={{ padding: "7px 13px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
             Saved in Profile
           </button>
           <button type="button" onClick={() => navigate('/dashboard')} style={{ padding: "7px 13px", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-card)", color: "var(--text)", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
-            📊 Dashboard
+            Dashboard
           </button>
         </div>
 

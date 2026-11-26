@@ -46,44 +46,44 @@ function ModernLanding() {
       step: '01',
       title: 'Take the 5-Minute Quiz',
       desc: 'Answer targeted questions about your favorite subjects, interests, and working styles. Designed for Matric, FSc, ICS, and A-Level students.',
-      icon: '📝',
+      icon: 'ðŸ“',
     },
     {
       step: '02',
       title: 'AI Evaluates Your Aptitude',
       desc: 'Our trained machine learning model analyzes your academic background and cognitive strengths to predict your highest-potential degree paths.',
-      icon: '🧠',
+      icon: 'ðŸ§ ',
     },
     {
       step: '03',
       title: 'Get Your Actionable Roadmap',
       desc: 'Receive instant match scores, admission merit requirements for top Pakistani universities, and eligible financial aid options.',
-      icon: '🎯',
+      icon: 'ðŸŽ¯',
     },
   ];
 
   const degrees = [
     {
       title: 'Computer Science & AI',
-      icon: '💻',
+      icon: 'ðŸ’»',
       tag: 'Highest Demand',
       description: 'Study algorithms, machine learning, data structures, and computer architecture to build modern digital systems.',
     },
     {
       title: 'Software Engineering',
-      icon: '⚙️',
+      icon: 'âš™ï¸',
       tag: 'Rapid Growth',
       description: 'Focus on full-stack development, software architecture, cloud platforms, and large-scale application design.',
     },
     {
       title: 'Business Administration (BBA)',
-      icon: '📊',
+      icon: 'ðŸ“Š',
       tag: 'Versatile Career',
       description: 'Develop executive leadership, financial analytics, marketing strategy, and modern digital entrepreneurship.',
     },
     {
       title: 'Medical & Health Sciences',
-      icon: '🔬',
+      icon: 'ðŸ”¬',
       tag: 'High Impact',
       description: 'Pursue clinical medicine, biomedical research, pharmaceuticals, and allied healthcare disciplines.',
     },
@@ -92,22 +92,22 @@ function ModernLanding() {
   const features = [
     {
       title: 'Personalized Aptitude Quiz',
-      icon: '📋',
+      icon: 'ðŸ“‹',
       desc: 'Two-tier assessment tailored to Pakistani educational backgrounds (Pre-Medical, Pre-Engineering, ICS, General Science).',
     },
     {
       title: 'AI-Powered Compatibility',
-      icon: '🤖',
+      icon: 'ðŸ¤–',
       desc: 'Predictive algorithm trained on actual student performance to find your highest-likelihood career fit.',
     },
     {
       title: 'Live University Recommender',
-      icon: '🏛️',
+      icon: 'ðŸ›ï¸',
       desc: 'Filter institutions across Punjab, Sindh, KPK, Islamabad, and Balochistan by admission criteria and fees.',
     },
     {
       title: 'Verified Scholarship Directory',
-      icon: '🎓',
+      icon: 'ðŸŽ“',
       desc: 'Browse need-based, merit, and government scholarships with income thresholds and application links.',
     },
   ];
@@ -137,9 +137,6 @@ function ModernLanding() {
 
   return (
     <div className="landing-wrapper">
-      {/* ========================================================
-          HERO SECTION
-      ======================================================== */}
       <section className="landing-hero">
         <div className="landing-hero__container">
           <div className="landing-hero__copy">
@@ -162,7 +159,7 @@ function ModernLanding() {
               {currentUser ? (
                 <>
                   <button type="button" className="landing-btn landing-btn--primary" onClick={handleStartAssessment}>
-                    Take Career Assessment →
+                    Take Career Assessment â†’
                   </button>
                   <button type="button" className="landing-btn landing-btn--secondary" onClick={handleViewResults}>
                     View My Results
@@ -171,7 +168,7 @@ function ModernLanding() {
               ) : (
                 <>
                   <button type="button" className="landing-btn landing-btn--primary" onClick={handleStartAssessment}>
-                    Start Free Assessment →
+                    Start Free Assessment â†’
                   </button>
                   <button type="button" className="landing-btn landing-btn--secondary" onClick={() => navigate('/login')}>
                     Sign In
@@ -183,26 +180,22 @@ function ModernLanding() {
                 className="landing-btn landing-btn--ghost"
                 onClick={() => navigate(currentUser ? '/university-recommender' : '/login')}
               >
-                Explore Universities 🏛️
+                Explore Universities ðŸ›ï¸
               </button>
             </div>
 
             <div className="landing-hero__trust-strip">
-              <span className="trust-item">✓ 100% Free & Instant</span>
-              <span className="trust-divider">•</span>
-              <span className="trust-item">✓ 50+ Universities</span>
-              <span className="trust-divider">•</span>
-              <span className="trust-item">✓ 100+ Scholarships</span>
-              <span className="trust-divider">•</span>
-              <span className="trust-item">✓ Pre-Med, Eng & ICS</span>
+              <span className="trust-item">âœ“ 100% Free & Instant</span>
+              <span className="trust-divider">â€¢</span>
+              <span className="trust-item">âœ“ 50+ Universities</span>
+              <span className="trust-divider">â€¢</span>
+              <span className="trust-item">âœ“ 100+ Scholarships</span>
+              <span className="trust-divider">â€¢</span>
+              <span className="trust-item">âœ“ Pre-Med, Eng & ICS</span>
             </div>
           </div>
         </div>
       </section>
-
-      {/* ========================================================
-          STATS BANNER
-      ======================================================== */}
       <section className="landing-stats-banner">
         <div className="landing-stats-grid">
           {stats.map((s) => (
@@ -214,10 +207,6 @@ function ModernLanding() {
           ))}
         </div>
       </section>
-
-      {/* ========================================================
-          3-STEP JOURNEY: HOW IT WORKS
-      ======================================================== */}
       <section className="landing-section">
         <div className="landing-section-header">
           <span className="landing-section-eyebrow">HOW IT WORKS</span>
@@ -240,10 +229,6 @@ function ModernLanding() {
           ))}
         </div>
       </section>
-
-      {/* ========================================================
-          FEATURED DEGREE PATHS
-      ======================================================== */}
       <section className="landing-section landing-section--tinted">
         <div className="landing-section-header">
           <span className="landing-section-eyebrow">POPULAR DEGREE PATHS</span>
@@ -266,10 +251,6 @@ function ModernLanding() {
           ))}
         </div>
       </section>
-
-      {/* ========================================================
-          CORE FEATURES
-      ======================================================== */}
       <section className="landing-section">
         <div className="landing-section-header">
           <span className="landing-section-eyebrow">BUILT FOR STUDENTS</span>
@@ -289,10 +270,6 @@ function ModernLanding() {
           ))}
         </div>
       </section>
-
-      {/* ========================================================
-          INTERACTIVE FAQ ACCORDION
-      ======================================================== */}
       <section className="landing-section">
         <div className="landing-section-header">
           <span className="landing-section-eyebrow">FREQUENTLY ASKED QUESTIONS</span>
@@ -314,7 +291,7 @@ function ModernLanding() {
                   aria-expanded={isOpen}
                 >
                   <span>{faq.q}</span>
-                  <span className="faq-toggle-icon">{isOpen ? '−' : '+'}</span>
+                  <span className="faq-toggle-icon">{isOpen ? 'âˆ’' : '+'}</span>
                 </button>
                 {isOpen && (
                   <div className="faq-answer-panel">
@@ -326,10 +303,6 @@ function ModernLanding() {
           })}
         </div>
       </section>
-
-      {/* ========================================================
-          FINAL HIGH-CONVERTING CTA
-      ======================================================== */}
       <section className="landing-cta-banner">
         <div className="landing-cta-banner__card">
           <span className="landing-cta-badge">GET STARTED TODAY</span>
@@ -341,12 +314,12 @@ function ModernLanding() {
           <div className="landing-cta-actions">
             {currentUser ? (
               <button type="button" className="landing-btn landing-btn--primary-gold" onClick={handleStartAssessment}>
-                Go to Career Assessment →
+                Go to Career Assessment â†’
               </button>
             ) : (
               <>
                 <button type="button" className="landing-btn landing-btn--primary-gold" onClick={() => navigate('/register')}>
-                  Create Free Account & Start →
+                  Create Free Account & Start â†’
                 </button>
                 <button type="button" className="landing-btn landing-btn--ghost-white" onClick={() => navigate('/login')}>
                   Already have an account? Sign In
@@ -356,10 +329,6 @@ function ModernLanding() {
           </div>
         </div>
       </section>
-
-      {/* ========================================================
-          CLEAN LANDING FOOTER
-      ======================================================== */}
       <footer className="landing-footer-main">
         <div className="landing-footer-content">
           <div className="landing-footer-brand">
@@ -391,7 +360,7 @@ function ModernLanding() {
         </div>
 
         <div className="landing-footer-bottom">
-          <p>© 2026 CareerGuide. All rights reserved. Designed for student empowerment across Pakistan.</p>
+          <p>Â© 2026 CareerGuide. All rights reserved. Designed for student empowerment across Pakistan.</p>
           <p className="footer-sec-note">All student assessment scores and credentials remain strictly confidential.</p>
         </div>
       </footer>
