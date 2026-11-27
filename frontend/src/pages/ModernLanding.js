@@ -37,7 +37,7 @@ function ModernLanding() {
   const stats = [
     { number: '50+', label: 'Pakistani Universities', desc: 'NUST, FAST, LUMS, COMSATS & more' },
     { number: '100+', label: 'Verified Scholarships', desc: 'HEC, PEEF, Ehsaas & Merit aid' },
-    { number: '4', label: 'Core Career Streams', desc: 'CS, Software Eng, BBA, Medical' },
+    { number: '4', label: 'Core Career Streams', desc: 'Technology, Medical, Business, Arts' },
     { number: '5 min', label: 'Assessment Time', desc: 'Accurate AI aptitude matching' },
   ];
 
@@ -45,7 +45,7 @@ function ModernLanding() {
     {
       step: '01',
       title: 'Take the 5-Minute Quiz',
-      desc: 'Answer targeted questions about your favorite subjects, interests, and working styles. Designed for Matric, FSc, ICS, and A-Level students.',
+      desc: 'Answer targeted questions about your favorite subjects, interests, and working styles. Designed for Matric, FSc Pre-Medical, Pre-Engineering, ICS, Commerce, and Arts students.',
       icon: '📝',
     },
     {
@@ -93,7 +93,7 @@ function ModernLanding() {
     {
       title: 'Personalized Aptitude Quiz',
       icon: '📋',
-      desc: 'Two-tier assessment tailored to Pakistani educational backgrounds (Pre-Medical, Pre-Engineering, ICS, General Science).',
+      desc: 'Personalized assessment tailored to Pakistani intermediate streams (Pre-Medical, Pre-Engineering, ICS, Commerce, and Arts).',
     },
     {
       title: 'AI-Powered Compatibility',
@@ -103,7 +103,7 @@ function ModernLanding() {
     {
       title: 'Live University Recommender',
       icon: '🏛️',
-      desc: 'Filter institutions across Punjab, Sindh, KPK, Islamabad, and Balochistan by admission criteria and fees.',
+      desc: 'Explore nationwide accredited universities and programs matched to your career field, filtered by city and admission merit eligibility.',
     },
     {
       title: 'Verified Scholarship Directory',
@@ -123,7 +123,7 @@ function ModernLanding() {
     },
     {
       q: 'How are the university merit recommendations calculated?',
-      a: 'We reference recent official admission merit cutoffs, entry test weightages (e.g. NET, ECAT, MDCAT, NTS), and program prerequisites for leading Pakistani universities.',
+      a: 'We reference published university admission cutoff percentages and evaluate your eligibility based on your combined Matric and Intermediate academic performance.',
     },
     {
       q: 'Can I retake the assessment later?',
