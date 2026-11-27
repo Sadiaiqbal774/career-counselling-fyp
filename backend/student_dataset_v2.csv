@@ -2,7 +2,7 @@ Math,Biology,Computer,Communication,Leadership,Background,Career
 2,4,2,4,2,Pre-Medical,MBBS
 1,5,2,4,2,Pre-Medical,MBBS
 2,5,2,5,3,Pre-Medical,MBBS
-1,5,1,4,3,Pre-Medical,MBBS
+1,5,1,4,3,Pre-Medical,Law
 2,4,3,4,3,Pre-Medical,MBBS
 2,5,2,4,3,Pre-Medical,MBBS
 3,5,1,3,3,Pre-Medical,MBBS
@@ -18,7 +18,7 @@ Math,Biology,Computer,Communication,Leadership,Background,Career
 2,4,2,4,2,Pre-Medical,MBBS
 2,4,2,4,3,Pre-Medical,MBBS
 2,5,2,4,2,Pre-Medical,MBBS
-1,4,1,4,2,Pre-Medical,MBBS
+1,4,1,4,2,Pre-Medical,Data Science
 2,5,2,4,2,Pre-Medical,MBBS
 2,4,2,4,2,Pre-Medical,MBBS
 2,5,1,3,3,Pre-Medical,MBBS
@@ -31,15 +31,15 @@ Math,Biology,Computer,Communication,Leadership,Background,Career
 2,4,2,5,3,Pre-Medical,MBBS
 2,4,1,3,3,Pre-Medical,MBBS
 3,5,2,3,2,Pre-Medical,MBBS
-1,4,3,3,4,Pre-Medical,MBBS
+1,4,3,3,4,Pre-Medical,Data Science
 1,5,2,4,3,Pre-Medical,MBBS
 1,5,1,3,2,Pre-Medical,MBBS
 2,5,2,4,3,Pre-Medical,MBBS
 3,5,2,5,3,Pre-Medical,MBBS
 3,5,1,3,4,Pre-Medical,MBBS
-3,5,2,5,2,Pre-Medical,Pharmacy
-1,5,2,4,3,Pre-Medical,Psychology
-3,5,2,3,1,Pre-Medical,MBBS
+3,5,2,5,2,Pre-Medical,MBBS
+1,5,2,4,3,Pre-Medical,MBBS
+3,5,2,3,1,Pre-Medical,Psychology
 3,4,1,2,2,Pre-Medical,Pharmacy
 3,3,2,2,2,Pre-Medical,Pharmacy
 4,5,3,2,2,Pre-Medical,Pharmacy
@@ -53,12 +53,12 @@ Math,Biology,Computer,Communication,Leadership,Background,Career
 3,5,2,2,1,Pre-Medical,Pharmacy
 3,4,2,2,2,Pre-Medical,Pharmacy
 4,5,2,2,2,Pre-Medical,Pharmacy
-2,5,2,4,3,Pre-Medical,MBBS
+2,5,2,4,3,Pre-Medical,Software Engineering
 3,4,1,3,2,Pre-Medical,Pharmacy
 3,3,3,3,1,Pre-Medical,Pharmacy
 2,5,2,2,2,Pre-Medical,Pharmacy
 3,5,3,1,2,Pre-Medical,Pharmacy
-3,5,2,1,2,Pre-Medical,Pharmacy
+3,5,2,1,2,Pre-Medical,BSCS
 4,3,3,2,2,Pre-Medical,Pharmacy
 2,4,3,3,3,Pre-Medical,Pharmacy
 4,5,3,3,3,Pre-Medical,Pharmacy
@@ -68,11 +68,11 @@ Math,Biology,Computer,Communication,Leadership,Background,Career
 4,5,2,1,2,Pre-Medical,Pharmacy
 2,4,2,3,2,Pre-Medical,Pharmacy
 1,5,2,2,3,Pre-Medical,Pharmacy
-1,4,3,1,3,Pre-Medical,Pharmacy
+1,4,3,1,3,Pre-Medical,Software Engineering
 3,5,2,3,3,Pre-Medical,Pharmacy
 3,5,2,2,2,Pre-Medical,Pharmacy
 3,5,3,1,2,Pre-Medical,Pharmacy
-4,4,2,2,3,Pre-Medical,Pharmacy
+4,4,2,2,3,Pre-Medical,Software Engineering
 3,5,3,3,2,Pre-Medical,Pharmacy
 4,4,1,3,2,Pre-Medical,Pharmacy
 3,5,1,1,1,Pre-Medical,Pharmacy
@@ -88,19 +88,19 @@ Math,Biology,Computer,Communication,Leadership,Background,Career
 3,4,4,1,2,Pre-Medical,Biotechnology
 3,3,3,1,2,Pre-Medical,Biotechnology
 3,4,4,3,2,Pre-Medical,Biotechnology
-3,5,4,3,2,Pre-Medical,Biotechnology
+3,5,4,3,2,Pre-Medical,Pharmacy
 4,4,5,3,2,Pre-Medical,Biotechnology
 4,5,3,2,2,Pre-Medical,Biotechnology
 4,3,3,1,1,Pre-Medical,Biotechnology
 3,4,5,3,1,Pre-Medical,Biotechnology
-4,4,4,2,2,Pre-Medical,Biotechnology
+4,4,4,2,2,Pre-Medical,MBBS
 3,5,3,2,4,Pre-Medical,Biotechnology
 4,5,4,2,2,Pre-Medical,Biotechnology
 3,3,4,1,2,Pre-Medical,Biotechnology
 4,4,4,2,2,Pre-Medical,Biotechnology
 4,3,4,1,1,Pre-Medical,Biotechnology
 5,4,3,1,1,Pre-Medical,Biotechnology
-3,5,4,1,2,Pre-Medical,MBBS
+3,5,4,1,2,Pre-Medical,Biotechnology
 3,4,4,2,2,Pre-Medical,Biotechnology
 4,4,3,2,3,Pre-Medical,Biotechnology
 3,3,5,2,3,Pre-Medical,Biotechnology
@@ -118,7 +118,7 @@ Math,Biology,Computer,Communication,Leadership,Background,Career
 2,3,4,1,2,Pre-Medical,Biotechnology
 5,3,3,2,3,Pre-Medical,Biotechnology
 3,4,5,1,1,Pre-Medical,Biotechnology
-3,3,4,2,1,Pre-Medical,MBBS
+3,3,4,2,1,Pre-Medical,Biotechnology
 2,3,2,4,2,Pre-Medical,Psychology
 2,4,2,3,3,Pre-Medical,Psychology
 1,3,1,5,2,Pre-Medical,Psychology
@@ -157,7 +157,7 @@ Math,Biology,Computer,Communication,Leadership,Background,Career
 2,2,2,5,2,Pre-Medical,Psychology
 2,3,3,5,3,Pre-Medical,Psychology
 2,3,1,4,2,Pre-Medical,Psychology
-1,2,2,5,1,Pre-Medical,Psychology
+1,2,2,5,1,Pre-Medical,Software Engineering
 2,4,2,5,3,Pre-Medical,Psychology
 1,1,2,5,5,Pre-Medical,Law
 3,2,1,5,5,Pre-Medical,Law
@@ -169,17 +169,17 @@ Math,Biology,Computer,Communication,Leadership,Background,Career
 1,2,3,5,5,Pre-Medical,Law
 3,2,3,5,5,Pre-Medical,Law
 2,4,2,4,5,Pre-Medical,Law
-2,1,2,5,5,Pre-Medical,Biotechnology
+2,1,2,5,5,Pre-Medical,Law
 2,2,2,3,5,Pre-Medical,Law
 1,1,2,5,4,Pre-Medical,Law
 2,1,2,4,5,Pre-Medical,Law
-2,1,2,5,3,Pre-Medical,MBBS
+2,1,2,5,3,Pre-Medical,Law
 1,2,2,5,5,Pre-Medical,Law
 2,2,1,4,4,Pre-Medical,Law
 2,3,1,3,4,Pre-Medical,Law
 1,1,2,5,5,Pre-Medical,Law
 3,1,1,5,4,Pre-Medical,Law
-2,2,2,5,4,Pre-Medical,Law
+2,2,2,5,4,Pre-Medical,MBBS
 3,2,1,5,4,Pre-Medical,Law
 1,2,2,4,5,Pre-Medical,Law
 3,3,2,5,3,Pre-Medical,Law
@@ -198,804 +198,924 @@ Math,Biology,Computer,Communication,Leadership,Background,Career
 2,1,2,5,5,Pre-Medical,Law
 2,1,2,5,4,Pre-Medical,Law
 2,3,3,5,5,Pre-Medical,Law
-2,2,2,5,5,Pre-Medical,Law
+2,2,2,5,5,Pre-Medical,Biotechnology
+4,1,5,2,2,Pre-Medical,BSCS
+4,2,5,2,2,Pre-Medical,BSCS
+3,2,4,1,1,Pre-Medical,BSCS
+3,1,5,2,2,Pre-Medical,BSCS
+4,1,5,2,1,Pre-Medical,BSCS
+4,1,5,2,3,Pre-Medical,BSCS
+5,1,4,2,1,Pre-Medical,BSCS
+4,2,4,2,2,Pre-Medical,BSCS
+4,2,5,2,1,Pre-Medical,BSCS
+4,1,5,1,2,Pre-Medical,BSCS
+3,1,5,4,1,Pre-Medical,BSCS
+5,1,5,2,2,Pre-Medical,BSCS
+4,2,4,3,1,Pre-Medical,BSCS
+4,1,5,3,2,Pre-Medical,BSCS
+4,1,5,1,1,Pre-Medical,BSCS
+4,2,5,1,3,Pre-Medical,Law
+4,1,5,2,2,Pre-Medical,BSCS
+4,1,4,2,2,Pre-Medical,BSCS
+4,1,5,2,1,Pre-Medical,BSCS
+5,2,5,2,3,Pre-Medical,BSCS
+5,2,5,2,1,Pre-Medical,BSCS
+5,1,4,3,2,Pre-Medical,BSCS
+5,1,4,2,2,Pre-Medical,BSCS
+4,2,5,2,1,Pre-Medical,BSCS
+5,1,4,2,2,Pre-Medical,BSCS
+4,2,5,2,1,Pre-Medical,BSCS
+4,1,4,3,2,Pre-Medical,BSCS
+5,1,5,2,2,Pre-Medical,BSCS
+5,1,3,1,2,Pre-Medical,BSCS
+5,2,5,3,3,Pre-Medical,BSCS
+4,2,5,1,2,Pre-Medical,BSCS
+4,1,5,1,1,Pre-Medical,BSCS
+3,1,5,1,1,Pre-Medical,BSCS
+4,3,5,2,2,Pre-Medical,BSCS
+3,1,5,1,2,Pre-Medical,BSCS
+3,1,5,2,2,Pre-Medical,BSCS
+3,2,4,2,2,Pre-Medical,BSCS
+3,1,5,2,2,Pre-Medical,BSCS
+5,2,5,2,3,Pre-Medical,BSCS
+5,1,4,3,1,Pre-Medical,BSCS
+2,1,5,3,3,Pre-Medical,Software Engineering
+3,1,4,5,4,Pre-Medical,Software Engineering
+4,1,5,3,2,Pre-Medical,Software Engineering
+2,1,3,3,4,Pre-Medical,Software Engineering
+3,2,5,4,3,Pre-Medical,Software Engineering
+3,2,4,4,4,Pre-Medical,Software Engineering
+3,1,4,3,4,Pre-Medical,Software Engineering
+2,1,5,4,4,Pre-Medical,Software Engineering
+4,1,5,3,4,Pre-Medical,Software Engineering
+3,1,4,3,2,Pre-Medical,Psychology
+4,2,4,4,3,Pre-Medical,Software Engineering
+3,2,5,5,3,Pre-Medical,Software Engineering
+4,1,5,3,3,Pre-Medical,Law
+3,1,5,4,4,Pre-Medical,Software Engineering
+4,2,5,4,3,Pre-Medical,Software Engineering
+3,1,5,4,3,Pre-Medical,BSCS
+4,1,3,4,3,Pre-Medical,Software Engineering
+3,1,5,5,4,Pre-Medical,Software Engineering
+3,1,5,2,4,Pre-Medical,Software Engineering
+4,1,4,3,3,Pre-Medical,Software Engineering
+3,1,5,4,3,Pre-Medical,Software Engineering
+1,1,5,1,3,Pre-Medical,Software Engineering
+2,2,4,4,4,Pre-Medical,Software Engineering
+4,1,5,2,4,Pre-Medical,Software Engineering
+2,1,5,2,4,Pre-Medical,Software Engineering
+4,1,4,3,4,Pre-Medical,Software Engineering
+2,1,5,4,4,Pre-Medical,Law
+4,2,5,5,3,Pre-Medical,Software Engineering
+2,1,5,3,3,Pre-Medical,Software Engineering
+5,1,4,4,3,Pre-Medical,Software Engineering
+3,2,4,4,5,Pre-Medical,Software Engineering
+3,1,4,3,3,Pre-Medical,Software Engineering
+3,2,4,4,3,Pre-Medical,Software Engineering
+3,1,5,4,4,Pre-Medical,Software Engineering
+2,2,5,2,3,Pre-Medical,Software Engineering
+3,2,5,4,4,Pre-Medical,Biotechnology
+4,1,5,3,2,Pre-Medical,Software Engineering
+3,2,4,4,3,Pre-Medical,Software Engineering
+3,2,4,4,2,Pre-Medical,Software Engineering
+4,2,5,4,2,Pre-Medical,Software Engineering
+5,2,4,1,2,Pre-Medical,Data Science
+5,2,4,2,3,Pre-Medical,Data Science
+5,4,3,2,3,Pre-Medical,Data Science
+4,4,5,2,2,Pre-Medical,Data Science
+5,2,4,3,3,Pre-Medical,Data Science
+4,3,5,2,3,Pre-Medical,Data Science
+5,1,3,1,3,Pre-Medical,Data Science
+5,2,2,1,3,Pre-Medical,Data Science
+4,2,3,3,2,Pre-Medical,Data Science
+5,4,5,1,2,Pre-Medical,Data Science
+5,2,4,1,3,Pre-Medical,Data Science
+5,4,4,3,3,Pre-Medical,Data Science
+5,1,3,2,3,Pre-Medical,Data Science
+5,1,3,1,1,Pre-Medical,Data Science
+5,3,4,1,2,Pre-Medical,Data Science
+5,3,3,1,4,Pre-Medical,Data Science
+5,2,4,2,3,Pre-Medical,Data Science
+4,3,3,2,3,Pre-Medical,Data Science
+4,2,3,1,2,Pre-Medical,Data Science
+4,2,3,2,2,Pre-Medical,Data Science
+5,2,5,2,2,Pre-Medical,Data Science
+5,1,4,3,2,Pre-Medical,Data Science
+5,2,5,1,1,Pre-Medical,Data Science
+5,1,5,1,1,Pre-Medical,Data Science
+4,1,4,1,2,Pre-Medical,Data Science
+5,3,4,1,3,Pre-Medical,Data Science
+5,2,5,1,4,Pre-Medical,Data Science
+4,3,3,1,3,Pre-Medical,Data Science
+5,3,4,2,3,Pre-Medical,Data Science
+5,1,3,2,3,Pre-Medical,Data Science
+4,1,3,1,1,Pre-Medical,Data Science
+4,1,4,2,2,Pre-Medical,Data Science
+5,2,3,1,2,Pre-Medical,Data Science
+4,1,4,2,1,Pre-Medical,Data Science
+5,2,4,2,1,Pre-Medical,Data Science
+4,2,5,1,3,Pre-Medical,Data Science
+5,2,4,1,2,Pre-Medical,Data Science
+4,1,5,1,2,Pre-Medical,Data Science
+4,1,4,1,3,Pre-Medical,Data Science
+5,2,4,3,2,Pre-Medical,Data Science
+5,2,4,1,3,Pre-Engineering,Engineering
+5,2,3,2,3,Pre-Engineering,BBA
 5,1,3,2,3,Pre-Engineering,Engineering
-5,2,3,3,4,Pre-Engineering,Engineering
-4,3,3,1,3,Pre-Engineering,Engineering
-4,2,3,2,4,Pre-Engineering,Engineering
-5,2,3,2,2,Pre-Engineering,Engineering
-5,1,3,2,4,Pre-Engineering,Engineering
-5,2,3,2,3,Pre-Engineering,BSCS
-5,2,3,3,4,Pre-Engineering,Engineering
-4,2,3,2,3,Pre-Engineering,Engineering
-4,1,3,1,4,Pre-Engineering,Engineering
-4,1,3,4,2,Pre-Engineering,Engineering
-5,2,3,2,4,Pre-Engineering,Engineering
-5,3,3,3,3,Pre-Engineering,Engineering
-5,1,3,3,3,Pre-Engineering,Software Engineering
-5,1,3,1,3,Pre-Engineering,Engineering
-5,3,5,2,4,Pre-Engineering,Engineering
-5,1,3,2,3,Pre-Engineering,Engineering
-5,1,2,2,3,Pre-Engineering,Engineering
-4,2,4,2,3,Pre-Engineering,Engineering
-5,3,3,3,4,Pre-Engineering,Engineering
-5,2,3,2,3,Pre-Engineering,Engineering
-5,1,2,3,4,Pre-Engineering,Engineering
-5,1,2,2,3,Pre-Engineering,Engineering
-5,2,3,2,3,Pre-Engineering,Engineering
-5,2,2,2,3,Pre-Engineering,BBA
-5,3,3,2,2,Pre-Engineering,Engineering
-4,1,3,3,3,Pre-Engineering,Engineering
-5,2,3,2,3,Pre-Engineering,Engineering
-5,1,2,2,3,Pre-Engineering,Engineering
-5,2,3,3,4,Pre-Engineering,Engineering
-5,2,3,2,4,Pre-Engineering,Data Science
-5,2,4,1,2,Pre-Engineering,Engineering
-4,1,3,1,3,Pre-Engineering,Engineering
-4,3,4,2,3,Pre-Engineering,Engineering
-4,1,3,1,3,Pre-Engineering,Engineering
+5,4,2,2,3,Pre-Engineering,Engineering
+5,2,4,3,4,Pre-Engineering,Engineering
+5,1,4,2,4,Pre-Engineering,Engineering
 4,1,3,2,4,Pre-Engineering,Engineering
-4,2,2,2,3,Pre-Engineering,Engineering
+5,1,4,2,3,Pre-Engineering,Engineering
+4,2,1,2,2,Pre-Engineering,Engineering
+5,2,4,2,3,Pre-Engineering,Engineering
+4,2,3,2,3,Pre-Engineering,Engineering
+4,2,2,3,3,Pre-Engineering,Data Science
+5,1,3,3,4,Pre-Engineering,Engineering
+4,2,3,2,3,Pre-Engineering,Engineering
+5,1,3,2,3,Pre-Engineering,Engineering
+4,2,3,1,3,Pre-Engineering,Engineering
+4,1,3,3,3,Pre-Engineering,Engineering
+5,1,3,2,4,Pre-Engineering,Engineering
+4,1,2,2,3,Pre-Engineering,Engineering
+5,1,5,1,4,Pre-Engineering,Engineering
+4,1,3,1,4,Pre-Engineering,Engineering
+5,1,3,3,3,Pre-Engineering,Engineering
 4,1,3,2,3,Pre-Engineering,Engineering
-5,2,3,3,5,Pre-Engineering,Engineering
-5,1,2,3,3,Pre-Engineering,Engineering
-3,1,5,2,1,Pre-Engineering,BSCS
-4,1,4,3,2,Pre-Engineering,BSCS
-5,1,5,1,1,Pre-Engineering,BSCS
-3,1,3,1,3,Pre-Engineering,BSCS
-4,2,5,2,1,Pre-Engineering,BSCS
-5,2,4,2,2,Pre-Engineering,BSCS
-4,1,4,2,2,Pre-Engineering,BSCS
-4,1,5,2,3,Pre-Engineering,Data Science
-5,1,5,1,3,Pre-Engineering,BSCS
-4,1,4,2,1,Pre-Engineering,BSCS
-5,2,4,2,1,Pre-Engineering,BSCS
-4,2,5,3,1,Pre-Engineering,BSCS
-5,1,5,1,2,Pre-Engineering,BSCS
-4,1,5,2,2,Pre-Engineering,BSCS
-5,2,5,2,1,Pre-Engineering,BSCS
-4,1,5,2,2,Pre-Engineering,BSCS
-5,1,3,2,2,Pre-Engineering,BSCS
-4,1,5,3,2,Pre-Engineering,BSCS
-4,1,5,1,2,Pre-Engineering,Engineering
-5,1,4,1,1,Pre-Engineering,BSCS
-4,1,5,2,2,Pre-Engineering,BSCS
-2,1,5,1,2,Pre-Engineering,BSCS
-3,2,4,2,2,Pre-Engineering,BSCS
-5,1,5,1,3,Pre-Engineering,BSCS
-4,1,5,1,2,Pre-Engineering,BSCS
-5,1,4,2,2,Pre-Engineering,BSCS
+5,1,3,2,2,Pre-Engineering,Engineering
+5,1,3,3,4,Pre-Engineering,Engineering
+5,1,3,2,3,Pre-Engineering,Engineering
+5,2,3,1,3,Pre-Engineering,Engineering
+5,1,3,1,3,Pre-Engineering,Engineering
+5,3,3,1,4,Pre-Engineering,Engineering
+4,1,3,2,4,Pre-Engineering,Engineering
+4,1,3,2,4,Pre-Engineering,Engineering
+5,3,5,1,3,Pre-Engineering,Engineering
+4,1,3,1,3,Pre-Engineering,Engineering
+5,1,4,1,5,Pre-Engineering,Engineering
+4,2,2,3,4,Pre-Engineering,Engineering
+5,1,3,1,4,Pre-Engineering,Engineering
+5,2,1,1,4,Pre-Engineering,Engineering
+5,2,2,2,4,Pre-Engineering,Engineering
+4,2,3,2,2,Pre-Engineering,Engineering
+5,1,3,2,3,Pre-Engineering,Software Engineering
+4,2,5,2,2,Pre-Engineering,BSCS
+3,2,5,2,2,Pre-Engineering,BSCS
 3,1,5,2,2,Pre-Engineering,BSCS
-5,2,5,4,2,Pre-Engineering,BSCS
+4,2,5,2,2,Pre-Engineering,BSCS
+3,2,5,2,1,Pre-Engineering,BSCS
+5,2,5,1,2,Pre-Engineering,BSCS
+5,1,4,2,2,Pre-Engineering,Data Science
+4,1,5,3,1,Pre-Engineering,BSCS
 4,1,5,1,1,Pre-Engineering,BSCS
-5,1,4,2,2,Pre-Engineering,BSCS
-4,2,4,2,3,Pre-Engineering,BSCS
-5,1,4,2,2,Pre-Engineering,BSCS
-4,2,4,2,2,Pre-Engineering,BSCS
-4,1,5,3,2,Pre-Engineering,BSCS
-3,2,5,1,2,Pre-Engineering,BSCS
-4,2,5,2,3,Pre-Engineering,BSCS
-5,1,5,2,1,Pre-Engineering,BSCS
-4,2,4,2,1,Pre-Engineering,BSCS
-4,2,4,2,1,Pre-Engineering,BSCS
-5,2,5,2,1,Pre-Engineering,BSCS
-4,1,5,3,3,Pre-Engineering,Software Engineering
-3,1,5,3,4,Pre-Engineering,Software Engineering
-3,3,4,4,4,Pre-Engineering,Software Engineering
-2,3,5,4,3,Pre-Engineering,Software Engineering
-3,1,5,4,4,Pre-Engineering,Software Engineering
-2,2,5,4,4,Pre-Engineering,Software Engineering
-3,1,4,2,4,Pre-Engineering,Software Engineering
-3,1,3,3,4,Pre-Engineering,Software Engineering
-3,1,4,4,3,Pre-Engineering,Software Engineering
-3,3,5,3,3,Pre-Engineering,Software Engineering
-3,2,5,3,4,Pre-Engineering,BBA
-3,3,5,5,4,Pre-Engineering,Software Engineering
-4,1,4,4,4,Pre-Engineering,Data Science
-3,1,4,2,2,Pre-Engineering,Software Engineering
-3,2,5,2,3,Pre-Engineering,Software Engineering
-3,3,4,3,5,Pre-Engineering,Software Engineering
-3,2,5,4,4,Pre-Engineering,Software Engineering
-2,2,4,4,4,Pre-Engineering,Software Engineering
-3,1,4,3,3,Pre-Engineering,Software Engineering
-2,1,4,4,3,Pre-Engineering,Software Engineering
-3,1,5,4,3,Pre-Engineering,Software Engineering
-3,1,5,5,3,Pre-Engineering,Software Engineering
-3,2,5,2,2,Pre-Engineering,Software Engineering
-3,1,5,3,2,Pre-Engineering,Software Engineering
-2,1,5,3,3,Pre-Engineering,Software Engineering
-4,2,5,2,4,Pre-Engineering,Software Engineering
-3,1,5,3,5,Pre-Engineering,Software Engineering
-2,2,4,3,4,Pre-Engineering,Software Engineering
-3,2,5,3,4,Pre-Engineering,Software Engineering
-3,1,4,4,4,Pre-Engineering,Software Engineering
-2,1,4,3,2,Pre-Engineering,Software Engineering
-3,1,5,4,3,Pre-Engineering,Software Engineering
-3,1,4,3,3,Pre-Engineering,Software Engineering
+3,1,4,2,2,Pre-Engineering,BSCS
+4,1,5,2,2,Pre-Engineering,BSCS
+4,1,5,2,1,Pre-Engineering,BSCS
+5,1,5,3,2,Pre-Engineering,BSCS
+4,1,5,2,2,Pre-Engineering,BSCS
+5,1,4,1,1,Pre-Engineering,BSCS
+3,2,5,3,1,Pre-Engineering,BSCS
+5,2,4,2,1,Pre-Engineering,BSCS
+4,1,5,1,2,Pre-Engineering,BSCS
+5,1,4,1,2,Pre-Engineering,BSCS
+4,1,5,1,1,Pre-Engineering,BSCS
+4,2,5,2,2,Pre-Engineering,BSCS
+3,1,5,1,2,Pre-Engineering,BSCS
+4,2,5,1,3,Pre-Engineering,BSCS
+2,1,5,2,1,Pre-Engineering,BSCS
+3,2,3,3,2,Pre-Engineering,Software Engineering
+3,1,4,2,2,Pre-Engineering,BSCS
+3,1,4,3,1,Pre-Engineering,BSCS
+5,1,4,1,1,Pre-Engineering,BSCS
+3,1,4,1,2,Pre-Engineering,BSCS
+3,1,4,1,3,Pre-Engineering,BSCS
+4,1,4,1,2,Pre-Engineering,BSCS
+3,2,4,2,1,Pre-Engineering,BSCS
+4,1,5,2,1,Pre-Engineering,BBA
+5,1,5,1,2,Pre-Engineering,BSCS
+4,1,5,3,1,Pre-Engineering,BSCS
+5,1,5,3,2,Pre-Engineering,BSCS
+4,1,5,2,1,Pre-Engineering,BSCS
+4,1,4,1,1,Pre-Engineering,BSCS
+4,2,5,2,2,Pre-Engineering,BSCS
+4,1,5,1,3,Pre-Engineering,BSCS
 3,1,5,4,2,Pre-Engineering,Software Engineering
+4,1,4,4,4,Pre-Engineering,Software Engineering
+2,2,5,3,5,Pre-Engineering,Software Engineering
+3,1,4,4,4,Pre-Engineering,Software Engineering
 3,1,5,3,2,Pre-Engineering,Software Engineering
-2,1,5,2,4,Pre-Engineering,Software Engineering
+2,2,3,4,3,Pre-Engineering,Software Engineering
 4,1,5,3,3,Pre-Engineering,Software Engineering
-2,1,5,3,3,Pre-Engineering,BBA
+4,1,5,3,4,Pre-Engineering,Software Engineering
+4,2,5,3,2,Pre-Engineering,Data Science
+2,2,5,3,3,Pre-Engineering,Software Engineering
+4,1,5,5,4,Pre-Engineering,Software Engineering
+3,1,4,3,3,Pre-Engineering,Software Engineering
+2,2,5,4,3,Pre-Engineering,Software Engineering
+3,2,5,4,3,Pre-Engineering,Software Engineering
+3,1,3,3,3,Pre-Engineering,Software Engineering
+2,1,5,2,3,Pre-Engineering,Software Engineering
+3,1,4,4,4,Pre-Engineering,Software Engineering
+4,1,4,3,4,Pre-Engineering,Software Engineering
+3,2,5,4,3,Pre-Engineering,Software Engineering
+4,2,4,2,4,Pre-Engineering,Engineering
+3,1,4,4,3,Pre-Engineering,Software Engineering
+3,2,4,3,4,Pre-Engineering,Software Engineering
+3,2,5,4,4,Pre-Engineering,Software Engineering
+3,1,5,4,4,Pre-Engineering,Software Engineering
+3,1,4,3,3,Pre-Engineering,Software Engineering
+3,3,4,4,4,Pre-Engineering,Software Engineering
+3,3,5,4,3,Pre-Engineering,Software Engineering
+3,1,5,4,4,Pre-Engineering,Software Engineering
+3,1,5,4,3,Pre-Engineering,Software Engineering
+3,1,5,3,3,Pre-Engineering,Software Engineering
+3,2,4,3,4,Pre-Engineering,Software Engineering
+3,1,4,4,3,Pre-Engineering,Software Engineering
+3,1,5,4,4,Pre-Engineering,Software Engineering
+4,3,4,3,3,Pre-Engineering,Software Engineering
 2,1,5,3,4,Pre-Engineering,Software Engineering
-3,1,5,5,3,Pre-Engineering,Software Engineering
-5,3,5,1,2,Pre-Engineering,Data Science
-5,2,4,1,2,Pre-Engineering,Data Science
-5,2,4,2,2,Pre-Engineering,Engineering
-5,4,3,2,2,Pre-Engineering,Data Science
+3,2,5,4,3,Pre-Engineering,Software Engineering
+4,1,3,3,2,Pre-Engineering,Software Engineering
+3,1,4,5,4,Pre-Engineering,Software Engineering
+4,1,4,3,4,Pre-Engineering,Software Engineering
+2,1,5,3,3,Pre-Engineering,Software Engineering
 5,2,4,2,3,Pre-Engineering,Data Science
-5,1,5,2,3,Pre-Engineering,Data Science
-4,1,4,2,3,Pre-Engineering,Data Science
-5,1,5,2,2,Pre-Engineering,Data Science
-4,2,2,2,1,Pre-Engineering,Data Science
-5,2,5,1,2,Pre-Engineering,Data Science
-5,3,4,1,2,Pre-Engineering,BSCS
-4,2,3,2,2,Pre-Engineering,Data Science
-5,1,4,3,3,Pre-Engineering,Data Science
-4,2,4,2,2,Pre-Engineering,Data Science
-5,1,4,2,2,Pre-Engineering,Data Science
-4,3,4,1,2,Pre-Engineering,Data Science
-4,1,4,2,2,Pre-Engineering,Software Engineering
-5,2,4,2,3,Pre-Engineering,Data Science
-5,1,3,1,2,Pre-Engineering,Data Science
-5,2,5,1,3,Pre-Engineering,Data Science
-4,2,4,1,3,Pre-Engineering,Data Science
 5,2,4,2,2,Pre-Engineering,Data Science
-4,1,4,2,2,Pre-Engineering,Data Science
-5,2,4,2,1,Pre-Engineering,Data Science
-5,1,3,3,3,Pre-Engineering,Data Science
-5,1,4,2,2,Pre-Engineering,Data Science
-5,2,4,1,2,Pre-Engineering,Data Science
+5,3,5,3,2,Pre-Engineering,Data Science
+5,2,4,1,1,Pre-Engineering,Data Science
 5,1,4,1,2,Pre-Engineering,Data Science
-5,3,4,1,3,Pre-Engineering,Data Science
+5,2,4,3,3,Pre-Engineering,Data Science
+5,1,3,3,2,Pre-Engineering,Data Science
+4,2,4,1,2,Pre-Engineering,BSCS
+5,1,3,2,3,Pre-Engineering,Data Science
+4,1,3,2,3,Pre-Engineering,Data Science
 4,2,4,1,3,Pre-Engineering,Data Science
-4,2,3,1,3,Pre-Engineering,Data Science
-5,3,5,1,2,Pre-Engineering,Engineering
-4,1,3,1,2,Pre-Engineering,Data Science
-5,1,4,1,4,Pre-Engineering,Data Science
-5,2,3,3,3,Pre-Engineering,Data Science
-5,1,4,1,3,Pre-Engineering,Data Science
-5,2,2,1,3,Pre-Engineering,Data Science
-5,3,3,2,3,Pre-Engineering,Data Science
-4,2,4,1,1,Pre-Engineering,Data Science
+4,2,4,2,3,Pre-Engineering,Data Science
+3,1,4,1,3,Pre-Engineering,Data Science
 5,2,4,1,2,Pre-Engineering,Data Science
-3,2,2,4,5,Pre-Engineering,BBA
-2,2,2,4,5,Pre-Engineering,BBA
+5,1,4,2,2,Pre-Engineering,Data Science
+3,1,5,1,1,Pre-Engineering,Data Science
+5,2,5,2,3,Pre-Engineering,Data Science
+5,2,5,2,1,Pre-Engineering,Data Science
+5,3,5,1,3,Pre-Engineering,Data Science
+5,4,3,1,2,Pre-Engineering,Data Science
+5,1,2,1,3,Pre-Engineering,Data Science
+5,3,4,3,3,Pre-Engineering,Data Science
+5,2,5,2,3,Pre-Engineering,Data Science
+5,2,4,3,2,Pre-Engineering,Data Science
+5,3,5,2,1,Pre-Engineering,Data Science
+5,1,5,2,3,Pre-Engineering,Data Science
+4,1,4,2,2,Pre-Engineering,Data Science
+5,4,4,2,3,Pre-Engineering,Data Science
+5,2,2,1,3,Pre-Engineering,Data Science
+4,2,3,3,3,Pre-Engineering,Data Science
+5,2,4,2,2,Pre-Engineering,Data Science
+3,2,4,2,3,Pre-Engineering,Data Science
+5,1,4,2,4,Pre-Engineering,Data Science
+5,3,4,1,3,Pre-Engineering,Data Science
+4,2,4,3,2,Pre-Engineering,Data Science
+3,2,3,2,2,Pre-Engineering,Data Science
+5,3,3,1,3,Pre-Engineering,Data Science
+4,1,4,2,2,Pre-Engineering,Data Science
+4,2,3,2,2,Pre-Engineering,Data Science
+4,2,4,1,3,Pre-Engineering,Software Engineering
+3,2,2,3,4,Pre-Engineering,BBA
+2,2,2,2,4,Pre-Engineering,BBA
+2,3,1,3,5,Pre-Engineering,BBA
+4,1,2,4,3,Pre-Engineering,BBA
+2,1,3,3,5,Pre-Engineering,BBA
+4,3,2,4,5,Pre-Engineering,BBA
+2,2,1,4,5,Pre-Engineering,BBA
 2,1,2,4,5,Pre-Engineering,BBA
-3,2,3,4,5,Pre-Engineering,BBA
-2,2,3,4,4,Pre-Engineering,BBA
-3,2,3,3,5,Pre-Engineering,BBA
-4,1,1,4,5,Pre-Engineering,BBA
-3,2,2,5,4,Pre-Engineering,BBA
-3,1,3,3,4,Pre-Engineering,BBA
-2,1,1,4,5,Pre-Engineering,BBA
-3,2,2,4,5,Pre-Engineering,BBA
-3,1,3,4,4,Pre-Engineering,BBA
-3,1,3,5,5,Pre-Engineering,BBA
-3,1,2,4,5,Pre-Engineering,BBA
-4,1,2,3,4,Pre-Engineering,BBA
-2,2,3,5,4,Pre-Engineering,BBA
-4,2,2,4,3,Pre-Engineering,BBA
+3,2,1,4,5,Pre-Engineering,BBA
+5,1,2,4,5,Pre-Engineering,BBA
 3,1,2,3,5,Pre-Engineering,BBA
-4,1,1,2,5,Pre-Engineering,BBA
-3,1,2,3,4,Pre-Engineering,BBA
-3,2,2,4,5,Pre-Engineering,BBA
-2,1,2,3,5,Pre-Engineering,BBA
-2,2,2,2,5,Pre-Engineering,BBA
-1,1,3,4,4,Pre-Engineering,BBA
-2,2,1,5,5,Pre-Engineering,BBA
-2,1,1,4,5,Pre-Engineering,BBA
-2,1,1,5,4,Pre-Engineering,BBA
-4,1,1,3,4,Pre-Engineering,BBA
-2,1,1,2,5,Pre-Engineering,BBA
-2,1,1,3,5,Pre-Engineering,BBA
-3,2,1,3,5,Pre-Engineering,BBA
-2,2,1,4,4,Pre-Engineering,BBA
+3,2,2,3,3,Pre-Engineering,BBA
+2,1,2,3,4,Pre-Engineering,BBA
+2,1,3,4,5,Pre-Engineering,BBA
 3,1,2,4,4,Pre-Engineering,BBA
-3,2,2,3,5,Pre-Engineering,BBA
+3,1,2,4,5,Pre-Engineering,BBA
+4,1,2,4,5,Pre-Engineering,BBA
+3,1,3,5,5,Pre-Engineering,BBA
+4,1,3,3,5,Pre-Engineering,BBA
+5,1,1,3,5,Pre-Engineering,BBA
+3,2,3,4,5,Pre-Engineering,BBA
+4,2,2,4,5,Pre-Engineering,BBA
+3,3,2,4,5,Pre-Engineering,BBA
+3,1,3,4,4,Pre-Engineering,BBA
+3,3,2,3,5,Pre-Engineering,BBA
 3,1,2,5,4,Pre-Engineering,BBA
-4,1,2,5,5,Pre-Engineering,BBA
-3,1,2,4,4,Pre-Engineering,BBA
-3,2,1,3,4,Pre-Engineering,BBA
+4,2,2,4,5,Pre-Engineering,BBA
+4,1,1,4,5,Pre-Engineering,BBA
 3,2,2,4,5,Pre-Engineering,BBA
-3,2,2,3,5,Pre-Engineering,BBA
+3,1,3,3,5,Pre-Engineering,BBA
+2,1,2,2,5,Pre-Engineering,BBA
+3,1,3,5,5,Pre-Engineering,BBA
+3,1,3,5,5,Pre-Engineering,BBA
+2,2,2,3,5,Pre-Engineering,BBA
+5,2,3,4,5,Pre-Engineering,BBA
+3,1,1,5,5,Pre-Engineering,BBA
+2,2,2,4,5,Pre-Engineering,BBA
+4,1,3,4,5,Pre-Engineering,BBA
+2,3,2,4,4,Pre-Engineering,BBA
+2,2,2,2,5,Pre-Engineering,BBA
+4,2,5,2,3,ICS,BBA
 4,1,5,2,1,ICS,BSCS
-5,1,4,3,2,ICS,BSCS
-3,2,5,2,3,ICS,BSCS
-4,1,4,2,2,ICS,BSCS
+3,2,4,2,1,ICS,BSCS
+4,1,5,1,3,ICS,BSCS
 4,1,5,2,1,ICS,BSCS
-3,2,3,2,1,ICS,BSCS
-5,1,5,2,2,ICS,BSCS
-5,1,5,1,2,ICS,BSCS
-5,2,5,1,1,ICS,BSCS
-4,2,5,2,1,ICS,BSCS
-5,1,5,4,2,ICS,BSCS
-5,1,4,1,1,ICS,Software Engineering
-3,2,5,2,2,ICS,BSCS
-4,2,5,2,2,ICS,BSCS
-4,1,3,2,2,ICS,BSCS
-3,1,5,1,1,ICS,BSCS
-4,1,4,2,3,ICS,BSCS
-5,1,4,1,2,ICS,BSCS
-4,2,5,2,2,ICS,BSCS
-5,2,4,1,3,ICS,BSCS
-4,1,4,2,2,ICS,BSCS
-4,2,4,1,2,ICS,BSCS
-4,2,5,2,2,ICS,Engineering
-4,1,5,2,2,ICS,BSCS
-5,1,4,2,2,ICS,BSCS
-4,3,4,2,3,ICS,BSCS
-4,3,5,2,1,ICS,BSCS
+4,2,5,1,2,ICS,BSCS
 4,1,5,2,3,ICS,BSCS
+5,1,5,2,1,ICS,BSCS
+5,1,4,1,3,ICS,BSCS
+4,2,4,2,3,ICS,BSCS
+3,1,5,1,2,ICS,BSCS
+4,1,4,2,2,ICS,BSCS
+3,1,5,1,2,ICS,BSCS
 4,1,5,2,1,ICS,BSCS
+5,2,4,2,2,ICS,BSCS
+4,2,5,1,2,ICS,BSCS
+5,1,5,1,1,ICS,BSCS
+4,1,5,3,1,ICS,BSCS
+3,1,5,2,3,ICS,BSCS
+5,2,5,2,1,ICS,BSCS
+5,1,5,3,2,ICS,BSCS
+4,1,3,2,2,ICS,BSCS
+4,2,5,1,2,ICS,BSCS
+4,1,5,3,1,ICS,BSCS
+4,2,4,2,1,ICS,BSCS
+4,1,5,3,1,ICS,BSCS
+3,1,5,1,2,ICS,BSCS
+4,1,5,4,3,ICS,Engineering
+4,2,4,1,3,ICS,BSCS
+5,2,4,2,2,ICS,Data Science
+4,1,4,2,3,ICS,BSCS
+3,2,5,2,2,ICS,BSCS
+4,1,4,2,1,ICS,BSCS
 4,1,5,2,2,ICS,BSCS
-4,2,4,1,2,ICS,BSCS
-5,1,4,2,1,ICS,BSCS
-4,1,5,2,2,ICS,BSCS
-5,3,4,1,1,ICS,BSCS
-4,1,5,1,2,ICS,BSCS
-4,2,5,2,2,ICS,BSCS
-5,1,3,1,1,ICS,BSCS
-4,1,4,3,2,ICS,BSCS
-5,1,4,2,2,ICS,BSCS
-3,1,5,2,1,ICS,BSCS
-3,1,5,4,4,ICS,Software Engineering
-3,1,5,4,3,ICS,Software Engineering
-4,2,5,5,3,ICS,Software Engineering
-3,1,5,3,2,ICS,Software Engineering
+5,2,5,2,2,ICS,BSCS
+5,2,4,2,1,ICS,BSCS
+5,1,5,3,2,ICS,BSCS
+4,1,5,1,1,ICS,BSCS
+5,1,4,1,3,ICS,BSCS
+5,2,5,2,1,ICS,BSCS
+3,2,5,3,3,ICS,Software Engineering
+3,2,3,4,2,ICS,Software Engineering
 3,1,5,3,3,ICS,Software Engineering
-3,1,5,5,4,ICS,Software Engineering
-3,1,4,5,3,ICS,Software Engineering
-2,1,5,3,3,ICS,Software Engineering
-4,1,4,4,4,ICS,Software Engineering
-3,1,4,3,4,ICS,Software Engineering
-2,1,5,2,4,ICS,Software Engineering
-2,1,5,4,4,ICS,Software Engineering
-1,1,5,3,4,ICS,Software Engineering
-4,2,5,2,3,ICS,Software Engineering
-3,1,5,4,3,ICS,Software Engineering
-1,1,5,3,2,ICS,Software Engineering
-4,1,5,4,4,ICS,Software Engineering
-3,2,5,4,2,ICS,Software Engineering
-3,2,5,3,4,ICS,Software Engineering
-4,3,4,3,3,ICS,Software Engineering
-3,1,3,3,4,ICS,Software Engineering
-3,3,5,4,4,ICS,Software Engineering
-4,1,5,3,4,ICS,Software Engineering
-3,1,5,5,3,ICS,Software Engineering
-3,2,5,3,2,ICS,Software Engineering
 3,1,5,4,4,ICS,Software Engineering
-2,1,5,3,3,ICS,Engineering
-3,3,5,4,4,ICS,Software Engineering
-4,1,3,3,4,ICS,Software Engineering
+2,1,5,3,3,ICS,Software Engineering
+3,2,5,2,5,ICS,Software Engineering
+2,2,5,3,4,ICS,Software Engineering
+3,2,5,4,3,ICS,Software Engineering
+3,2,5,4,3,ICS,Software Engineering
 2,1,4,4,4,ICS,Software Engineering
 3,2,5,4,3,ICS,Software Engineering
-1,1,5,4,4,ICS,Software Engineering
-4,1,5,4,5,ICS,Software Engineering
+4,1,5,3,3,ICS,Software Engineering
+2,2,4,5,3,ICS,Software Engineering
+2,2,5,3,4,ICS,Software Engineering
+2,1,4,2,3,ICS,Software Engineering
+1,1,4,3,4,ICS,Software Engineering
+3,2,5,4,3,ICS,Software Engineering
+3,2,5,3,3,ICS,Software Engineering
+2,1,5,3,3,ICS,Software Engineering
+2,2,5,3,4,ICS,Software Engineering
+3,1,5,3,3,ICS,Software Engineering
+3,2,5,3,4,ICS,Software Engineering
+3,3,5,2,4,ICS,Software Engineering
 4,2,5,3,4,ICS,Software Engineering
-2,1,5,5,3,ICS,Software Engineering
-1,2,4,3,3,ICS,Software Engineering
-3,2,4,3,4,ICS,Software Engineering
-3,1,5,4,3,ICS,Software Engineering
-2,2,4,4,3,ICS,Software Engineering
-2,1,5,3,4,ICS,Software Engineering
-5,3,4,1,2,ICS,Data Science
-4,2,4,1,2,ICS,Data Science
-4,3,3,1,3,ICS,Data Science
-5,1,3,2,1,ICS,Data Science
-4,2,5,1,2,ICS,Data Science
-5,3,3,2,4,ICS,Data Science
-4,3,3,2,2,ICS,Data Science
-4,1,4,2,2,ICS,Data Science
-5,2,3,2,3,ICS,Data Science
+2,1,4,3,3,ICS,Software Engineering
+4,2,5,2,3,ICS,Software Engineering
+2,2,5,4,3,ICS,Software Engineering
+1,1,5,3,3,ICS,Software Engineering
+4,2,5,3,3,ICS,Software Engineering
+3,2,5,4,4,ICS,Software Engineering
+2,2,5,2,2,ICS,Software Engineering
+2,2,5,4,5,ICS,Software Engineering
+2,1,5,3,3,ICS,Software Engineering
+2,2,4,5,3,ICS,Software Engineering
+4,1,5,3,3,ICS,Software Engineering
+3,1,5,3,5,ICS,Software Engineering
+3,2,5,4,2,ICS,Software Engineering
+3,1,5,4,4,ICS,Software Engineering
+3,2,5,5,3,ICS,Software Engineering
+2,1,5,4,3,ICS,Software Engineering
+5,2,5,1,2,ICS,Data Science
+5,1,5,1,3,ICS,Data Science
 5,2,4,2,3,ICS,Data Science
-5,2,4,1,2,ICS,Engineering
-5,3,3,1,1,ICS,Data Science
-4,1,4,1,2,ICS,Data Science
-4,2,5,2,2,ICS,Data Science
-5,2,4,2,2,ICS,Data Science
-5,1,4,2,2,ICS,Data Science
-5,1,4,2,2,ICS,Data Science
-5,2,4,3,2,ICS,Data Science
-5,2,4,1,3,ICS,Data Science
-5,2,2,1,3,ICS,Data Science
-5,2,5,2,3,ICS,Data Science
-5,3,4,2,2,ICS,Data Science
-4,3,4,2,2,ICS,Data Science
-4,2,5,2,1,ICS,Data Science
-5,3,4,1,4,ICS,Data Science
-5,2,4,2,2,ICS,Data Science
-5,2,4,2,2,ICS,Data Science
-5,1,3,2,3,ICS,Data Science
-5,2,4,2,2,ICS,Data Science
-5,2,5,1,3,ICS,Data Science
-4,2,4,1,3,ICS,Data Science
-5,1,4,3,3,ICS,Data Science
-5,2,5,3,3,ICS,Data Science
-4,2,4,1,3,ICS,Data Science
+5,2,5,2,1,ICS,Data Science
+4,3,4,1,2,ICS,Data Science
+5,3,3,1,3,ICS,Data Science
+5,2,3,2,3,ICS,Data Science
+5,2,4,1,2,ICS,Data Science
+5,2,3,1,3,ICS,Data Science
+5,2,4,2,3,ICS,Data Science
+5,1,3,2,2,ICS,Data Science
+4,2,4,1,2,ICS,Data Science
 5,2,5,2,2,ICS,Data Science
-5,1,3,2,3,ICS,BBA
-4,3,4,2,3,ICS,Data Science
+5,2,4,3,2,ICS,Data Science
+5,2,3,2,3,ICS,Data Science
+4,2,3,1,3,ICS,Data Science
+5,1,4,1,2,ICS,Data Science
+5,1,3,2,3,ICS,Data Science
+5,2,5,1,4,ICS,Data Science
+4,3,3,3,3,ICS,Data Science
+4,2,4,2,2,ICS,Data Science
+5,3,4,1,2,ICS,Data Science
+5,3,5,2,3,ICS,Data Science
+5,2,4,1,2,ICS,Data Science
+5,2,4,2,3,ICS,Data Science
+5,2,4,1,3,ICS,Data Science
+5,2,4,1,2,ICS,Data Science
+4,3,5,2,4,ICS,Data Science
+5,4,4,2,2,ICS,Data Science
+5,3,4,3,3,ICS,Data Science
+5,1,4,2,2,ICS,Data Science
+4,4,4,1,2,ICS,Data Science
+5,2,4,2,2,ICS,Data Science
+5,1,3,1,2,ICS,Data Science
 5,2,5,2,3,ICS,Data Science
-4,4,4,2,1,ICS,Data Science
-4,3,4,1,3,ICS,Data Science
-4,3,3,2,4,ICS,Engineering
-4,1,3,3,2,ICS,Engineering
-4,2,3,2,2,ICS,Engineering
-4,2,4,1,5,ICS,Engineering
-4,1,4,2,3,ICS,Engineering
-5,3,4,1,3,ICS,Engineering
-5,1,3,2,4,ICS,Engineering
-5,1,3,2,3,ICS,Engineering
-5,2,2,1,4,ICS,Engineering
-5,3,3,2,5,ICS,Data Science
-4,1,4,1,3,ICS,Engineering
-4,2,2,2,4,ICS,Engineering
-4,1,3,1,3,ICS,BBA
-5,1,3,2,3,ICS,Engineering
-5,3,3,2,3,ICS,Engineering
-5,3,3,1,4,ICS,Engineering
-5,1,4,2,2,ICS,Engineering
-5,1,3,3,2,ICS,Engineering
-4,1,3,2,4,ICS,Engineering
-5,2,3,2,3,ICS,Engineering
-5,1,4,3,4,ICS,Engineering
-5,2,1,2,3,ICS,Engineering
-5,2,3,1,3,ICS,Engineering
-5,2,3,3,3,ICS,Engineering
-5,3,2,2,3,ICS,Engineering
-5,1,3,3,3,ICS,Engineering
-4,1,4,2,3,ICS,Engineering
-5,1,3,4,4,ICS,Engineering
-4,2,2,1,4,ICS,Engineering
-5,2,3,2,4,ICS,Engineering
-5,1,2,2,4,ICS,Engineering
+4,3,4,2,3,ICS,Data Science
+4,1,3,2,3,ICS,Data Science
+4,1,3,1,1,ICS,Data Science
+4,1,4,1,2,ICS,Data Science
+5,1,4,2,2,ICS,Data Science
 4,2,3,3,4,ICS,Engineering
-4,1,3,3,3,ICS,Engineering
-4,1,4,3,4,ICS,Engineering
+5,2,3,3,3,ICS,Engineering
+5,2,3,1,4,ICS,Engineering
+5,1,4,4,4,ICS,Engineering
+5,2,2,1,4,ICS,Engineering
+4,1,3,2,2,ICS,Engineering
+4,3,2,3,3,ICS,Engineering
+5,2,4,3,3,ICS,Engineering
+5,1,3,2,4,ICS,Engineering
+5,1,2,3,4,ICS,Engineering
+5,2,2,3,3,ICS,Engineering
+5,1,4,1,3,ICS,Engineering
+5,1,3,3,3,ICS,Engineering
+5,1,3,2,3,ICS,Engineering
+5,1,3,2,2,ICS,Data Science
+4,2,2,1,3,ICS,Engineering
+5,2,3,3,3,ICS,Engineering
+5,1,4,2,3,ICS,Engineering
 5,2,3,2,3,ICS,Engineering
+5,2,3,2,4,ICS,Engineering
+5,3,4,3,5,ICS,Engineering
+5,2,3,1,3,ICS,Engineering
+4,2,3,2,4,ICS,Engineering
+5,1,3,3,4,ICS,Engineering
+4,1,3,3,4,ICS,Engineering
 5,2,3,2,3,ICS,Engineering
-5,1,3,3,4,ICS,Software Engineering
+5,2,2,2,3,ICS,Engineering
+5,1,3,1,2,ICS,Engineering
+5,2,4,3,2,ICS,Engineering
 5,2,3,2,3,ICS,Engineering
-5,2,2,2,4,ICS,BSCS
-5,2,3,2,3,ICS,BSCS
-3,2,3,3,4,ICS,BBA
-3,3,1,4,4,ICS,BBA
-3,1,2,3,5,ICS,BBA
-3,1,3,4,5,ICS,BBA
-2,2,2,3,5,ICS,BBA
-3,3,3,3,5,ICS,BBA
-2,2,3,3,5,ICS,BBA
-3,2,2,5,5,ICS,BBA
-3,2,2,4,4,ICS,BBA
-2,1,2,4,5,ICS,BBA
-3,2,3,4,4,ICS,BBA
-4,1,2,4,4,ICS,BBA
-2,2,1,5,4,ICS,BBA
+5,2,4,1,3,ICS,Engineering
+3,1,3,1,4,ICS,Engineering
+5,1,3,1,4,ICS,Engineering
+4,2,3,2,3,ICS,Engineering
+5,1,2,2,3,ICS,BBA
+4,2,3,1,3,ICS,Engineering
+5,2,4,2,3,ICS,Engineering
+5,2,3,1,3,ICS,Engineering
+4,1,2,1,4,ICS,Engineering
+5,1,3,1,3,ICS,Engineering
+3,2,2,5,4,ICS,BBA
 2,2,3,4,5,ICS,BBA
-2,1,1,2,5,ICS,BBA
-1,1,2,3,5,ICS,BBA
-3,2,3,5,5,ICS,BBA
-3,2,2,4,5,ICS,BBA
-2,2,2,3,4,ICS,BBA
-2,2,2,3,5,ICS,BBA
+1,1,2,4,4,ICS,BBA
+3,1,3,4,5,ICS,BBA
 3,1,3,3,5,ICS,BBA
-3,2,2,3,5,ICS,BBA
-3,3,2,2,5,ICS,BBA
-4,3,3,3,5,ICS,BBA
-2,2,1,3,4,ICS,BBA
-4,2,2,3,5,ICS,BBA
-2,2,3,5,4,ICS,BBA
-1,1,3,4,4,ICS,BBA
+3,2,2,5,5,ICS,BBA
+2,2,2,4,4,ICS,BBA
+3,1,2,4,5,ICS,BBA
+4,1,2,4,5,ICS,BBA
+3,1,3,3,5,ICS,BBA
+2,2,3,4,5,ICS,Engineering
+2,2,1,4,5,ICS,BBA
+3,1,1,3,5,ICS,BBA
+4,2,1,5,5,ICS,BBA
+2,1,3,4,4,ICS,BBA
+3,1,2,5,5,ICS,BBA
+3,2,3,5,5,ICS,BBA
 4,2,2,4,5,ICS,BBA
-3,3,2,4,5,ICS,BBA
-2,2,2,2,3,ICS,BBA
-2,2,2,4,5,ICS,BBA
-2,1,2,3,5,ICS,BBA
-2,2,2,5,5,ICS,BBA
-4,1,2,3,5,ICS,BBA
-3,1,2,3,5,ICS,BBA
-3,2,2,4,4,ICS,BBA
+2,1,2,4,5,ICS,BBA
 3,2,3,4,5,ICS,BBA
-3,3,2,5,4,ICS,BBA
-2,1,4,4,5,ICS,BBA
-5,2,4,1,3,Commerce,Accounting
-4,1,4,2,4,Commerce,Accounting
-5,1,3,2,4,Commerce,Accounting
-4,1,4,2,2,Commerce,Accounting
+3,2,2,3,5,ICS,BBA
+4,1,2,4,4,ICS,BBA
+3,1,2,5,5,ICS,BBA
+3,2,2,4,5,ICS,BBA
+2,1,2,3,4,ICS,BBA
+4,2,1,3,5,ICS,BBA
+4,1,3,4,5,ICS,BBA
+2,2,2,4,4,ICS,BBA
+3,2,2,4,5,ICS,BBA
+3,3,3,3,5,ICS,BBA
+2,1,3,3,5,ICS,BBA
+3,1,2,4,4,ICS,BBA
+4,1,1,4,5,ICS,BBA
+4,2,1,4,5,ICS,BBA
+4,2,2,4,4,ICS,BSCS
+2,2,2,4,4,ICS,BBA
+3,3,2,4,5,ICS,BBA
+4,1,2,3,4,ICS,BBA
+3,2,3,4,5,ICS,BBA
+5,1,2,3,5,ICS,BBA
+5,3,2,3,3,Commerce,Accounting
+5,1,4,2,3,Commerce,Accounting
+5,1,2,1,2,Commerce,Accounting
+5,2,2,2,3,Commerce,Accounting
+4,1,2,3,3,Commerce,Accounting
+5,1,2,3,3,Commerce,Accounting
+5,2,2,2,3,Commerce,Accounting
+3,1,4,2,2,Commerce,Accounting
 3,2,3,1,3,Commerce,Accounting
-4,2,2,1,3,Commerce,Accounting
-4,2,2,2,4,Commerce,Accounting
-5,1,3,1,3,Commerce,Accounting
-5,1,2,1,3,Commerce,Accounting
-4,2,3,2,4,Commerce,Accounting
-5,1,2,2,3,Commerce,Accounting
-3,1,2,1,3,Commerce,Accounting
-5,1,5,2,3,Commerce,Accounting
-4,1,3,3,2,Commerce,Accounting
-5,1,2,2,4,Commerce,Accounting
-4,1,2,1,4,Commerce,Media Studies
-4,1,3,1,3,Commerce,Accounting
-5,1,2,2,4,Commerce,Accounting
-5,1,3,1,4,Commerce,Accounting
-3,2,2,3,3,Commerce,Law
-3,1,3,3,3,Commerce,Accounting
-4,2,3,1,2,Commerce,Accounting
-4,2,4,2,3,Commerce,Accounting
-5,1,3,1,2,Commerce,Accounting
-4,1,3,2,3,Commerce,Accounting
-5,1,3,1,3,Commerce,Accounting
-5,1,3,1,3,Commerce,Accounting
-3,2,4,2,4,Commerce,Accounting
-4,3,3,2,3,Commerce,Accounting
-4,2,3,3,3,Commerce,Accounting
-4,1,3,2,3,Commerce,Accounting
-4,3,3,1,3,Commerce,Accounting
-4,2,3,2,3,Commerce,Accounting
-4,1,2,1,2,Commerce,Accounting
-5,2,3,2,4,Commerce,Accounting
-3,2,3,2,3,Commerce,Accounting
+3,2,3,3,3,Commerce,Accounting
+5,1,3,2,3,Commerce,Accounting
+4,1,4,1,3,Commerce,Accounting
 4,1,2,2,3,Commerce,Accounting
-3,1,2,2,2,Commerce,Accounting
-3,1,3,1,3,Commerce,Accounting
-5,1,3,3,3,Commerce,Accounting
-3,2,2,5,5,Commerce,BBA
-3,2,2,5,4,Commerce,Law
-3,1,2,3,5,Commerce,BBA
-3,1,3,5,5,Commerce,BBA
-4,1,1,3,5,Commerce,BBA
-3,1,2,4,4,Commerce,BBA
-3,2,1,4,4,Commerce,BBA
-3,2,3,4,4,Commerce,BBA
-4,1,2,4,5,Commerce,BBA
-3,1,1,4,5,Commerce,BBA
-4,1,1,4,5,Commerce,BBA
-3,1,3,3,5,Commerce,BBA
-3,1,2,5,4,Commerce,BBA
-3,1,2,4,4,Commerce,BBA
-4,1,2,4,3,Commerce,BBA
-2,2,1,3,5,Commerce,BBA
-4,2,2,5,4,Commerce,BBA
-4,1,3,4,4,Commerce,BBA
+3,1,2,1,3,Commerce,Accounting
+5,2,3,1,2,Commerce,Accounting
+5,1,3,1,3,Commerce,Accounting
+4,2,3,1,2,Commerce,Accounting
+4,1,3,4,4,Commerce,Economics
+5,1,1,1,4,Commerce,Accounting
+4,1,3,1,2,Commerce,Accounting
+4,1,2,1,3,Commerce,Accounting
+4,1,3,2,3,Commerce,Accounting
+5,2,3,2,2,Commerce,Accounting
+4,2,3,2,3,Commerce,Accounting
+4,2,3,2,3,Commerce,Accounting
+5,1,3,2,3,Commerce,Accounting
+4,2,5,2,3,Commerce,Accounting
+4,1,4,1,3,Commerce,Accounting
+3,1,2,2,5,Commerce,Accounting
+4,1,3,1,4,Commerce,Accounting
+4,1,3,2,3,Commerce,Accounting
+4,1,2,2,2,Commerce,Accounting
+4,2,3,2,3,Commerce,Accounting
+5,2,3,2,4,Commerce,Accounting
+4,1,3,2,4,Commerce,Accounting
+4,1,3,2,2,Commerce,Accounting
+4,1,2,3,4,Commerce,Accounting
+3,1,3,3,3,Commerce,Accounting
+4,2,3,2,2,Commerce,Accounting
+4,1,2,2,3,Commerce,Law
+3,1,2,4,5,Commerce,BBA
+1,1,2,4,5,Commerce,BBA
+3,1,2,4,5,Commerce,BBA
+2,1,2,5,5,Commerce,BBA
+4,2,2,4,5,Commerce,BBA
 3,2,2,4,4,Commerce,BBA
-3,2,2,3,5,Commerce,BBA
-3,3,3,4,5,Commerce,BBA
-3,2,2,3,4,Commerce,BBA
+2,3,2,3,5,Commerce,BBA
 3,2,2,4,5,Commerce,BBA
-4,1,2,5,5,Commerce,BBA
-2,1,2,4,5,Commerce,BBA
-3,2,2,3,5,Commerce,BBA
+2,1,2,5,5,Commerce,BBA
+1,1,4,4,4,Commerce,BBA
 3,1,1,4,5,Commerce,BBA
-3,1,2,3,4,Commerce,BBA
-3,2,3,4,4,Commerce,BBA
-3,2,2,4,4,Commerce,BBA
-3,2,3,3,5,Commerce,BBA
-1,1,2,3,5,Commerce,BBA
-3,1,2,3,5,Commerce,BBA
 2,1,2,4,5,Commerce,BBA
-3,1,1,3,5,Commerce,BBA
-3,2,2,3,5,Commerce,BBA
-3,2,3,3,5,Commerce,BBA
-3,1,2,3,4,Commerce,BBA
+2,2,1,5,4,Commerce,BBA
+2,2,3,4,5,Commerce,BBA
+3,1,2,3,4,Commerce,Media Studies
+3,1,2,3,5,Commerce,BBA
+3,2,2,5,4,Commerce,BBA
+3,1,2,4,4,Commerce,BBA
 2,1,1,3,5,Commerce,BBA
-3,1,2,2,4,Commerce,BBA
-4,2,1,4,1,Commerce,Economics
-3,2,3,4,2,Commerce,Economics
-2,1,2,3,2,Commerce,Economics
-4,2,2,4,3,Commerce,Economics
-4,2,2,3,4,Commerce,Economics
+2,1,3,3,5,Commerce,BBA
+3,2,1,4,4,Commerce,BBA
+5,1,1,3,4,Commerce,BBA
+4,3,2,3,3,Commerce,BBA
+3,1,2,4,5,Commerce,BBA
+3,1,1,4,5,Commerce,BBA
+4,2,1,3,4,Commerce,BBA
+2,2,2,5,5,Commerce,BBA
+3,2,2,4,5,Commerce,BBA
+3,1,1,4,5,Commerce,BBA
+3,2,1,4,5,Commerce,BBA
+2,3,2,4,5,Commerce,BBA
+2,1,3,3,4,Commerce,BBA
+4,2,2,3,5,Commerce,BBA
+2,1,1,3,4,Commerce,BBA
+2,2,2,5,4,Commerce,BBA
+3,2,2,4,5,Commerce,BBA
+3,1,2,3,4,Commerce,BBA
+3,1,2,5,4,Commerce,BBA
+3,1,2,3,5,Commerce,BBA
+3,2,2,3,4,Commerce,BBA
 4,2,2,5,3,Commerce,Economics
-3,3,1,4,2,Commerce,Economics
-4,1,2,3,4,Commerce,Economics
-5,2,2,3,3,Commerce,Economics
+4,2,2,3,3,Commerce,Economics
+4,2,2,5,3,Commerce,Economics
+4,3,2,3,2,Commerce,Economics
+4,2,1,3,2,Commerce,Economics
+3,1,2,3,3,Commerce,Economics
+3,1,2,4,2,Commerce,Economics
+4,3,2,3,2,Commerce,Economics
 4,2,2,3,2,Commerce,Economics
-3,2,3,4,3,Commerce,Economics
-3,2,1,3,3,Commerce,Economics
+4,2,1,3,2,Commerce,Economics
+4,2,2,3,3,Commerce,Economics
+4,2,2,4,2,Commerce,Economics
+4,3,1,3,3,Commerce,Economics
+4,1,2,4,1,Commerce,Economics
+4,2,1,5,2,Commerce,Economics
+3,1,1,3,2,Commerce,Economics
+5,2,2,3,3,Commerce,Economics
 4,1,1,3,3,Commerce,Economics
-5,3,1,5,3,Commerce,Economics
-3,2,2,4,1,Commerce,Economics
-4,1,1,4,2,Commerce,Economics
-3,2,2,5,3,Commerce,Economics
-5,2,2,4,2,Commerce,Economics
-3,1,1,4,3,Commerce,Economics
-4,3,2,3,3,Commerce,Economics
-4,3,2,3,3,Commerce,Economics
-5,2,2,4,2,Commerce,Economics
-4,1,1,4,3,Commerce,Economics
-4,2,2,4,3,Commerce,Economics
-3,2,1,2,2,Commerce,Economics
-5,2,1,3,2,Commerce,Law
-5,2,3,4,3,Commerce,Economics
-3,2,1,4,2,Commerce,Economics
+5,2,1,3,3,Commerce,Economics
+3,2,2,4,2,Commerce,Economics
+4,2,1,5,2,Commerce,Economics
+4,1,2,5,2,Commerce,Economics
 4,2,1,4,2,Commerce,Economics
+3,3,2,3,2,Commerce,Economics
+3,2,1,4,3,Commerce,Economics
+4,3,1,3,2,Commerce,Economics
+5,1,2,4,2,Commerce,Economics
 3,3,2,3,3,Commerce,Economics
-3,1,2,2,3,Commerce,Economics
-4,2,2,4,2,Commerce,Economics
-4,2,1,3,3,Commerce,Economics
-5,2,1,4,3,Commerce,Economics
-4,2,2,4,2,Commerce,Economics
-2,2,2,4,1,Commerce,Economics
-4,3,2,4,3,Commerce,Economics
-5,1,2,3,2,Commerce,Economics
-4,3,3,4,2,Commerce,Economics
-5,2,1,2,3,Commerce,Economics
-2,3,1,5,5,Commerce,Law
-2,1,3,5,5,Commerce,Law
-2,1,1,4,4,Commerce,Law
-2,3,1,5,5,Commerce,Law
-2,1,1,5,5,Commerce,Law
-3,2,1,5,5,Commerce,Law
-2,3,1,5,5,Commerce,Law
-1,2,3,5,4,Commerce,Law
-1,3,2,4,5,Commerce,Law
-1,3,2,5,5,Commerce,Law
-3,2,2,5,5,Commerce,Law
-2,2,3,4,5,Commerce,Law
-2,2,1,5,5,Commerce,Law
-1,2,1,4,5,Commerce,Law
-2,2,2,3,4,Commerce,Law
-3,1,2,4,5,Commerce,Law
-1,2,2,4,4,Commerce,Law
-2,1,2,5,5,Commerce,Law
-2,2,1,4,5,Commerce,Law
-1,1,2,4,4,Commerce,Law
-2,1,1,4,5,Commerce,Law
-2,2,2,5,5,Commerce,Accounting
-2,2,2,5,4,Commerce,Law
-1,2,2,5,5,Commerce,Law
-2,2,2,5,5,Commerce,Law
-3,2,2,5,5,Commerce,Law
-1,2,4,5,5,Commerce,Law
-1,1,3,4,4,Commerce,Law
-1,1,1,5,5,Commerce,Law
-2,1,2,4,5,Commerce,Law
-2,1,2,5,5,Commerce,Law
-1,2,1,5,4,Commerce,Law
-1,2,2,5,5,Commerce,Law
-3,2,2,5,5,Commerce,BBA
+4,4,2,3,3,Commerce,Economics
+3,2,3,4,1,Commerce,Law
+4,3,2,3,2,Commerce,BBA
+3,2,3,4,3,Commerce,Accounting
+3,1,2,3,2,Commerce,Economics
+4,1,1,4,3,Commerce,Economics
+5,2,2,3,2,Commerce,Law
+3,2,2,2,2,Commerce,Accounting
+5,2,1,5,2,Commerce,Economics
+4,2,1,3,4,Commerce,Economics
+5,2,2,3,3,Commerce,Economics
+3,2,1,2,3,Commerce,Economics
 1,1,2,5,5,Commerce,Law
-1,1,2,5,3,Commerce,Law
-2,1,1,5,5,Commerce,Law
-1,2,2,5,4,Commerce,Law
+2,2,2,5,5,Commerce,Law
+2,2,2,5,5,Commerce,Law
+3,3,2,5,5,Commerce,Law
+3,2,4,4,4,Commerce,Law
+2,2,3,4,5,Commerce,Law
+3,2,1,5,5,Commerce,Law
+2,2,2,5,5,Commerce,Law
+2,1,1,4,5,Commerce,Law
+2,2,2,4,5,Commerce,Law
+2,1,2,4,4,Commerce,Economics
+2,1,3,5,5,Commerce,Law
+2,3,1,5,4,Commerce,Law
+1,1,2,5,5,Commerce,Law
+1,1,2,5,5,Commerce,Law
+2,2,2,5,4,Commerce,Law
+3,1,2,4,5,Commerce,Law
+3,1,1,5,5,Commerce,Law
+1,1,1,5,5,Commerce,Law
+2,2,1,5,5,Commerce,Law
+1,3,1,4,5,Commerce,Law
+2,2,3,5,3,Commerce,Law
+2,2,2,5,5,Commerce,Law
+2,2,1,4,5,Commerce,Law
+1,2,1,5,4,Commerce,Law
 1,3,2,5,4,Commerce,Law
+3,1,3,5,5,Commerce,Law
+1,2,1,5,5,Commerce,Law
+1,3,2,4,4,Commerce,Law
 2,1,1,5,5,Commerce,Law
-1,1,3,5,4,Commerce,Media Studies
-1,1,4,5,3,Commerce,Media Studies
-2,1,3,5,4,Commerce,BBA
-1,2,4,5,3,Commerce,Media Studies
-2,2,4,5,3,Commerce,Media Studies
-1,2,4,5,2,Commerce,Media Studies
-1,3,3,4,4,Commerce,Media Studies
-2,2,4,5,3,Commerce,Media Studies
-1,2,4,5,3,Commerce,Media Studies
-1,2,5,5,2,Commerce,Media Studies
-2,1,3,5,3,Commerce,Media Studies
-1,1,4,5,3,Commerce,Media Studies
-1,2,3,5,2,Commerce,Media Studies
-1,2,5,5,3,Commerce,Media Studies
-1,1,3,4,2,Commerce,Media Studies
-2,1,4,4,3,Commerce,Media Studies
-1,3,4,5,2,Commerce,Media Studies
-1,1,3,5,2,Commerce,Media Studies
-1,1,2,4,3,Commerce,Media Studies
-1,1,5,4,3,Commerce,Media Studies
-2,2,3,5,2,Commerce,Media Studies
-3,1,3,4,2,Commerce,Media Studies
-2,3,3,4,1,Commerce,Media Studies
+2,1,2,4,4,Commerce,Law
+1,2,2,4,5,Commerce,Law
+2,2,2,4,3,Commerce,Law
+2,2,2,5,5,Commerce,Law
+1,1,1,5,5,Commerce,Law
+1,1,2,4,4,Commerce,Law
+3,2,2,4,5,Commerce,Law
+2,2,2,4,5,Commerce,Law
+2,3,1,4,4,Commerce,Law
+2,2,1,4,4,Commerce,Law
 1,1,3,5,3,Commerce,Media Studies
-2,1,3,5,3,Commerce,Media Studies
+2,1,4,5,2,Commerce,Media Studies
+2,2,4,4,3,Commerce,Media Studies
+1,2,4,5,4,Commerce,Media Studies
 2,2,3,4,2,Commerce,Media Studies
+2,2,3,5,2,Commerce,Media Studies
+1,1,4,5,4,Commerce,Media Studies
+2,1,4,4,2,Commerce,Media Studies
+2,1,4,4,3,Commerce,Media Studies
 1,2,4,5,3,Commerce,Media Studies
-2,2,4,5,4,Commerce,Media Studies
-1,1,3,5,4,Commerce,Media Studies
-1,3,2,5,3,Commerce,Media Studies
-1,3,4,5,3,Commerce,Media Studies
-1,1,4,4,2,Commerce,Media Studies
-2,3,4,4,3,Commerce,Media Studies
-1,1,3,4,2,Commerce,Media Studies
-1,2,4,5,3,Commerce,Media Studies
-2,2,3,5,4,Commerce,Media Studies
-2,1,3,4,2,Commerce,Media Studies
+1,1,3,5,3,Commerce,Media Studies
+3,1,3,4,3,Commerce,Media Studies
+2,2,4,4,4,Commerce,Media Studies
+2,2,3,5,2,Commerce,Media Studies
+2,1,5,5,3,Commerce,Media Studies
+2,2,3,5,3,Commerce,Media Studies
+2,2,4,5,3,Commerce,Media Studies
+1,3,3,5,3,Commerce,Media Studies
+3,1,3,4,3,Commerce,Media Studies
+1,1,2,5,3,Commerce,Media Studies
+1,2,3,5,3,Commerce,Media Studies
+3,2,3,4,3,Commerce,Media Studies
+1,1,4,4,3,Commerce,Media Studies
+2,2,3,5,2,Commerce,Media Studies
+1,2,4,5,4,Commerce,Media Studies
+1,1,4,4,4,Commerce,Media Studies
+2,2,5,4,3,Commerce,Media Studies
+2,1,4,4,3,Commerce,Media Studies
+2,2,2,4,3,Commerce,Media Studies
 1,1,4,5,2,Commerce,Media Studies
-2,1,3,4,3,Commerce,Media Studies
-1,2,3,4,2,Commerce,Media Studies
+2,1,3,5,4,Commerce,Media Studies
+3,2,4,5,2,Commerce,Media Studies
+2,1,4,5,3,Commerce,Media Studies
+1,1,4,5,3,Commerce,Media Studies
+1,3,4,5,4,Commerce,Media Studies
+2,1,2,4,4,Commerce,Media Studies
+1,2,4,5,3,Commerce,Media Studies
+2,2,5,4,3,Commerce,Media Studies
+2,3,4,5,4,Commerce,Media Studies
+2,1,4,5,4,Commerce,Media Studies
 2,2,2,5,5,Arts,Law
-2,2,2,4,5,Arts,Law
-2,2,2,5,5,Arts,Law
-2,3,2,5,5,Arts,Law
-2,2,1,4,4,Arts,Law
-1,1,2,5,5,Arts,Law
-1,1,2,5,4,Arts,Law
-2,3,2,4,5,Arts,Law
-2,2,2,4,4,Arts,Law
-2,2,1,5,5,Arts,Law
-2,2,2,4,5,Arts,Law
-2,2,2,5,5,Arts,Law
-2,3,1,4,5,Arts,Law
-2,1,2,5,3,Arts,Law
-2,2,2,5,4,Arts,Law
-1,1,1,5,4,Arts,Law
-3,2,2,5,5,Arts,Law
-2,1,1,4,5,Arts,Law
-3,2,1,4,5,Arts,Law
-1,2,2,5,5,Arts,Law
-2,2,1,5,5,Arts,Law
-2,1,3,5,5,Arts,Law
-2,2,1,5,4,Arts,Law
-1,3,2,4,4,Arts,Law
-1,2,1,5,5,Arts,Law
-2,3,2,5,4,Arts,Law
-3,1,2,5,4,Arts,Law
-1,3,2,4,5,Arts,Law
-2,4,2,5,5,Arts,Law
-1,2,3,5,4,Arts,Law
+2,1,3,4,4,Arts,Law
 2,3,2,4,4,Arts,Law
-1,2,3,5,5,Arts,Law
-1,1,2,4,5,Arts,Media Studies
-2,1,1,5,5,Arts,Law
-3,2,2,4,4,Arts,Education
-1,2,2,3,4,Arts,Law
-3,2,1,5,5,Arts,Law
-2,2,2,4,5,Arts,Law
+3,1,1,5,5,Arts,Law
+1,2,2,5,5,Arts,Law
+2,1,2,4,4,Arts,Law
+1,1,1,4,5,Arts,Law
+1,1,1,4,4,Arts,Law
+3,1,2,5,5,Arts,Law
+1,2,1,5,5,Arts,Law
+1,2,2,4,5,Arts,Law
+2,1,2,4,4,Arts,Law
+1,2,2,4,5,Arts,Education
+2,3,2,5,4,Arts,Law
+1,1,2,5,5,Arts,Law
+3,2,2,4,4,Arts,Law
+3,2,1,4,4,Arts,Law
+1,1,1,5,4,Arts,Law
 3,2,2,4,5,Arts,Law
-1,2,1,3,5,Arts,Law
-1,1,4,5,4,Arts,Media Studies
+2,2,2,5,5,Arts,Law
+2,1,1,5,5,Arts,Law
+2,2,2,4,5,Arts,Law
+2,1,3,4,4,Arts,Law
+3,2,2,5,5,Arts,Law
+1,1,2,5,5,Arts,Law
+3,2,1,5,5,Arts,Law
+2,2,3,3,5,Arts,Law
+2,1,2,5,5,Arts,Law
+2,2,2,5,5,Arts,Law
+2,2,1,4,4,Arts,Law
+2,2,2,4,5,Arts,Law
+1,2,2,4,4,Arts,Law
+2,4,2,5,5,Arts,Law
+2,1,3,4,5,Arts,Law
+2,1,2,5,5,Arts,Law
+2,1,1,5,5,Arts,Law
+2,3,1,5,5,Arts,Law
+1,1,2,5,5,Arts,Law
+1,1,2,5,5,Arts,Law
+1,2,2,4,5,Arts,Law
 1,2,4,5,3,Arts,Media Studies
-1,2,4,5,3,Arts,Media Studies
-2,2,4,5,3,Arts,Education
-3,2,5,4,3,Arts,Media Studies
-2,2,5,4,4,Arts,Media Studies
-2,2,3,5,4,Arts,Media Studies
-2,2,4,5,3,Arts,Media Studies
-1,1,3,4,3,Arts,Media Studies
-1,2,4,4,4,Arts,Media Studies
-1,1,4,4,2,Arts,Media Studies
-2,1,4,5,3,Arts,Media Studies
-2,2,3,5,3,Arts,Media Studies
+1,3,3,4,3,Arts,Media Studies
 1,1,4,5,3,Arts,Media Studies
-1,1,4,5,3,Arts,Media Studies
-1,2,3,5,2,Arts,BBA
-2,1,4,4,3,Arts,Media Studies
-3,1,3,5,3,Arts,Media Studies
+1,3,3,5,2,Arts,Media Studies
+1,1,5,4,4,Arts,Media Studies
+1,1,3,5,2,Arts,Media Studies
+1,1,3,4,2,Arts,Media Studies
 1,1,3,5,3,Arts,Media Studies
-2,1,3,5,3,Arts,Media Studies
-1,2,3,4,3,Arts,Media Studies
-1,2,5,5,1,Arts,Media Studies
-2,2,4,5,3,Arts,Media Studies
-1,2,3,4,5,Arts,Media Studies
-1,2,3,5,2,Arts,Media Studies
+2,1,3,4,3,Arts,Media Studies
+2,2,4,4,3,Arts,Education
+1,1,5,4,3,Arts,Education
+2,1,3,4,3,Arts,Media Studies
 1,2,4,5,2,Arts,Media Studies
-3,1,5,5,3,Arts,Media Studies
+1,1,3,5,3,Arts,Media Studies
+1,2,3,4,2,Arts,Media Studies
+1,2,4,5,2,Arts,Media Studies
 1,2,3,5,3,Arts,Media Studies
+1,2,5,5,4,Arts,Media Studies
+2,1,3,4,2,Arts,Media Studies
+1,2,4,5,3,Arts,Education
+1,2,4,5,4,Arts,Media Studies
+2,2,3,4,3,Arts,Media Studies
+1,2,4,4,4,Arts,Media Studies
+1,1,4,5,4,Arts,Media Studies
+1,2,4,4,2,Arts,Media Studies
+2,2,4,5,4,Arts,Media Studies
+2,1,5,5,3,Arts,Media Studies
+1,2,2,5,2,Arts,Media Studies
+2,1,3,4,3,Arts,Media Studies
+3,3,4,5,4,Arts,Media Studies
+2,1,4,4,4,Arts,Media Studies
+3,2,2,5,2,Arts,Media Studies
 1,2,4,4,3,Arts,Media Studies
-2,1,2,5,3,Arts,Media Studies
-1,1,4,4,2,Arts,Media Studies
-1,2,3,4,4,Arts,Media Studies
-2,2,3,4,1,Arts,Media Studies
-2,2,3,5,4,Arts,Media Studies
-1,1,3,5,4,Arts,Media Studies
-1,1,4,4,2,Arts,Media Studies
-3,2,4,4,4,Arts,Media Studies
-1,1,4,4,4,Arts,Media Studies
-2,2,3,4,2,Arts,Media Studies
-2,2,3,4,2,Arts,Media Studies
-2,3,1,5,3,Arts,Psychology
-2,3,2,5,1,Arts,Psychology
-3,3,2,4,2,Arts,Psychology
-1,4,2,5,4,Arts,Psychology
-2,4,1,4,2,Arts,Psychology
-2,3,1,4,2,Arts,Education
-2,2,2,5,4,Arts,Psychology
-2,3,2,4,2,Arts,Psychology
-2,2,2,4,3,Arts,Psychology
-1,3,2,5,3,Arts,Psychology
+1,1,3,5,3,Arts,Media Studies
+1,1,4,3,3,Arts,Media Studies
+1,2,4,5,3,Arts,Media Studies
+2,2,2,5,2,Arts,Media Studies
+2,2,4,4,4,Arts,Media Studies
+1,2,3,4,3,Arts,Media Studies
+2,1,4,5,2,Arts,Media Studies
 1,3,1,5,3,Arts,Psychology
-3,3,1,4,3,Arts,Psychology
-2,3,2,4,3,Arts,Psychology
-2,3,1,5,2,Arts,Psychology
-2,3,3,5,2,Arts,Psychology
-2,3,1,5,3,Arts,Psychology
-2,3,2,5,3,Arts,Psychology
-1,4,1,5,2,Arts,Psychology
-3,3,1,4,3,Arts,Psychology
-1,3,1,5,2,Arts,Psychology
-1,4,1,5,2,Arts,Psychology
-3,4,1,4,3,Arts,Psychology
-1,3,2,4,3,Arts,Psychology
-2,4,1,4,1,Arts,Education
-1,3,2,5,3,Arts,Psychology
-1,3,2,4,4,Arts,Psychology
-2,3,3,4,3,Arts,Psychology
-2,3,2,4,3,Arts,Psychology
-2,3,1,4,3,Arts,Psychology
-2,1,2,5,2,Arts,Psychology
-2,3,1,5,4,Arts,Psychology
-3,3,2,5,2,Arts,Psychology
-2,3,2,4,3,Arts,Psychology
-2,1,2,5,3,Arts,Psychology
+1,2,2,4,3,Arts,Psychology
+2,2,1,5,3,Arts,Psychology
+1,3,1,4,3,Arts,Psychology
+1,4,1,4,2,Arts,Psychology
+1,3,1,5,1,Arts,Psychology
 2,4,2,5,3,Arts,Psychology
-2,3,1,4,3,Arts,Psychology
-1,4,2,5,2,Arts,Psychology
-2,4,3,3,2,Arts,Psychology
-2,4,2,4,3,Arts,Psychology
-2,3,2,5,4,Arts,Psychology
-3,3,1,5,4,Arts,Education
-3,2,2,3,4,Arts,Education
-2,4,1,4,4,Arts,Education
-4,1,1,5,5,Arts,Education
-2,3,1,5,5,Arts,Education
-3,2,2,4,3,Arts,Psychology
-1,2,1,3,4,Arts,Education
-2,1,1,4,4,Arts,Education
-3,2,2,4,4,Arts,Education
-2,3,1,4,4,Arts,Education
-2,3,2,4,4,Arts,Education
-2,2,1,4,4,Arts,Education
-1,3,2,4,5,Arts,Education
-3,4,2,5,4,Arts,Education
-1,2,2,4,4,Arts,Education
-3,3,2,4,3,Arts,Education
-4,3,1,4,4,Arts,Education
-2,2,1,4,4,Arts,Education
-3,3,2,4,4,Arts,Education
-3,3,1,5,4,Arts,Education
-3,2,1,4,5,Arts,Education
+1,4,1,3,2,Arts,Psychology
+2,3,2,3,1,Arts,Psychology
+3,4,1,5,3,Arts,Psychology
+2,3,2,4,3,Arts,Psychology
+2,3,1,5,3,Arts,Psychology
+1,4,1,4,2,Arts,Psychology
+2,2,2,4,3,Arts,Psychology
+1,3,3,4,3,Arts,Psychology
+2,3,2,5,2,Arts,Education
+1,3,2,4,3,Arts,Psychology
+3,3,1,4,4,Arts,Media Studies
+2,4,1,5,3,Arts,Law
+1,4,3,4,2,Arts,Psychology
+1,4,2,5,3,Arts,Psychology
+1,4,1,4,3,Arts,Psychology
+1,3,2,5,4,Arts,Psychology
+2,4,1,4,3,Arts,Psychology
+2,2,1,5,2,Arts,Psychology
+3,4,3,5,3,Arts,Psychology
+1,3,2,4,2,Arts,Psychology
+1,3,2,4,3,Arts,Psychology
+1,1,1,5,1,Arts,Psychology
+2,4,1,5,2,Arts,Law
+3,3,2,5,3,Arts,Psychology
+1,3,2,4,1,Arts,Psychology
+2,2,3,5,2,Arts,Psychology
+1,2,1,5,4,Arts,Psychology
+2,3,1,4,4,Arts,Psychology
+1,5,3,3,2,Arts,Psychology
+1,3,2,5,2,Arts,Psychology
+2,4,2,5,2,Arts,Psychology
+2,4,2,5,4,Arts,Psychology
+2,3,1,4,2,Arts,BBA
+3,2,1,3,3,Arts,Education
+2,2,1,4,3,Arts,Education
 3,3,1,4,5,Arts,Education
-3,2,2,4,4,Arts,Education
-4,3,1,4,4,Arts,Education
-1,2,1,4,4,Arts,Education
-3,3,1,4,4,Arts,BBA
-2,3,3,3,4,Arts,Education
-2,2,2,5,4,Arts,Education
-2,3,1,4,4,Arts,Education
-3,3,1,3,3,Arts,Education
-3,3,2,3,5,Arts,Education
-2,3,2,4,4,Arts,Education
-3,5,2,5,5,Arts,Media Studies
-3,2,2,3,5,Arts,Education
-3,1,1,5,4,Arts,Education
+2,2,2,5,5,Arts,Education
+3,1,2,4,5,Arts,Education
+3,3,1,4,4,Arts,Education
+3,2,1,5,4,Arts,Education
+2,2,2,4,4,Arts,Education
+3,2,2,5,5,Arts,Education
+2,5,2,4,4,Arts,Education
+2,4,3,5,5,Arts,Education
+2,3,1,3,4,Arts,Education
+3,3,2,5,4,Arts,Education
+2,2,1,5,4,Arts,Education
+3,4,1,5,4,Arts,Education
+1,3,1,4,5,Arts,Education
+1,3,1,5,4,Arts,Education
+3,2,1,5,5,Arts,BBA
+3,2,2,5,4,Arts,Psychology
+3,2,1,5,4,Arts,Education
+2,2,2,5,5,Arts,Education
+4,3,1,5,5,Arts,Education
+2,2,2,4,4,Arts,Education
+3,3,2,3,4,Arts,Education
 3,2,1,4,4,Arts,Education
-2,4,1,4,4,Arts,Education
-1,2,1,5,5,Arts,Psychology
-1,1,2,4,5,Arts,Education
+4,4,1,5,5,Arts,Education
+3,3,2,5,5,Arts,Education
+2,3,2,4,5,Arts,Education
+3,3,1,3,4,Arts,Education
+2,2,2,5,4,Arts,Education
 2,3,2,4,4,Arts,Education
-3,2,2,4,4,Arts,BBA
-2,3,2,3,5,Arts,BBA
-3,1,2,4,5,Arts,BBA
-1,3,2,4,4,Arts,BBA
-3,1,3,3,5,Arts,BBA
-3,1,2,5,3,Arts,BBA
-2,1,1,3,4,Arts,BBA
-2,1,1,5,5,Arts,BBA
-3,1,1,3,5,Arts,BBA
-4,2,2,3,5,Arts,BBA
-3,1,3,3,5,Arts,BBA
+3,1,1,4,4,Arts,Education
+2,3,3,4,4,Arts,Education
+4,2,3,4,5,Arts,Education
+3,3,1,4,4,Arts,Education
+3,3,1,4,5,Arts,Education
+3,2,1,4,5,Arts,Education
+3,2,1,4,4,Arts,Education
+4,2,1,4,4,Arts,Education
+3,3,2,3,5,Arts,Education
+3,2,1,4,5,Arts,BBA
 4,1,2,3,5,Arts,BBA
-2,2,2,4,4,Arts,BBA
-3,1,2,5,5,Arts,BBA
-2,2,1,3,4,Arts,BBA
-3,2,2,4,4,Arts,BBA
-3,2,2,4,5,Arts,BBA
-3,2,3,4,5,Arts,BBA
-3,1,1,3,4,Arts,BBA
-3,2,3,4,4,Arts,Law
-2,1,2,4,5,Arts,BBA
-4,2,1,3,5,Arts,BBA
-2,2,2,3,5,Arts,BBA
-3,1,2,4,5,Arts,BBA
-3,2,2,3,4,Arts,BBA
-4,2,2,5,5,Arts,BBA
-3,1,3,4,5,Arts,BBA
-3,2,1,4,4,Arts,BBA
-3,1,2,3,5,Arts,BBA
 4,2,2,4,5,Arts,BBA
-4,1,2,3,5,Arts,BBA
-4,1,1,4,4,Arts,BBA
-3,2,2,3,4,Arts,BBA
-3,1,1,4,5,Arts,BBA
-3,1,3,2,4,Arts,BBA
-3,2,2,5,4,Arts,BBA
-3,2,1,5,4,Arts,BBA
+2,2,3,4,4,Arts,BBA
+4,1,2,4,5,Arts,BBA
+3,1,2,5,5,Arts,BBA
+2,2,1,5,4,Arts,BBA
+3,1,2,4,5,Arts,BBA
+3,1,3,4,5,Arts,BBA
+3,1,2,5,5,Arts,BBA
+3,1,3,3,4,Arts,BBA
+3,1,3,4,5,Arts,BBA
+3,1,1,4,4,Arts,BBA
+3,2,3,4,5,Arts,BBA
+3,1,2,4,5,Arts,BBA
+2,1,2,4,4,Arts,BBA
+3,1,2,5,5,Arts,BBA
+4,3,2,3,4,Arts,BBA
+3,1,2,3,5,Arts,BBA
+3,1,2,4,4,Arts,BBA
+3,1,1,3,5,Arts,BBA
+2,1,1,4,5,Arts,BBA
+3,1,1,3,5,Arts,BBA
+3,1,3,4,4,Arts,BBA
+3,2,1,4,5,Arts,BBA
+2,2,2,4,5,Arts,BBA
+2,2,2,4,5,Arts,BBA
+2,1,1,4,4,Arts,BBA
 3,2,2,3,5,Arts,BBA
-2,1,2,3,5,Arts,Law
-4,1,3,4,4,Arts,BBA
+4,3,3,4,4,Arts,BBA
+4,1,2,3,5,Arts,BBA
+3,2,2,3,4,Arts,BBA
+4,3,2,3,4,Arts,BBA
+3,2,1,4,5,Arts,BBA
+4,1,1,4,5,Arts,BBA
+3,2,2,3,5,Arts,BBA
+3,2,3,3,4,Arts,BBA
+3,1,3,4,4,Arts,BBA
+3,2,3,4,5,Arts,BBA
+3,1,1,4,5,Arts,BBA
