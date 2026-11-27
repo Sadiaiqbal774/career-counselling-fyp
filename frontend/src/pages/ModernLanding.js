@@ -46,44 +46,44 @@ function ModernLanding() {
       step: '01',
       title: 'Take the 5-Minute Quiz',
       desc: 'Answer targeted questions about your favorite subjects, interests, and working styles. Designed for Matric, FSc, ICS, and A-Level students.',
-      icon: 'ðŸ“',
+      icon: '📝',
     },
     {
       step: '02',
       title: 'AI Evaluates Your Aptitude',
       desc: 'Our trained machine learning model analyzes your academic background and cognitive strengths to predict your highest-potential degree paths.',
-      icon: 'ðŸ§ ',
+      icon: '🧠',
     },
     {
       step: '03',
       title: 'Get Your Actionable Roadmap',
       desc: 'Receive instant match scores, admission merit requirements for top Pakistani universities, and eligible financial aid options.',
-      icon: 'ðŸŽ¯',
+      icon: '🎯',
     },
   ];
 
   const degrees = [
     {
       title: 'Computer Science & AI',
-      icon: 'ðŸ’»',
+      icon: '💻',
       tag: 'Highest Demand',
       description: 'Study algorithms, machine learning, data structures, and computer architecture to build modern digital systems.',
     },
     {
       title: 'Software Engineering',
-      icon: 'âš™ï¸',
+      icon: '⚙️',
       tag: 'Rapid Growth',
       description: 'Focus on full-stack development, software architecture, cloud platforms, and large-scale application design.',
     },
     {
       title: 'Business Administration (BBA)',
-      icon: 'ðŸ“Š',
+      icon: '📊',
       tag: 'Versatile Career',
       description: 'Develop executive leadership, financial analytics, marketing strategy, and modern digital entrepreneurship.',
     },
     {
       title: 'Medical & Health Sciences',
-      icon: 'ðŸ”¬',
+      icon: '🔬',
       tag: 'High Impact',
       description: 'Pursue clinical medicine, biomedical research, pharmaceuticals, and allied healthcare disciplines.',
     },
@@ -92,22 +92,22 @@ function ModernLanding() {
   const features = [
     {
       title: 'Personalized Aptitude Quiz',
-      icon: 'ðŸ“‹',
+      icon: '📋',
       desc: 'Two-tier assessment tailored to Pakistani educational backgrounds (Pre-Medical, Pre-Engineering, ICS, General Science).',
     },
     {
       title: 'AI-Powered Compatibility',
-      icon: 'ðŸ¤–',
+      icon: '🤖',
       desc: 'Predictive algorithm trained on actual student performance to find your highest-likelihood career fit.',
     },
     {
       title: 'Live University Recommender',
-      icon: 'ðŸ›ï¸',
+      icon: '🏛️',
       desc: 'Filter institutions across Punjab, Sindh, KPK, Islamabad, and Balochistan by admission criteria and fees.',
     },
     {
       title: 'Verified Scholarship Directory',
-      icon: 'ðŸŽ“',
+      icon: '🎓',
       desc: 'Browse need-based, merit, and government scholarships with income thresholds and application links.',
     },
   ];
@@ -159,7 +159,7 @@ function ModernLanding() {
               {currentUser ? (
                 <>
                   <button type="button" className="landing-btn landing-btn--primary" onClick={handleStartAssessment}>
-                    Take Career Assessment â†’
+                    Take Career Assessment →
                   </button>
                   <button type="button" className="landing-btn landing-btn--secondary" onClick={handleViewResults}>
                     View My Results
@@ -168,7 +168,7 @@ function ModernLanding() {
               ) : (
                 <>
                   <button type="button" className="landing-btn landing-btn--primary" onClick={handleStartAssessment}>
-                    Start Free Assessment â†’
+                    Start Free Assessment →
                   </button>
                   <button type="button" className="landing-btn landing-btn--secondary" onClick={() => navigate('/login')}>
                     Sign In
@@ -180,18 +180,18 @@ function ModernLanding() {
                 className="landing-btn landing-btn--ghost"
                 onClick={() => navigate(currentUser ? '/university-recommender' : '/login')}
               >
-                Explore Universities ðŸ›ï¸
+                Explore Universities 🏛️
               </button>
             </div>
 
             <div className="landing-hero__trust-strip">
-              <span className="trust-item">âœ“ 100% Free & Instant</span>
-              <span className="trust-divider">â€¢</span>
-              <span className="trust-item">âœ“ 50+ Universities</span>
-              <span className="trust-divider">â€¢</span>
-              <span className="trust-item">âœ“ 100+ Scholarships</span>
-              <span className="trust-divider">â€¢</span>
-              <span className="trust-item">âœ“ Pre-Med, Eng & ICS</span>
+              <span className="trust-item">✓ 100% Free & Instant</span>
+              <span className="trust-divider">•</span>
+              <span className="trust-item">✓ 50+ Universities</span>
+              <span className="trust-divider">•</span>
+              <span className="trust-item">✓ 100+ Scholarships</span>
+              <span className="trust-divider">•</span>
+              <span className="trust-item">✓ Pre-Med, Eng & ICS</span>
             </div>
           </div>
         </div>
@@ -291,7 +291,7 @@ function ModernLanding() {
                   aria-expanded={isOpen}
                 >
                   <span>{faq.q}</span>
-                  <span className="faq-toggle-icon">{isOpen ? 'âˆ’' : '+'}</span>
+                  <span className="faq-toggle-icon">{isOpen ? '−' : '+'}</span>
                 </button>
                 {isOpen && (
                   <div className="faq-answer-panel">
@@ -314,12 +314,12 @@ function ModernLanding() {
           <div className="landing-cta-actions">
             {currentUser ? (
               <button type="button" className="landing-btn landing-btn--primary-gold" onClick={handleStartAssessment}>
-                Go to Career Assessment â†’
+                Go to Career Assessment →
               </button>
             ) : (
               <>
                 <button type="button" className="landing-btn landing-btn--primary-gold" onClick={() => navigate('/register')}>
-                  Create Free Account & Start â†’
+                  Create Free Account & Start →
                 </button>
                 <button type="button" className="landing-btn landing-btn--ghost-white" onClick={() => navigate('/login')}>
                   Already have an account? Sign In
@@ -360,7 +360,7 @@ function ModernLanding() {
         </div>
 
         <div className="landing-footer-bottom">
-          <p>Â© 2026 CareerGuide. All rights reserved. Designed for student empowerment across Pakistan.</p>
+          <p>© 2026 CareerGuide. All rights reserved. Designed for student empowerment across Pakistan.</p>
           <p className="footer-sec-note">All student assessment scores and credentials remain strictly confidential.</p>
         </div>
       </footer>

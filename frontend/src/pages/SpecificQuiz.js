@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   answerScores,
-  careerRecommendations,
   getEmptyScores,
   specificQuestionsByCategory,
   storageKeys,
@@ -214,9 +213,6 @@ function SpecificQuiz() {
         )}
 
         <h2>{currentQuestion.text}</h2>
-
-        {/* Career recommendation for the current category */}
-        <p className="muted-text">{careerRecommendations[currentCategory]}</p>
 
         <div className="option-grid">
           {answerOptions.map((option) => (

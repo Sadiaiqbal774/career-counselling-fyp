@@ -3269,7 +3269,7 @@ def build_career_explanation(predicted_career, predicted_field, confidence, data
         "Leadership": "Leadership",
     }
     dom_str = ", ".join([skill_names.get(s, s) for s in dominant]) if dominant else "your profile"
-    points.append(f"Your interest ratings (especially {dom_str}) strongly align with {predicted_career} ({round(confidence * 100)}% model confidence).")
+    points.append(f"Your interest ratings (especially {dom_str}) strongly align with {predicted_career}.")
     points.append(f"Your {background} academic background qualifies for degree programs in {predicted_field}.")
     points.append(f"Your average marks of {marks:.0f}% were used to filter university programs you are eligible for.")
     return points
