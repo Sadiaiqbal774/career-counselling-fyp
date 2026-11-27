@@ -211,13 +211,14 @@ EXPANDED_KNOWLEDGE_BASE = [
     {
         "id": "merit_formulas",
         "category": "Admissions",
-        "keywords": ["merit formula", "how aggregate is calculated", "aggregate formula", "how to calculate aggregate", "calculate aggregate formula for nust", "merit formula for universities"],
+        "keywords": ["merit formula", "how aggregate is calculated", "aggregate formula", "how to calculate aggregate", "calculate aggregate formula for nust", "merit formula for universities", "fast merit", "fast aggregate", "nust merit", "comsats merit", "mdcat aggregate formula"],
         "patterns": [
             "how to calculate university aggregate in pakistan",
             "what is the merit formula for universities",
             "how to calculate merit for nust fast comsats mdcat",
             "formula for aggregate calculation in pakistan",
-            "how is admission merit calculated"
+            "how is admission merit calculated",
+            "what is fast merit formula"
         ],
         "response": "Standard admission aggregate formulas in Pakistan:\n• NUST: 75% NET Entry Test + 15% FSc/HSSC-1 + 10% Matric/SSC.\n• FAST-NUCES: 50% NU Entry Test + 50% FSc/Matric.\n• Medical (PMDC): 50% MDCAT + 40% FSc Pre-Medical + 10% Matric.\n• COMSATS: 50% NTS-NAT Test + 40% FSc + 10% Matric.\n• UET Engineering (ECAT): 33% ECAT + 50% FSc + 17% Matric.\nYou can calculate your exact aggregate automatically on our University Recommender page!",
         "links": [{"label": "Calculate Your Aggregate", "link": "/university-recommender"}]
@@ -480,26 +481,15 @@ class AIChatbotEngine:
         self.vectorizer = TfidfVectorizer(
             ngram_range=(1, 3),
             token_pattern=r"(?u)\b\w+\b",
+            stop_words="english",
             sublinear_tf=True
         )
         self.tfidf_matrix = self.vectorizer.fit_transform(self.corpus)
 
-    def predict(self, user_query, threshold=0.18):
-        if not user_query or not user_query.strip():
+    def predict(self, user_query, threshold=0.33):
+        if not user_query or not str(user_query).strip():
             return {
-                "response": "Hi! I am your CareerGuide AI Assistant. You can ask me anything about degrees, career scope, university admissions, or scholarships in Pakistan.",
-                "links": [{"label": "Take Career Quiz", "link": "/quiz"}],
-                "confidence": 1.0,
-                "matchedTopic": "greeting"
-            }
-
-        clean_text = user_query.strip().lower()
-        normalized_q = normalize_text(user_query)
-
-        # 1. Greetings
-        if clean_text in ("hi", "hello", "hey", "salam", "assalam o alaikum", "aoa", "good morning", "good evening"):
-            return {
-                "response": "Walekum Assalam! I'm your CareerGuide AI Counseling Assistant. I can help you choose the right degree, compare universities (NUST, FAST, COMSATS), check entry tests (NET, MDCAT, ECAT, LAT), or explore scholarships. What would you like to know?",
+                "response": "Hello! I am your CareerGuide AI Counseling Assistant. You can ask me anything about degrees, career scope, university admissions, or scholarships in Pakistan.",
                 "links": [
                     {"label": "Career Assessment Quiz", "link": "/quiz"},
                     {"label": "University Recommender", "link": "/university-recommender"},
@@ -509,7 +499,174 @@ class AIChatbotEngine:
                 "matchedTopic": "greeting"
             }
 
-        # 2. High-precision Keyword Priority Match (Pass 1)
+        raw_text = str(user_query).strip()
+        clean_text = raw_text.lower()
+        # Clean punctuation for intent / word matching
+        stripped_text = re.sub(r"[^\w\s]", " ", clean_text)
+        words = [w for w in stripped_text.split() if w]
+        joined = " ".join(words)
+        normalized_q = normalize_text(user_query)
+
+        # -------------------------------------------------------------
+        # 1. GREETINGS (hello, hey, hi, salam, aoa, good morning, etc.)
+        # -------------------------------------------------------------
+        GREETING_WORDS = {
+            "hi", "hello", "hey", "salam", "assalam", "asalam", "aoa",
+            "hiya", "hola", "greetings", "aslamoalikum", "asalamualaykum"
+        }
+        GREETING_PHRASES = [
+            "assalam o alaikum", "assalam alaikum", "asalam alaikum", "assalamu alaikum",
+            "good morning", "good afternoon", "good evening", "good day",
+            "hey there", "hello there", "hello assistant", "hey assistant",
+            "hello bot", "hey bot", "salam alaikum"
+        ]
+        is_greeting = False
+        if any(joined == p or joined.startswith(p + " ") for p in GREETING_PHRASES):
+            is_greeting = True
+        elif words and all(w in GREETING_WORDS for w in words):
+            is_greeting = True
+        elif len(words) <= 3 and any(w in GREETING_WORDS for w in words) and not any(
+            w in ["cs", "se", "ai", "engineering", "medical", "university", "merit", "scholarship", "fee", "mdcat", "net", "ecat"]
+            for w in words
+        ):
+            is_greeting = True
+
+        if is_greeting:
+            return {
+                "response": "Walekum Assalam & Hello! I am your CareerGuide AI Counseling Assistant.\n\n"
+                            "I am here to guide Pakistani students on:\n"
+                            "• Degree & career options (CS, Software Engineering, AI, MBBS, Engineering, Business, Law)\n"
+                            "• University admissions, closing merits, & aggregate formulas (FAST, NUST, COMSATS, UET)\n"
+                            "• Entry tests (MDCAT, ECAT, NET, NAT, LAT)\n"
+                            "• Scholarships & financial aid (HEC Need-Based, PEEF, Ehsaas)\n\n"
+                            "How can I help you today?",
+                "links": [
+                    {"label": "Career Assessment Quiz", "link": "/quiz"},
+                    {"label": "University Recommender", "link": "/university-recommender"},
+                    {"label": "Scholarship Finder", "link": "/scholarships"}
+                ],
+                "confidence": 1.0,
+                "matchedTopic": "greeting"
+            }
+
+        # -------------------------------------------------------------
+        # 2. BOT IDENTITY ("Who are you?", "What is your name?")
+        # -------------------------------------------------------------
+        IDENTITY_PHRASES = [
+            "who are you", "what is your name", "what are you", "who made you",
+            "who created you", "tell me about yourself", "are you an ai",
+            "are you a bot", "what is this bot"
+        ]
+        if any(p in joined for p in IDENTITY_PHRASES):
+            return {
+                "response": "I am the CareerGuide AI Counseling Assistant! 🎓\n\n"
+                            "I am an intelligent advisory assistant designed specifically to guide intermediate "
+                            "and high-school students in Pakistan. I help you discover the most suitable career pathways, "
+                            "compare degrees, calculate university admission aggregates, and explore accredited universities and scholarships.",
+                "links": [
+                    {"label": "Take Career Quiz", "link": "/quiz"},
+                    {"label": "University Recommender", "link": "/university-recommender"}
+                ],
+                "confidence": 1.0,
+                "matchedTopic": "identity"
+            }
+
+        # -------------------------------------------------------------
+        # 3. HELP & CAPABILITIES ("What can you do?", "What questions can I ask?")
+        # -------------------------------------------------------------
+        GUIDANCE_PHRASES = [
+            "what can you do", "what do you do", "how can you help", "how to use",
+            "what questions can i ask", "what can i ask", "what to ask", "help me",
+            "guide me", "how does this work", "options", "commands", "what are you for",
+            "sample questions", "example questions"
+        ]
+        if joined == "help" or any(p in joined for p in GUIDANCE_PHRASES):
+            return {
+                "response": "Here is what I can help you with:\n\n"
+                            "🎓 Degree Comparisons & Career Scope:\n"
+                            "• 'Difference between CS and SE?'\n"
+                            "• 'Scope of Artificial Intelligence in Pakistan?'\n"
+                            "• 'Can Pre-Medical students do Computer Science?'\n"
+                            "• 'Options after FSc Pre-Medical other than MBBS?'\n"
+                            "• 'Options after FSc Pre-Engineering / ICS?'\n\n"
+                            "🏛️ University Admissions & Aggregate Merit:\n"
+                            "• 'What is FAST merit formula?'\n"
+                            "• 'Fee structure and merit for COMSATS Lahore?'\n"
+                            "• 'Top CS universities in Pakistan?'\n\n"
+                            "📝 Entry Test Guidelines:\n"
+                            "• 'MDCAT pattern and passing criteria?'\n"
+                            "• 'NUST NET entry test guide and preparation?'\n"
+                            "• 'ECAT guide for engineering admissions?'\n\n"
+                            "💰 Scholarships & Financial Assistance:\n"
+                            "• 'How to get HEC Need-Based scholarship?'\n"
+                            "• 'PEEF scholarship eligibility criteria?'\n\n"
+                            "You can also take our AI Career Quiz to discover which field matches your personality!",
+                "links": [
+                    {"label": "Start Career Quiz", "link": "/quiz"},
+                    {"label": "University Recommender", "link": "/university-recommender"},
+                    {"label": "Scholarship Finder", "link": "/scholarships"}
+                ],
+                "confidence": 1.0,
+                "matchedTopic": "bot_guidance"
+            }
+
+        # -------------------------------------------------------------
+        # 4. SMALL TALK ("How are you?")
+        # -------------------------------------------------------------
+        SMALLTALK_PHRASES = [
+            "how are you", "how are you doing", "how r u", "how do you do",
+            "how is it going", "hows it going", "hope you are well", "are you okay"
+        ]
+        if any(p in joined for p in SMALLTALK_PHRASES):
+            return {
+                "response": "I'm doing great, thank you for asking! 😊 I'm ready to help you with your degree options, university admissions, and scholarships. What would you like to explore today?",
+                "links": [
+                    {"label": "University Recommender", "link": "/university-recommender"},
+                    {"label": "Career Assessment", "link": "/quiz"}
+                ],
+                "confidence": 1.0,
+                "matchedTopic": "smalltalk"
+            }
+
+        # -------------------------------------------------------------
+        # 5. GRATITUDE ("Thank you", "Thanks")
+        # -------------------------------------------------------------
+        THANKS_WORDS = ["thank you", "thanks", "thanks a lot", "thank u", "thx", "jazakallah", "jazak allah", "shukriya", "thankyou"]
+        if any(t in joined for t in THANKS_WORDS):
+            return {
+                "response": "You're very welcome! If you have any more questions about university cutoffs, degrees, or scholarships, feel free to ask anytime. Best of luck with your studies!",
+                "links": [],
+                "confidence": 1.0,
+                "matchedTopic": "thanks"
+            }
+
+        # -------------------------------------------------------------
+        # 6. FAREWELLS ("Bye", "Goodbye", "Allah Hafiz")
+        # -------------------------------------------------------------
+        BYE_WORDS = ["bye", "goodbye", "see you", "allah hafiz", "khuda hafiz", "take care", "bye bye", "good night"]
+        if any(b in joined for b in BYE_WORDS):
+            return {
+                "response": "Allah Hafiz and goodbye! Wishing you huge success in your academic and career journey. Come back whenever you need counseling!",
+                "links": [],
+                "confidence": 1.0,
+                "matchedTopic": "farewell"
+            }
+
+        # -------------------------------------------------------------
+        # 7. COMPLIMENTS / POSITIVE FEEDBACK
+        # -------------------------------------------------------------
+        COMPLIMENT_WORDS = ["good job", "awesome", "great job", "well done", "cool", "nice bot", "helpful bot", "great bot"]
+        if any(c in joined for c in COMPLIMENT_WORDS) and len(words) <= 4:
+            return {
+                "response": "Thank you! I'm glad I could help. Let me know if there's anything else you need about degrees or university admissions.",
+                "links": [],
+                "confidence": 1.0,
+                "matchedTopic": "compliment"
+            }
+
+        # -------------------------------------------------------------
+        # 8. PASS 1: High-precision Keyword Priority Match
+        # -------------------------------------------------------------
         for entry in EXPANDED_KNOWLEDGE_BASE:
             for kw in entry.get("keywords", []):
                 norm_kw = kw.lower().strip()
@@ -521,13 +678,16 @@ class AIChatbotEngine:
                         "matchedTopic": entry["id"]
                     }
 
-        # 3. TF-IDF Cosine Similarity Semantic Matching (Pass 2)
+        # -------------------------------------------------------------
+        # 9. PASS 2: TF-IDF Cosine Similarity Semantic Matching
+        # -------------------------------------------------------------
         try:
             q_vec = self.vectorizer.transform([normalized_q])
             sims = cosine_similarity(q_vec, self.tfidf_matrix)[0]
             best_idx = int(np.argmax(sims))
             best_score = float(sims[best_idx])
 
+            # Safety check: Verify the query shares more than just generic stopwords/location words
             if best_score >= threshold:
                 matched_entry = self.entry_mapping[best_idx]
                 return {
@@ -539,10 +699,12 @@ class AIChatbotEngine:
         except Exception:
             pass
 
-        # 4. Contextual Fallback
+        # -------------------------------------------------------------
+        # 10. CONTEXTUAL KEYWORD FALLBACKS
+        # -------------------------------------------------------------
         if any(w in clean_text for w in ["universit", "college", "admission", "merit", "cutoff"]):
             return {
-                "response": "For university admissions in Pakistan, programs typically require 50% to 70%+ marks in Intermediate (FSc/ICS) and a valid entry test score (NET, ECAT, MDCAT, or NAT). You can use our University Recommender to view exact cutoff percentages and admission schedules.",
+                "response": "For university admissions in Pakistan, undergraduate programs typically require 50% to 70%+ marks in Intermediate (FSc/ICS) and a valid entry test score (NET, ECAT, MDCAT, or NAT). You can use our University Recommender to view exact cutoff percentages and eligible universities.",
                 "links": [{"label": "Open University Recommender", "link": "/university-recommender"}],
                 "confidence": 0.5,
                 "matchedTopic": "university_fallback"
@@ -550,7 +712,7 @@ class AIChatbotEngine:
 
         if any(w in clean_text for w in ["scholarship", "financial aid", "fee", "funding"]):
             return {
-                "response": "Pakistan offers multiple verified funding options including HEC Need-Based Aid, PEEF, Ehsaas, and institutional merit fee concessions. You can search, filter by province, and bookmark these in our Scholarship Finder.",
+                "response": "Pakistan offers multiple verified funding options including HEC Need-Based Aid, PEEF, Ehsaas, and university merit concessions. You can search, filter by province, and check requirements in our Scholarship Finder.",
                 "links": [{"label": "Open Scholarship Finder", "link": "/scholarships"}],
                 "confidence": 0.5,
                 "matchedTopic": "scholarship_fallback"
@@ -567,9 +729,19 @@ class AIChatbotEngine:
                 "matchedTopic": "quiz_fallback"
             }
 
+        # -------------------------------------------------------------
+        # 11. UNCOMMON / OUT-OF-SCOPE GUIDANCE FALLBACK
+        # -------------------------------------------------------------
         return {
-            "response": "I am trained to guide students across computing, medical sciences, engineering, business, law, and social sciences in Pakistan. Try asking me specific questions like: 'Difference between CS and SE?', 'Can Pre-Med students do CS?', 'What is the scope of AI?', 'Best universities for Software Engineering?', or 'How to get HEC scholarships?'.",
+            "response": "I specialize specifically in career counseling, degree programs, university admissions, and scholarships in Pakistan.\n\n"
+                        "I may not have an answer for that specific query, but I can gladly help you with:\n"
+                        "• Degree Comparisons: e.g. 'CS vs SE', 'CS vs AI', 'Options after Pre-Medical'\n"
+                        "• University Admissions: e.g. 'FAST merit formula', 'Fee structure of COMSATS', 'Top CS universities'\n"
+                        "• Entry Test Guidance: e.g. 'MDCAT pattern & preparation', 'NUST NET guide', 'ECAT guide'\n"
+                        "• Scholarships: e.g. 'HEC Need-Based scholarship', 'PEEF eligibility criteria'\n\n"
+                        "Try asking one of the questions above, or take our Career Assessment Quiz below!",
             "links": [
+                {"label": "Take Career Quiz", "link": "/quiz"},
                 {"label": "Explore Universities", "link": "/university-recommender"},
                 {"label": "Find Scholarships", "link": "/scholarships"}
             ],

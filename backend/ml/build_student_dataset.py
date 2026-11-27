@@ -22,14 +22,14 @@ Target Interest Profiles (mean ratings on a 1-5 scale, order: Math, Biology, Com
 - Education:            Math 2.4, Biology 2.8, Computer 1.4, Communication 4.2, Leadership 4.2
 
 Background Eligibility Rules:
-- Pre-Medical:     MBBS, Pharmacy, Biotechnology, Psychology, Law
+- Pre-Medical:     MBBS, Pharmacy, Biotechnology, Psychology, Law, BSCS, Software Engineering, Data Science
 - Pre-Engineering: Engineering, BSCS, Software Engineering, Data Science, BBA
 - ICS:             BSCS, Software Engineering, Data Science, Engineering, BBA
 - Commerce:        Accounting, BBA, Economics, Law, Media Studies
 - Arts:            Law, Media Studies, Psychology, Education, BBA
 
 Dataset Generation Rules:
-- 40 rows for each allowed (Background, career) pair (5 backgrounds * 5 careers = 25 pairs * 40 = 1000 rows total before noise).
+- 40 rows for each allowed (Background, career) pair.
 - Each interest score sampled from Normal(mean, 0.7), rounded and clipped to [1, 5].
 - 5% label noise: for 5% of rows, replace the label with another career allowed in the same background.
 - Random seed: 42.
@@ -46,7 +46,7 @@ RANDOM_SEED = 42
 
 # Background to allowed Careers mapping
 BACKGROUND_CAREERS = {
-    "Pre-Medical": ["MBBS", "Pharmacy", "Biotechnology", "Psychology", "Law"],
+    "Pre-Medical": ["MBBS", "Pharmacy", "Biotechnology", "Psychology", "Law", "BSCS", "Software Engineering", "Data Science"],
     "Pre-Engineering": ["Engineering", "BSCS", "Software Engineering", "Data Science", "BBA"],
     "ICS": ["BSCS", "Software Engineering", "Data Science", "Engineering", "BBA"],
     "Commerce": ["Accounting", "BBA", "Economics", "Law", "Media Studies"],

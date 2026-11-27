@@ -1,10 +1,10 @@
 [
   {
     "id": "greeting",
-    "keyword": "hello, hi, hey, salam, assalam, good morning, good afternoon, good evening",
-    "response": "Hi! I'm the CareerGuide assistant. Ask me about your quiz results, universities, scholarships, or your profile.",
-    "link": "",
-    "linkLabel": ""
+    "keyword": "hello, hi, hey, salam, assalam, good morning, good afternoon, good evening, hey there, aoa, greetings",
+    "response": "Hello and welcome! I am your CareerGuide AI Counseling Assistant. I can help you choose the right degree (CS, SE, AI, MBBS, Engineering, Business), calculate university aggregate merits (FAST, NUST, COMSATS, UET), and explore scholarships across Pakistan. How can I help you today?",
+    "link": "/quiz",
+    "linkLabel": "Take Career Quiz"
   },
   {
     "id": "post-quiz-help",
@@ -50,16 +50,9 @@
   },
   {
     "id": "contact-help",
-    "keyword": "help, support, contact, admin, complaint",
-    "response": "For any questions or institutional guidance, please reach out to your career counselling office or system administrator.",
-    "link": "",
-    "linkLabel": ""
-  },
-  {
-    "id": "default",
-    "keyword": "",
-    "response": "I can help you with your assessment results, university recommendations, scholarships, or your profile. What would you like to know?",
-    "link": "",
-    "linkLabel": ""
+    "keyword": "help, support, contact, admin, guide me, what can you do, what to ask, what questions can i ask, how to use",
+    "response": "Here is what I can help you with:\n1. Degree Comparisons & Scope (CS vs SE, CS vs AI, Pre-Med alternatives)\n2. University Admissions & Merit formulas (FAST, NUST, COMSATS, UET)\n3. Entry Test Guides (MDCAT, NET, ECAT, LAT)\n4. Scholarships & Financial Aid (HEC Need-Based, PEEF, Ehsaas)\n5. Interpreting your Career Assessment Quiz results.\nWhat would you like to know?",
+    "link": "/university-recommender",
+    "linkLabel": "Explore Universities"
   }
 ]

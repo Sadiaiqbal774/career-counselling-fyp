@@ -3095,12 +3095,22 @@ def ai_chat_query():
 
     # 1. Check Admin Auto-Responses first (FR-14-02: Admin dynamic rule)
     records = load_json_records("chatbot-responses") or []
-    norm = message.lower()
+    norm = message.lower().strip()
+    clean_norm = re.sub(r"[^\w\s]", " ", norm)
     matched_admin = None
     for r in records:
-        kw = (r.get("keyword") or "").lower().strip()
-        if kw and kw in norm:
-            matched_admin = r
+        raw_kws = [k.strip().lower() for k in (r.get("keyword") or "").split(",") if k.strip()]
+        for kw in raw_kws:
+            if not kw:
+                continue
+            if kw == norm:
+                matched_admin = r
+                break
+            pattern = r"\b" + re.escape(kw) + r"\b"
+            if re.search(pattern, norm) or re.search(pattern, clean_norm):
+                matched_admin = r
+                break
+        if matched_admin:
             break
 
     if matched_admin and matched_admin.get("response"):
