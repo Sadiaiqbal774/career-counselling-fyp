@@ -1233,30 +1233,6 @@ function UniversityRecommender() {
               )}
             </div>
 
-            {/* Summary Stats */}
-            {result.universities && result.universities.length > 0 && (
-              <div className="summary-stats">
-                <div className="summary-stat-item">
-                  <div className="summary-stat-label">Your Average</div>
-                  <div className="summary-stat-value">
-                    {((parseFloat(formData.Matric) + parseFloat(formData.Inter)) / 2).toFixed(1)}%
-                  </div>
-                </div>
-                <div className="summary-stat-item summary-stat-divider" />
-                <div className="summary-stat-item">
-                  <div className="summary-stat-label">Career Match</div>
-                  <div className="summary-stat-value">
-                    {result.confidence != null ? `${Math.round(result.confidence * 100)}%` : "—"}
-                  </div>
-                </div>
-                <div className="summary-stat-item summary-stat-divider" />
-                <div className="summary-stat-item">
-                  <div className="summary-stat-label">Matches</div>
-                  <div className="summary-stat-value">{result.universities.length}</div>
-                </div>
-              </div>
-            )}
-
             {/* Recommendation Type Tabs */}
             {(() => {
               const uniCount = result.universities ? result.universities.length : 0;
